@@ -1,0 +1,12 @@
+{
+  "name": "mp3-free",
+  "version": "1.0.0",
+  "description": "MP3 음원의 잠재적 영향 분석 인포그래픽",
+  "scripts": {
+    "dev": "npx http-server -p 3000",
+    "build": "echo 'Static site - no build needed'"
+  },
+  "keywords": ["audio", "mp3", "wav", "infographic"],
+  "author": "",
+  "license": "MIT"
+}
