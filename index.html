@@ -319,13 +319,13 @@
                     <div class="video-container">
                         <iframe
                             src="https://www.youtube.com/embed/CtgjPG11eII"
-                            title="남우선 PD 대충 영어 추천 영상"
+                            title="MBC 다큐 : 생명의 소리 아날로그"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                         </iframe>
                     </div>
                     <p class="text-center text-gray-600 mt-4">
-                        '생명의 소리' 남우선 PD가 직접 대충 영어의 WAV 음원 선택을 추천하는 영상입니다
+                        'MP3 유해론'을 제기하며 4관왕의 신화를 쓴 '생명의 소리 아날로그 1부'
                     </p>
                 </div>
             </section>
@@ -349,6 +349,72 @@
                     <p class="mt-4 text-center text-lg">
                         MP3는 배속이 높아질수록 정보 손실이 두드러져 <span class="warning-text">인지율이 급격히 하락</span>합니다.
                         반면, PCM(WAV)은 고배속에서도 <span class="safe-text">명확한 소리를 유지</span>하여 속청 학습 효과를 극대화합니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- What Was Lost Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    무엇이 사라졌는가?: 손실 압축의 비밀
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    MP3는 파일 크기를 줄이기 위해 '손실 압축' 방식을 사용합니다.
+                    이 과정에서 원음(WAV, LP)에 포함된 방대한 음역대, 특히 인간이 '듣기 어렵다'고 여겨지는
+                    <span class="font-bold text-red-600">고주파수 영역의 데이터가 대거 삭제</span>됩니다.
+                </p>
+
+                <div class="glass-card">
+                    <h3 class="text-2xl font-bold text-center mb-8 section-title">아날로그 원음 vs MP3 압축 음원</h3>
+                    <div class="flex flex-col md:flex-row justify-around items-center gap-8">
+                        <div class="w-full md:w-2/5 p-6 rounded-2xl bg-gradient-to-br from-green-400 to-blue-500 text-white shadow-2xl transform hover:scale-105 transition-transform">
+                            <h4 class="text-2xl font-bold mb-3">✅ WAV / LP (무손실)</h4>
+                            <p class="mb-4 text-lg">풍부한 고주파수 포함</p>
+                            <div class="text-sm font-mono mt-2 p-4 bg-white bg-opacity-20 rounded-lg">
+                                [저주파]...[중주파]...<span class="font-bold text-yellow-300">[고주파]</span>...<span class="font-bold text-yellow-300">[초고주파]</span>
+                            </div>
+                        </div>
+
+                        <div class="text-6xl font-bold text-red-500 my-4 md:my-0">➡️✂️</div>
+
+                        <div class="w-full md:w-2/5 p-6 rounded-2xl bg-gradient-to-br from-red-500 to-pink-500 text-white shadow-2xl transform hover:scale-105 transition-transform">
+                            <h4 class="text-2xl font-bold mb-3">❌ MP3 (손실)</h4>
+                            <p class="mb-4 text-lg">고주파수 대부분 삭제</p>
+                            <div class="text-sm font-mono mt-2 p-4 bg-white bg-opacity-20 rounded-lg">
+                                [저주파]...[중주파]...<span class="line-through opacity-50">[고주파]</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 p-6 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl">
+                        <p class="text-lg text-gray-800 text-center leading-relaxed">
+                            문제는 이 '삭제된' 고주파수 영역이 단순한 소음이 아니라는 점입니다.<br>
+                            MBC 다큐멘터리에 따르면, 미국에서는 모차르트 음악의 고주파음을 활용해
+                            <span class="font-bold text-purple-700">정신 질환을 치료하고 두뇌 활성화를 돕는</span> 연구가 진행 중입니다.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Prenatal Test Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    데이터로 보는 생체 반응의 차이
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    단순한 감상을 넘어, 우리 몸은 소리의 차이에 민감하게 반응합니다.
+                    방송 실험 및 태교 실험 결과는 아날로그 음원과 디지털 음원이
+                    신체 근력 및 태아의 반응에 상반된 영향을 미칠 수 있음을 보여줍니다.
+                </p>
+
+                <div class="glass-card">
+                    <h3 class="text-2xl font-bold text-center mb-6 section-title">태교 실험 반응 비교</h3>
+                    <div class="chart-container">
+                        <canvas id="prenatalChart"></canvas>
+                    </div>
+                    <p class="mt-6 text-center text-lg">
+                        아날로그 국악이나 자연의 소리를 들려주었을 때 태아는 <span class="safe-text">안정적인 반응</span>을 보인 반면,<br>
+                        MP3 음원 청취 시에는 <span class="warning-text">스트레스 반응</span>을 보이는 경우가 관찰되었습니다.
                     </p>
                 </div>
             </section>
@@ -436,7 +502,7 @@
     <!-- Footer -->
     <footer class="text-center p-6 bg-gray-800 text-gray-300">
         <p class="text-sm">본 콘텐츠는 제공된 자료 [1, 2] 및 관련 연구를 바탕으로, 교육적 신념을 알리기 위해 제작되었습니다.</p>
-        <p class="text-sm mt-2">© 2024 대충 영어. All rights reserved.</p>
+        <p class="text-sm mt-2">© 2025 대충 영어. All rights reserved.</p>
     </footer>
 
     <!-- Charts Script -->
@@ -519,6 +585,63 @@
                         ...defaultChartOptions.plugins,
                         legend: {
                             display: false
+                        }
+                    }
+                }
+            });
+
+            // 태교 실험 차트
+            const ctxPrenatal = document.getElementById('prenatalChart').getContext('2d');
+            new Chart(ctxPrenatal, {
+                type: 'doughnut',
+                data: {
+                    labels: ['태아 안정 (아날로그/자연음)', '태아 스트레스 반응 (MP3)'],
+                    datasets: [{
+                        data: [80, 20],
+                        backgroundColor: [
+                            'rgba(56, 161, 105, 0.8)',
+                            'rgba(229, 62, 62, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(56, 161, 105, 1)',
+                            'rgba(229, 62, 62, 1)'
+                        ],
+                        borderWidth: 3,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: colors.darkBlue,
+                                font: {
+                                    size: 14,
+                                    family: "'Noto Sans KR', sans-serif",
+                                    weight: '600'
+                                },
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            bodyFont: {
+                                family: "'Noto Sans KR', sans-serif",
+                                size: 14
+                            },
+                            titleFont: {
+                                family: "'Noto Sans KR', sans-serif",
+                                size: 16
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + '%';
+                                }
+                            }
                         }
                     }
                 }
