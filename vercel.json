@@ -2,14 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "mp3wav.html",
+      "src": "index.html",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/",
-      "dest": "/mp3wav.html"
+      "dest": "/index.html"
     }
   ]
 }
