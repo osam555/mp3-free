@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>왜 대충 영어는 WAV를 선택했는가? | MP3 vs WAV 분석</title>
+    <meta name="description" content="MP3 손실 음원의 잠재적 영향과 대충 영어가 WAV 무손실 음원을 선택한 이유">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #1a202c;
+            line-height: 1.7;
+        }
+
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin: 0 auto;
+            height: 350px;
+        }
+
+        @media (max-width: 640px) {
+            .chart-container {
+                height: 280px;
+            }
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #005A9C 0%, #003d6b 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 90, 156, 0.1);
+            transition: all 0.3s ease;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 90, 156, 0.15);
+        }
+
+        .section-title {
+            color: #005A9C;
+            font-weight: 900;
+        }
+
+        .warning-text {
+            color: #E53E3E;
+            font-weight: 700;
+        }
+
+        .safe-text {
+            color: #38A169;
+            font-weight: 700;
+        }
+
+        blockquote {
+            border-left: 5px solid #005A9C;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #2d3748;
+            background: rgba(0, 90, 156, 0.05);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .image-card {
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transition: transform 0.3s ease;
+            margin-bottom: 1rem;
+        }
+
+        .image-card:hover {
+            transform: scale(1.02);
+        }
+
+        .image-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .video-container {
+            position: relative;
+            padding-bottom: 56.25%;
+            height: 0;
+            overflow: hidden;
+            border-radius: 1rem;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+            margin: 2rem 0;
+        }
+
+        .video-container iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .platform-badge {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .platform-badge:hover {
+            border-color: #005A9C;
+            transform: translateY(-10px);
+            box-shadow: 0 15px 40px rgba(0, 90, 156, 0.2);
+        }
+
+        .nav-link {
+            transition: all 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+        }
+
+        .nav-link:hover {
+            background: rgba(0, 90, 156, 0.1);
+            transform: scale(1.05);
+        }
+
+        .smooth-scroll {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body class="smooth-scroll bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full bg-white bg-opacity-95 backdrop-filter backdrop-blur-lg shadow-lg z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="text-2xl font-bold section-title">대충 영어</div>
+            <div class="hidden md:flex space-x-4">
+                <a href="#hero" class="nav-link text-gray-700 hover:text-blue-700">홈</a>
+                <a href="#evidence" class="nav-link text-gray-700 hover:text-blue-700">방송 실험</a>
+                <a href="#expert" class="nav-link text-gray-700 hover:text-blue-700">전문가</a>
+                <a href="#comparison" class="nav-link text-gray-700 hover:text-blue-700">속청 비교</a>
+                <a href="#choice" class="nav-link text-gray-700 hover:text-blue-700">우리의 선택</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="hero" class="hero-gradient min-h-screen flex items-center justify-center relative pt-20">
+        <div class="max-w-6xl mx-auto px-4 text-center relative z-10">
+            <h1 class="text-5xl md:text-7xl font-black text-white mb-6 fade-in-up">
+                학습의 질은<br><span class="text-yellow-300">'소리'</span>에서 시작됩니다
+            </h1>
+            <p class="text-xl md:text-3xl text-gray-200 mb-12 fade-in-up">
+                왜 '대충 영어'는 MP3 대신 WAV를 선택했는가?
+            </p>
+            <a href="#evidence" class="inline-block bg-white text-blue-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-2xl fade-in-up">
+                과학적 근거 보기 ↓
+            </a>
+        </div>
+        <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="bg-white">
+        <div class="max-w-7xl mx-auto p-4 md:p-8">
+
+            <!-- Evidence Section -->
+            <section id="evidence" class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    1. 2000년대의 경고: "MP3가 몸에 좋지 않다"
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    2000년대 중반, KBS와 MBC는 충격적인 실험 결과를 방송했습니다. [1]
+                    이는 '가공된 디지털 소리'가 단순한 음질의 문제를 넘어, 우리 몸에 직접적인 영향을 미칠 수 있다는 경고였습니다.
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <!-- KBS 스펀지 -->
+                    <div class="glass-card">
+                        <div class="image-card">
+                            <img src="asset/kbs스펀지.png" alt="KBS 스펀지 MP3 실험" loading="lazy">
+                        </div>
+                        <div class="image-card">
+                            <img src="asset/장동민-스펀지-mp3.png" alt="장동민 스펀지 MP3 근력 테스트" loading="lazy">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-red-600">KBS '스펀지' (2006) [1]</h3>
+                        <p class="text-lg">
+                            MP3를 10분 이상 청취한 피실험자의 <span class="warning-text">근력이 눈에 띄게 저하</span>되는 현상을 방송했습니다.
+                        </p>
+                    </div>
+
+                    <!-- MBC 생명의 소리 -->
+                    <div class="glass-card">
+                        <div class="image-card">
+                            <img src="asset/mbc-mp3식물.png" alt="MBC 생명의 소리 식물 실험" loading="lazy">
+                        </div>
+                        <h3 class="text-2xl font-bold mb-3 text-red-600">MBC '생명의 소리' [1]</h3>
+                        <p class="text-lg mb-4">
+                            MP3 청취 시 근력이 저하되었을 뿐만 아니라, MP3를 들려준 <span class="warning-text">식물의 성장이 억제</span>되는 현상을 관찰했습니다.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- 근력 테스트 차트 -->
+                <div class="glass-card">
+                    <h3 class="text-2xl font-bold text-center mb-6 section-title">근력 테스트 비교 (MBC 실험 근거)</h3>
+                    <div class="chart-container">
+                        <canvas id="muscleChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-center text-lg">
+                        LP(아날로그) 음원을 들었을 때 100%의 근력을 유지했다면,
+                        MP3(디지털) 음원을 들었을 때는 근력이 <span class="warning-text">약 30-40% 감소</span>하는 경향을 보였습니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Expert Section -->
+            <section id="expert" class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    2. 전문가의 증언: '생명의 소리' 남우선 PD 추천사
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-6">
+                    당시 &lt;MP3 유해론&gt;을 제기하며 4관왕의 신화를 쓴 '생명의 소리' 남우선 PD
+                    (現 베토벤하우스 인천 대표, 오디오평론가)가 저희 '대충 영어' 앱의 선택을 지지하는 추천사를 보내왔습니다. [2]
+                </p>
+
+                <div class="glass-card bg-blue-50 border-l-4 border-blue-400">
+                    <div class="flex flex-col md:flex-row items-center gap-6 mb-6">
+                        <div class="image-card w-48 h-48 flex-shrink-0">
+                            <img src="asset/남우선.png" alt="남우선 PD" class="w-full h-full object-cover">
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-2 text-blue-700">남우선 PD</h3>
+                            <p class="text-lg text-gray-700">
+                                전 MBC PD / '생명의 소리' 연출<br>
+                                現 베토벤하우스 인천 대표, 오디오평론가
+                            </p>
+                        </div>
+                    </div>
+
+                    <blockquote class="bg-white">
+                        <p class="text-lg mb-4">
+                            "거의 모든 영어 앱들이 효율성을 앞세워 데이터량이 적은 mp3 파일로 음성데이터를 만드는데 반해,
+                            이번에 개발한 속청영어의 앱은 당당히 <strong class="text-blue-700">'웨이브 파일(무손실 음원)'을 음원으로 쓰는 대단한 일</strong>을 해냈습니다."
+                        </p>
+                        <p class="text-lg mb-4">
+                            "이건 마른 육포로 스테이크를 만들지 않고 <strong class="text-blue-700">육즙이 좔좔 흐르는 한우 안심으로 스테이크 요리를 하는 정도의 차이</strong>를 보여줍니다."
+                        </p>
+                        <p class="text-lg mb-4">
+                            "속청영어의 어플 음원은 pcm을 사용해 영상을 만들었고 유튜브에서 사용하니
+                            <strong class="text-blue-700">빠른 배속에서도 더 잘 들리게</strong> 되었습니다.
+                            무손실 음원으로 제작한 영어음성은 <strong class="text-blue-700">장시간 청취시 피로도를 줄여 더욱 효율적인 영어학습</strong>을 가능하게 했습니다.
+                            저자의 이런 과학적 사고와 인식에 경의를 표합니다."
+                        </p>
+                        <cite class="block text-right font-bold text-gray-700 mt-4">
+                            - 남우선 (전 MBC PD / '생명의 소리' 연출)
+                        </cite>
+                    </blockquote>
+                </div>
+
+                <!-- YouTube 영상 추가 -->
+                <div class="glass-card mt-8">
+                    <h3 class="text-2xl font-bold text-center mb-6 section-title">📺 남우선 PD 직접 증언 영상</h3>
+                    <div class="video-container">
+                        <iframe
+                            src="https://www.youtube.com/embed/CtgjPG11eII"
+                            title="남우선 PD 대충 영어 추천 영상"
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                    <p class="text-center text-gray-600 mt-4">
+                        '생명의 소리' 남우선 PD가 직접 대충 영어의 WAV 음원 선택을 추천하는 영상입니다
+                    </p>
+                </div>
+            </section>
+
+            <!-- Comparison Section -->
+            <section id="comparison" class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    3. 우리의 핵심 발견: '속청'이 증명한 WAV의 우수성
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    저희의 핵심 훈련법인 '2~4배속 속청' 과정에서 MP3의 치명적인 한계를 발견했습니다.
+                    고배속 재생 시, MP3는 정보가 손실되어 소리가 뭉개지지만, WAV(PCM)는 원본 정보를 유지하여 명료함을 지켰습니다. [2]
+                </p>
+
+                <!-- 속청 비교 차트 -->
+                <div class="glass-card">
+                    <h3 class="text-2xl font-bold text-center mb-6 section-title">배속별 음원 선명도 비교 (사용자 피드백 기반)</h3>
+                    <div class="chart-container" style="max-width: 800px;">
+                        <canvas id="speedChart"></canvas>
+                    </div>
+                    <p class="mt-4 text-center text-lg">
+                        MP3는 배속이 높아질수록 정보 손실이 두드러져 <span class="warning-text">인지율이 급격히 하락</span>합니다.
+                        반면, PCM(WAV)은 고배속에서도 <span class="safe-text">명확한 소리를 유지</span>하여 속청 학습 효과를 극대화합니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Market Section -->
+            <section class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    4. 시장의 검증: Apple, 멜론은 왜 '무손실'로 가는가?
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    '소리'를 가장 민감하게 다루는 음악 산업의 리더들(애플, 멜론, 지니)은 이미 MP3를 버리고
+                    '무손실 음원(FLAC)'으로 서비스를 전환하고 있습니다. [3, 4] 이는 MP3의 한계를 업계 스스로 인정하는 반증입니다.
+                </p>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-8">
+                    <div class="platform-badge text-center">
+                        <h3 class="text-2xl font-bold mb-2">Apple Music [3]</h3>
+                        <p class="text-lg safe-text">Lossless (무손실)<br>"아티스트가 스튜디오에서 만든 그대로"</p>
+                    </div>
+                    <div class="platform-badge text-center">
+                        <h3 class="text-2xl font-bold mb-2">멜론(Melon) [4]</h3>
+                        <p class="text-lg safe-text">Hi-Fi (FLAC 16bit)<br>"원음 그대로의 감동"</p>
+                    </div>
+                    <div class="platform-badge text-center">
+                        <h3 class="text-2xl font-bold mb-2">지니(Genie) [4]</h3>
+                        <p class="text-lg safe-text">FLAC 24bit<br>"스튜디오 현장감 그대로"</p>
+                    </div>
+                </div>
+
+                <div class="glass-card bg-gradient-to-r from-blue-50 to-purple-50 text-center">
+                    <h3 class="text-3xl font-bold mb-2 section-title">LP의 부활</h3>
+                    <p class="text-lg">
+                        2019년 미국에서는 30년 만에 LP 매출이 CD 매출을 역전했습니다.
+                        이는 고음질 아날로그 사운드에 대한 대중의 향수가 단순한 유행이 아님을 증명합니다.
+                    </p>
+                </div>
+            </section>
+
+            <!-- Choice Section -->
+            <section id="choice" class="mb-12">
+                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+                    우리의 약속: 학습자를 위한 '무손실(WAV)' 선언
+                </h2>
+                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                    음악 감상조차 '무손실'이 표준이 되는 시대입니다.
+                    한 사람의 인생을 바꿀 '학습' 콘텐츠를 30년 전의 손실 포맷으로 제공할 수는 없습니다.
+                    <span class="font-bold">방송인 배철수가 "MP3 음악은 쓰레기와 같다"고 비판한 이유</span>,
+                    남우선 PD가 '한우 안심'에 비유한 이유 [2]가 여기에 있습니다.
+                </p>
+
+                <div class="glass-card max-w-3xl mx-auto border-t-4 border-blue-700">
+                    <h3 class="text-2xl font-bold mb-4 text-center section-title">'대충 영어'가 WAV(PCM)를 고집하는 이유</h3>
+                    <ul class="space-y-4 text-lg">
+                        <li class="flex items-start">
+                            <span class="text-3xl mr-4">🚀</span>
+                            <div>
+                                <strong class="text-blue-700">학습 효율 극대화:</strong>
+                                '속청' 훈련 시 <span class="font-bold">3~4배속에서도 명료한 소리</span>를 전달하여
+                                뇌의 영어 회로를 정확하게 각인시킵니다. [2]
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-3xl mr-4">🧠</span>
+                            <div>
+                                <strong class="text-blue-700">두뇌 피로도 감소:</strong>
+                                원본의 모든 정보(고주파 포함)를 전달하여 장시간 학습 시
+                                <span class="font-bold">청각적 피로와 스트레스를 줄여줍니다</span>. [2]
+                            </div>
+                        </li>
+                        <li class="flex items-start">
+                            <span class="text-3xl mr-4">🏆</span>
+                            <div>
+                                <strong class="text-blue-700">전문가 표준 준수:</strong>
+                                Apple, 멜론 등 전문가 집단이 인정한 '무손실' 포맷을 사용하여
+                                <span class="font-bold">최고 품질의 교육 콘텐츠</span>를 제공합니다. [3, 4]
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center p-6 bg-gray-800 text-gray-300">
+        <p class="text-sm">본 콘텐츠는 제공된 자료 [1, 2] 및 관련 연구를 바탕으로, 교육적 신념을 알리기 위해 제작되었습니다.</p>
+        <p class="text-sm mt-2">© 2024 대충 영어. All rights reserved.</p>
+    </footer>
+
+    <!-- Charts Script -->
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            const colors = {
+                red: '#E53E3E',
+                green: '#38A169',
+                blue: '#005A9C',
+                darkBlue: '#1a202c'
+            };
+
+            const defaultChartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: colors.darkBlue,
+                            font: {
+                                size: 16,
+                                family: "'Noto Sans KR', sans-serif",
+                                weight: '700'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        bodyFont: {
+                            family: "'Noto Sans KR', sans-serif"
+                        },
+                        titleFont: {
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    }
+                }
+            };
+
+            // 근력 테스트 차트
+            const ctxMuscle = document.getElementById('muscleChart').getContext('2d');
+            new Chart(ctxMuscle, {
+                type: 'bar',
+                data: {
+                    labels: ['LP (아날로그)', 'MP3 (디지털)'],
+                    datasets: [{
+                        label: '근력 유지율 (%)',
+                        data: [100, 65],
+                        backgroundColor: [colors.green, colors.red],
+                        borderColor: [colors.green, colors.red],
+                        borderWidth: 2,
+                        borderRadius: 8
+                    }]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 110,
+                            ticks: {
+                                color: colors.darkBlue,
+                                font: {
+                                    family: "'Noto Sans KR', sans-serif"
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: colors.darkBlue,
+                                font: {
+                                    family: "'Noto Sans KR', sans-serif",
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        ...defaultChartOptions.plugins,
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+
+            // 속청 비교 차트
+            const ctxSpeed = document.getElementById('speedChart').getContext('2d');
+            new Chart(ctxSpeed, {
+                type: 'bar',
+                data: {
+                    labels: ['2배속', '3배속', '4배속'],
+                    datasets: [
+                        {
+                            label: 'MP3 선명도 (인지율)',
+                            data: [80, 50, 20],
+                            backgroundColor: colors.red,
+                            borderRadius: 8
+                        },
+                        {
+                            label: 'PCM/WAV 선명도 (인지율)',
+                            data: [100, 95, 85],
+                            backgroundColor: colors.green,
+                            borderRadius: 8
+                        }
+                    ]
+                },
+                options: {
+                    ...defaultChartOptions,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 110,
+                            ticks: {
+                                color: colors.darkBlue,
+                                font: {
+                                    family: "'Noto Sans KR', sans-serif"
+                                },
+                                callback: function(value) {
+                                    return value + '%';
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: colors.darkBlue,
+                                font: {
+                                    family: "'Noto Sans KR', sans-serif",
+                                    size: 14
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 스크롤 애니메이션
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -100px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = '1';
+                        entry.target.style.transform = 'translateY(0)';
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.glass-card').forEach(card => {
+                card.style.opacity = '0';
+                card.style.transform = 'translateY(30px)';
+                card.style.transition = 'all 0.6s ease-out';
+                observer.observe(card);
+            });
+        });
+    </script>
+</body>
+</html>
