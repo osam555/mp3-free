@@ -226,7 +226,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section id="hero" class="hero-gradient min-h-screen flex items-center justify-center relative pt-20">
+    <section id="hero" class="hero-gradient flex items-center justify-center relative pt-20 py-16 md:py-24">
         <div class="max-w-6xl mx-auto px-4 text-center relative z-10">
             <h1 class="text-5xl md:text-7xl font-black text-white mb-6 fade-in-up">
                 영어 학습의 차이는<br><span class="text-yellow-300">'소리'</span>에서 시작됩니다
@@ -282,7 +282,7 @@
                             <img src="asset/mbc-mp3-muscle.png" alt="MBC 생명의 소리 근력 테스트" loading="lazy" class="w-full h-full object-cover">
                         </div>
                         <p class="text-center text-gray-700 font-semibold mt-2">근육 활성화 30-40% 저하</p>
-                        <h3 class="text-2xl font-bold mb-3 mt-4 text-red-600">MBC '생명의 소리'</h3>
+                        <h3 class="text-2xl font-bold mb-3 mt-4 text-red-600">MBC '생명의 소리' 아날로그</h3>
                         <p class="text-lg mb-4">
                             MP3 청취 시 <span class="warning-text">반응속도가 0.1초나 더 느려졌고</span>, 근력이 저하되었을 뿐만 아니라, MP3를 들려준 <span class="warning-text">식물의 성장이 억제</span>되는 현상을 관찰했습니다.
                         </p>
@@ -414,6 +414,14 @@
                         </div>
                     </div>
 
+                    <!-- 모바일: 배철수 이미지 (기사원문보기 아래 표시) -->
+                    <div class="md:hidden mb-6">
+                        <div class="image-card">
+                            <img src="asset/baecheolsoo.jpg" alt="배철수 음악평론가" loading="lazy" class="w-full h-auto rounded-lg">
+                        </div>
+                        <p class="text-center text-gray-700 font-semibold mt-3">방송인 배철수 "MP3는 쓰레기와도 같은 음악"</p>
+                    </div>
+
                     <!-- 배철수 이미지 + 주요 내용 -->
                     <div class="bg-white p-6 rounded-xl mb-6 flex flex-col md:flex-row gap-6">
                         <!-- 좌측: 이미지 (PC 버전에서만 표시) -->
@@ -474,14 +482,6 @@
                                         </p>
                                     </div>
                                 </div>
-                            </div>
-
-                            <!-- 모바일: 이미지 하단에 표시 -->
-                            <div class="md:hidden mt-6">
-                                <div class="image-card">
-                                    <img src="asset/baecheolsoo.jpg" alt="배철수 음악평론가" loading="lazy" class="w-full h-auto rounded-lg">
-                                </div>
-                                <p class="text-center text-gray-700 font-semibold mt-3">방송인 배철수 "MP3는 쓰레기와도 같은 음악"</p>
                             </div>
                         </div>
                     </div>
@@ -582,7 +582,7 @@
                             "이건 마른 육포로 스테이크를 만들지 않고 <strong class="text-blue-700">육즙이 좔좔 흐르는 한우 안심으로 스테이크 요리를 하는 정도의 차이</strong>를 보여줍니다."
                         </p>
                         <p class="text-lg mb-4">
-                            "속청영어의 어플 음원은 pcm을 사용해 영상을 만들었고 유튜브에서 사용하니
+                            "속청영어의 어플 음원은 WAV를 사용해 영상을 만들었고 유튜브에서 사용하니
                             <strong class="text-blue-700">빠른 배속에서도 더 잘 들리게</strong> 되었습니다.
                             무손실 음원으로 제작한 영어음성은 <strong class="text-blue-700">장시간 청취시 피로도를 줄여 더욱 효율적인 영어학습</strong>을 가능하게 했습니다.
                             저자의 이런 과학적 사고와 인식에 경의를 표합니다."
@@ -602,10 +602,10 @@
                         </div>
                         <div class="flex-1 text-center md:text-left">
                             <h4 class="text-xl md:text-2xl font-bold text-blue-700 mb-4">
-                                WAV 무손실 음원과 속청 학습의 과학적 원리
+                                WAV 무손실 음원과 <br>속청 학습의 과학적 원리
                             </h4>
                             <p class="text-lg text-gray-700 leading-relaxed mb-4">
-                                남우선 PD가 추천한 WAV 음원 기반 속청 학습법의 모든 것을<br>
+                                남우선 PD가 추천한 WAV 음원 기반 속청 학습법의 모든 것을
                                 이 책에서 자세히 만나보실 수 있습니다.
                             </p>
                             <ul class="text-left space-y-2 text-gray-700 mb-6">
@@ -634,7 +634,7 @@
                 </h2>
                 <p class="text-lg text-center max-w-3xl mx-auto mb-8">
                     저희의 핵심 훈련법인 '2~4배속 속청' 과정에서 MP3의 치명적인 한계를 발견했습니다.
-                    고배속 재생 시, MP3는 정보가 손실되어 소리가 뭉개지지만, WAV(PCM)는 원본 정보를 유지하여 명료함을 지켰습니다.
+                    고배속 재생 시, MP3는 정보가 손실되어 소리가 뭉개지지만, WAV는 원본 정보를 유지하여 명료함을 지켰습니다.
                 </p>
 
                 <!-- 속청 비교 차트 -->
@@ -645,7 +645,7 @@
                     </div>
                     <p class="mt-4 text-center text-lg">
                         MP3는 배속이 높아질수록 정보 손실이 두드러져 <span class="warning-text">인지율이 급격히 하락</span>합니다.
-                        반면, PCM(WAV)은 고배속에서도 <span class="safe-text">명확한 소리를 유지</span>하여 속청 학습 효과를 극대화합니다.
+                        반면, WAV는 고배속에서도 <span class="safe-text">명확한 소리를 유지</span>하여 속청 학습 효과를 극대화합니다.
                     </p>
                 </div>
 
@@ -655,13 +655,13 @@
                     <div class="video-container">
                         <iframe
                             src="https://www.youtube.com/embed/6xhwSSWzceQ"
-                            title="WAV(PCM)로 제작한 한글속청 영상"
+                            title="WAV로 제작한 한글속청 영상"
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                             allowfullscreen>
                         </iframe>
                     </div>
                     <p class="text-center text-gray-600 mt-4">
-                        WAV(PCM) 무손실 음원으로 제작된 한글속청 영상 - 고배속에서도 명료한 음질을 직접 확인하세요
+                        WAV 무손실 음원으로 제작된 한글속청 영상 - 고배속에서도 명료한 음질을 직접 확인하세요
                     </p>
                 </div>
             </section>
@@ -720,7 +720,7 @@
                 </p>
 
                 <div class="glass-card max-w-3xl mx-auto border-t-4 border-blue-700">
-                    <h3 class="text-2xl font-bold mb-4 text-center section-title">'대충 영어'가 WAV(PCM)를 고집하는 이유</h3>
+                    <h3 class="text-2xl font-bold mb-4 text-center section-title">'대충 영어'가 WAV를 고집하는 이유</h3>
                     <ul class="space-y-4 text-lg">
                         <li class="flex items-start">
                             <span class="text-3xl mr-4">🚀</span>
@@ -756,7 +756,7 @@
                     대충 영어 앱: WAV 무손실 음원으로 학습하세요
                 </h2>
                 <p class="text-lg text-center max-w-3xl mx-auto mb-8">
-                    K-Beauty-Mobile 앱은 WAV(PCM) 무손실 음원을 기반으로<br>
+                    K-Beauty-Mobile 앱은 WAV 무손실 음원을 기반으로<br>
                     속청 훈련과 흥미로운 데이터셋으로 영어 학습의 새로운 패러다임을 제시합니다
                 </p>
 
@@ -766,7 +766,7 @@
                         <div class="text-6xl mb-4">🎵</div>
                         <h3 class="text-2xl font-bold mb-3 section-title">WAV 무손실 음원</h3>
                         <p class="text-lg text-gray-700 leading-relaxed">
-                            모든 학습 콘텐츠를 WAV(PCM) 포맷으로 제공하여
+                            모든 학습 콘텐츠를 WAV 포맷으로 제공하여
                             <span class="font-bold text-blue-700">고배속에서도 명료한 음질</span>을 보장합니다
                         </p>
                     </div>
