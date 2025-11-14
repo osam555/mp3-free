@@ -61,6 +61,22 @@ function copyEmail(email) {
     });
 }
 
+// 이메일 수동 발송
+async function sendEmail(docId, name, email) {
+    if (!confirm(`${name}님(${email})에게 WAV 파일 다운로드 링크를 이메일로 발송하시겠습니까?`)) return;
+
+    try {
+        // Firebase Functions의 sendManualEmail 호출
+        const sendManualEmail = firebase.functions().httpsCallable('sendManualEmail');
+        const result = await sendManualEmail({ applicationId: docId });
+
+        alert(result.data.message);
+    } catch (error) {
+        console.error('이메일 발송 에러:', error);
+        alert(`이메일 발송 중 오류가 발생했습니다: ${error.message}`);
+    }
+}
+
 // 신청 삭제
 async function deleteApplication(docId, name) {
     if (!confirm(`${name}님의 신청을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
@@ -142,7 +158,12 @@ function renderTable(applications) {
                         <option value="sent" ${app.status === 'sent' ? 'selected' : ''}>발송 완료</option>
                     </select>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
+                    <button onclick="sendEmail('${app.id}', '${app.name}', '${app.email}')"
+                            class="text-blue-600 hover:text-blue-800 font-semibold"
+                            title="WAV 파일 링크 이메일 발송">
+                        📧 이메일
+                    </button>
                     <button onclick="deleteApplication('${app.id}', '${app.name}')"
                             class="text-red-600 hover:text-red-800 font-semibold">
                         🗑️ 삭제

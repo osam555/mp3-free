@@ -1,0 +1,21 @@
+rules_version = '2';
+
+// Firebase Storage 보안 규칙
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // receipts 폴더: 누구나 업로드 가능, 인증된 사용자만 읽기 가능
+    match /receipts/{fileName} {
+      // 파일 업로드 허용 (크기 5MB 제한)
+      allow create: if request.resource.size < 5 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*')
+                    || request.resource.contentType == 'application/pdf';
+
+      // 인증된 사용자만 읽기 가능
+      allow read: if request.auth != null;
+
+      // 업데이트 및 삭제는 인증된 사용자만
+      allow update, delete: if request.auth != null;
+    }
+  }
+}
