@@ -107,8 +107,7 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const receiptFile = document.getElementById('receipt').files[0];
-    const review1File = document.getElementById('review1').files[0];
-    const review2File = document.getElementById('review2').files[0];
+    const reviewFile = document.getElementById('review1').files[0];
 
     // 영어 학습 목표 (복수 선택)
     const goalsCheckboxes = document.querySelectorAll('input[name="goals"]:checked');
@@ -137,26 +136,14 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
         return;
     }
 
-    // 후기 1 파일 검사 (선택사항)
-    if (review1File) {
-        if (review1File.size > 5 * 1024 * 1024) {
-            showMessage('후기 1 파일 크기는 5MB 이하여야 합니다.', 'error');
+    // 후기 파일 검사 (선택사항)
+    if (reviewFile) {
+        if (reviewFile.size > 5 * 1024 * 1024) {
+            showMessage('후기 파일 크기는 5MB 이하여야 합니다.', 'error');
             return;
         }
-        if (!allowedTypes.includes(review1File.type)) {
-            showMessage('후기 1은 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
-            return;
-        }
-    }
-
-    // 후기 2 파일 검사 (선택사항)
-    if (review2File) {
-        if (review2File.size > 5 * 1024 * 1024) {
-            showMessage('후기 2 파일 크기는 5MB 이하여야 합니다.', 'error');
-            return;
-        }
-        if (!allowedTypes.includes(review2File.type)) {
-            showMessage('후기 2는 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
+        if (!allowedTypes.includes(reviewFile.type)) {
+            showMessage('후기는 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
             return;
         }
     }
@@ -185,24 +172,14 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
         const receiptUploadTask = await receiptStorageRef.put(receiptFile);
         const receiptUrl = await receiptUploadTask.ref.getDownloadURL();
 
-        // 후기 1 업로드 (선택사항)
-        let review1Url = null;
-        let review1FileName = null;
-        if (review1File) {
-            review1FileName = `${timestamp}_review1_${review1File.name}`;
-            const review1StorageRef = storage.ref(`reviews/${review1FileName}`);
-            const review1UploadTask = await review1StorageRef.put(review1File);
-            review1Url = await review1UploadTask.ref.getDownloadURL();
-        }
-
-        // 후기 2 업로드 (선택사항)
-        let review2Url = null;
-        let review2FileName = null;
-        if (review2File) {
-            review2FileName = `${timestamp}_review2_${review2File.name}`;
-            const review2StorageRef = storage.ref(`reviews/${review2FileName}`);
-            const review2UploadTask = await review2StorageRef.put(review2File);
-            review2Url = await review2UploadTask.ref.getDownloadURL();
+        // 후기 업로드 (선택사항)
+        let reviewUrl = null;
+        let reviewFileName = null;
+        if (reviewFile) {
+            reviewFileName = `${timestamp}_review_${reviewFile.name}`;
+            const reviewStorageRef = storage.ref(`reviews/${reviewFileName}`);
+            const reviewUploadTask = await reviewStorageRef.put(reviewFile);
+            reviewUrl = await reviewUploadTask.ref.getDownloadURL();
         }
 
         // 현재 라운드 확인
@@ -227,13 +204,9 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
         };
 
         // 후기가 있는 경우에만 추가
-        if (review1Url) {
-            applicationData.review1Url = review1Url;
-            applicationData.review1FileName = review1FileName;
-        }
-        if (review2Url) {
-            applicationData.review2Url = review2Url;
-            applicationData.review2FileName = review2FileName;
+        if (reviewUrl) {
+            applicationData.reviewUrl = reviewUrl;
+            applicationData.reviewFileName = reviewFileName;
         }
 
         await applicationsRef.add(applicationData);

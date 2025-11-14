@@ -169,8 +169,7 @@ function renderTable(applications) {
                         <a href="${app.receiptUrl}" target="_blank" class="text-blue-600 hover:underline">
                             📄 영수증
                         </a>
-                        ${app.review1Url ? `<a href="${app.review1Url}" target="_blank" class="text-green-600 hover:underline">✍️ 후기1</a>` : ''}
-                        ${app.review2Url ? `<a href="${app.review2Url}" target="_blank" class="text-green-600 hover:underline">✍️ 후기2</a>` : ''}
+                        ${app.reviewUrl ? `<a href="${app.reviewUrl}" target="_blank" class="text-green-600 hover:underline">✍️ 후기</a>` : ''}
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
