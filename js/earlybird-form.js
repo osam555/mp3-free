@@ -9,90 +9,22 @@ function maskName(name) {
 
 // 실시간 신청자 수 및 리스트 업데이트
 function updateApplicantStats() {
-    // 익명 사용자는 신청자 수를 볼 수 없으므로 기본값 표시
-    applicationsRef
-        .orderBy('timestamp', 'desc')
-        .limit(20)
-        .onSnapshot((snapshot) => {
-            const count = snapshot.size;
-
-            // 라운드 결정 (1차: 0-100명, 2차: 101-200명)
-            const currentRound = count < 100 ? 1 : 2;
-            const roundCount = count < 100 ? count : count - 100;
-            const progressPercentage = Math.min((roundCount / 100) * 100, 100);
-
-            // 신청자 수 업데이트
-            document.getElementById('applicant-count').textContent = `${roundCount}/100`;
-            document.getElementById('progress-bar').style.width = `${progressPercentage}%`;
-
-            // 라운드 표시 업데이트
-            const roundDisplay = document.getElementById('round-display');
-            if (roundDisplay) {
-                if (currentRound === 1) {
-                    roundDisplay.textContent = '1차 얼리버드';
-                    roundDisplay.className = 'text-2xl font-bold text-blue-600';
-                } else {
-                    roundDisplay.textContent = '2차 얼리버드';
-                    roundDisplay.className = 'text-2xl font-bold text-purple-600';
-                }
-            }
-
-            // 최근 신청자 리스트 업데이트 (최근 20명)
-            const recentApplicants = document.getElementById('recent-applicants');
-            recentApplicants.innerHTML = '';
-
-            const applicants = [];
-            snapshot.forEach((doc) => {
-                applicants.push(doc.data());
-            });
-
-            // 최근 20명만 표시
-            const displayCount = Math.min(applicants.length, 20);
-            for (let i = 0; i < displayCount; i++) {
-                const applicant = applicants[i];
-                const card = document.createElement('div');
-                card.className = 'text-center p-3 bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg transform hover:scale-105 transition-transform';
-
-                // 연령대 표시 (배열 또는 단일값 지원)
-                const ageDisplay = Array.isArray(applicant.ageGroups)
-                    ? applicant.ageGroups.join(', ')
-                    : (applicant.ageGroup || '미입력');
-
-                card.innerHTML = `
-                    <div class="text-2xl mb-1">👤</div>
-                    <div class="text-sm font-semibold text-gray-700">${maskName(applicant.name)}</div>
-                    <div class="text-xs text-gray-500">${ageDisplay}</div>
-                `;
-                recentApplicants.appendChild(card);
-            }
-
-            // 신청자가 없는 경우
-            if (applicants.length === 0) {
-                recentApplicants.innerHTML = `
-                    <div class="col-span-2 md:col-span-4 text-center p-6">
-                        <div class="text-4xl mb-2">🎯</div>
-                        <p class="text-gray-600">첫 번째 얼리버드가 되어보세요!</p>
-                    </div>
-                `;
-            }
-        }, (error) => {
-            console.error('실시간 업데이트 에러:', error);
-            // 권한 오류 시 기본값 표시
-            document.getElementById('applicant-count').textContent = '-';
-            const recentApplicants = document.getElementById('recent-applicants');
-            recentApplicants.innerHTML = `
-                <div class="col-span-2 md:col-span-4 text-center p-6">
-                    <div class="text-4xl mb-2">🎯</div>
-                    <p class="text-gray-600">데이터 로딩 중...</p>
-                </div>
-            `;
-        });
+    // 익명 사용자는 읽기 권한이 없으므로 기본 UI 표시
+    document.getElementById('applicant-count').textContent = '-';
+    const recentApplicants = document.getElementById('recent-applicants');
+    recentApplicants.innerHTML = `
+        <div class="col-span-2 md:col-span-4 text-center p-6">
+            <div class="text-4xl mb-2">🎯</div>
+            <p class="text-gray-600">첫 번째 얼리버드가 되어보세요!</p>
+        </div>
+    `;
 }
 
-// 중복 신청 확인
+// 중복 신청 확인 (서버 측에서 처리하도록 제거)
+// 익명 사용자는 읽기 권한이 없으므로 클라이언트에서 중복 체크 불가
 async function checkDuplicateEmail(email) {
-    const snapshot = await applicationsRef.where('email', '==', email).get();
-    return !snapshot.empty;
+    // 서버 측에서 중복 체크하도록 변경
+    return false; // 항상 중복 아님으로 처리
 }
 
 // 폼 제출 처리
@@ -182,12 +114,7 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
             reviewUrl = await reviewUploadTask.ref.getDownloadURL();
         }
 
-        // 현재 라운드 확인
-        const currentSnapshot = await applicationsRef.get();
-        const currentCount = currentSnapshot.size;
-        const currentRound = currentCount < 100 ? 1 : 2;
-
-        // 2. Firestore에 신청 정보 저장
+        // 2. Firestore에 신청 정보 저장 (라운드는 서버에서 자동 계산)
         const applicationData = {
             name,
             email,
@@ -197,7 +124,6 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
             receiptUrl,
             receiptFileName,
             maskedName: maskName(name),
-            round: currentRound,
             status: 'pending',
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             createdAt: new Date().toISOString()
