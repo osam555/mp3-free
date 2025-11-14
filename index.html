@@ -217,18 +217,54 @@
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full shadow-lg z-50" style="background: #1925FA; backdrop-filter: blur(10px);">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="text-2xl font-bold text-white">대충 영어</div>
-            <div class="hidden md:flex space-x-4">
-                <a href="#hero" class="nav-link text-white hover:bg-white hover:bg-opacity-20">홈</a>
-                <a href="#evidence" class="nav-link text-white hover:bg-white hover:bg-opacity-20">방송 실험</a>
-                <a href="#earlybird" class="nav-link text-white bg-yellow-400 bg-opacity-30 hover:bg-opacity-50">🎁 얼리버드</a>
-                <a href="#expert" class="nav-link text-white hover:bg-white hover:bg-opacity-20">전문가</a>
-                <a href="#comparison" class="nav-link text-white hover:bg-white hover:bg-opacity-20">속청 비교</a>
-                <a href="#choice" class="nav-link text-white hover:bg-white hover:bg-opacity-20">우리의 선택</a>
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="text-2xl font-bold text-white">대충 영어</div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex space-x-4">
+                    <a href="#hero" class="nav-link text-white hover:bg-white hover:bg-opacity-20">홈</a>
+                    <a href="#evidence" class="nav-link text-white hover:bg-white hover:bg-opacity-20">방송 실험</a>
+                    <a href="#earlybird" class="nav-link text-white bg-yellow-400 bg-opacity-30 hover:bg-opacity-50">🎁 얼리버드</a>
+                    <a href="#expert" class="nav-link text-white hover:bg-white hover:bg-opacity-20">전문가</a>
+                    <a href="#comparison" class="nav-link text-white hover:bg-white hover:bg-opacity-20">속청 비교</a>
+                    <a href="#choice" class="nav-link text-white hover:bg-white hover:bg-opacity-20">우리의 선택</a>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-btn" class="md:hidden text-white p-2">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Mobile Menu -->
+            <div id="mobile-menu" class="hidden md:hidden mt-4 pb-4 space-y-2">
+                <a href="#hero" class="block text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded">홈</a>
+                <a href="#evidence" class="block text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded">방송 실험</a>
+                <a href="#earlybird" class="block text-white bg-yellow-400 bg-opacity-30 hover:bg-opacity-50 px-4 py-2 rounded">🎁 얼리버드</a>
+                <a href="#expert" class="block text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded">전문가</a>
+                <a href="#comparison" class="block text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded">속청 비교</a>
+                <a href="#choice" class="block text-white hover:bg-white hover:bg-opacity-20 px-4 py-2 rounded">우리의 선택</a>
             </div>
         </div>
     </nav>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobile-menu-btn').addEventListener('click', function() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when clicking a link
+        document.querySelectorAll('#mobile-menu a').forEach(link => {
+            link.addEventListener('click', function() {
+                document.getElementById('mobile-menu').classList.add('hidden');
+            });
+        });
+    </script>
 
     <!-- Hero Section -->
     <section id="hero" class="hero-gradient flex items-center justify-center relative pt-20 md:pt-40 py-16 md:py-24">
