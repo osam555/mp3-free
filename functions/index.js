@@ -6,9 +6,14 @@
  * 2. sendManualEmail - HTTP callable function for manual email sending from admin dashboard
  */
 
-const functions = require('firebase-functions');
+const {onDocumentUpdated} = require('firebase-functions/v2/firestore');
+const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const {setGlobalOptions} = require('firebase-functions/v2');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+
+// 글로벌 옵션 설정 (리전)
+setGlobalOptions({region: 'us-central1'});
 
 // Firebase Admin 초기화
 admin.initializeApp();
@@ -23,8 +28,9 @@ admin.initializeApp();
  * 환경 변수 설정:
  * firebase functions:config:set gmail.email="your-email@gmail.com" gmail.password="your-app-password"
  */
-const gmailEmail = functions.config().gmail?.email;
-const gmailPassword = functions.config().gmail?.password;
+// 환경 변수에서 Gmail 설정 가져오기
+const gmailEmail = process.env.GMAIL_EMAIL;
+const gmailPassword = process.env.GMAIL_PASSWORD;
 
 // Nodemailer transporter 설정
 const transporter = nodemailer.createTransport({
@@ -168,11 +174,11 @@ function createEmailTemplate(name, round) {
 /**
  * Firestore Trigger: 신청 상태가 'approved'로 변경될 때 자동 이메일 발송
  */
-exports.sendEarlybirdEmail = functions.firestore
-  .document('earlybird_applications/{applicationId}')
-  .onUpdate(async (change, context) => {
-    const beforeData = change.before.data();
-    const afterData = change.after.data();
+exports.sendEarlybirdEmail = onDocumentUpdated(
+  'earlybird_applications/{applicationId}',
+  async (event) => {
+    const beforeData = event.data.before.data();
+    const afterData = event.data.after.data();
 
     // status가 'approved'로 변경된 경우에만 이메일 발송
     if (beforeData.status !== 'approved' && afterData.status === 'approved') {
@@ -190,18 +196,17 @@ exports.sendEarlybirdEmail = functions.firestore
         console.log(`✅ Email sent successfully to ${email}`);
 
         // Firestore에 이메일 발송 기록 저장
-        await change.after.ref.update({
+        await event.data.after.ref.update({
           emailSent: true,
           emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
         });
       } catch (error) {
         console.error('❌ Error sending email:', error);
-        throw new functions.https.HttpsError('internal', 'Failed to send email');
+        throw new HttpsError('internal', 'Failed to send email');
       }
     }
-
-    return null;
-  });
+  }
+);
 
 /**
  * HTTP Callable Function: 관리자 대시보드에서 수동으로 이메일 발송
@@ -210,11 +215,11 @@ exports.sendEarlybirdEmail = functions.firestore
  * const sendEmail = firebase.functions().httpsCallable('sendManualEmail');
  * await sendEmail({ applicationId: 'xxx' });
  */
-exports.sendManualEmail = functions.https.onCall(async (data, context) => {
-  const { applicationId } = data;
+exports.sendManualEmail = onCall(async (request) => {
+  const { applicationId } = request.data;
 
   if (!applicationId) {
-    throw new functions.https.HttpsError('invalid-argument', 'applicationId is required');
+    throw new HttpsError('invalid-argument', 'applicationId is required');
   }
 
   try {
@@ -225,7 +230,7 @@ exports.sendManualEmail = functions.https.onCall(async (data, context) => {
       .get();
 
     if (!applicationDoc.exists) {
-      throw new functions.https.HttpsError('not-found', 'Application not found');
+      throw new HttpsError('not-found', 'Application not found');
     }
 
     const { name, email, round } = applicationDoc.data();
@@ -250,6 +255,6 @@ exports.sendManualEmail = functions.https.onCall(async (data, context) => {
     return { success: true, message: `이메일이 ${email}로 발송되었습니다.` };
   } catch (error) {
     console.error('❌ Error sending manual email:', error);
-    throw new functions.https.HttpsError('internal', error.message);
+    throw new HttpsError('internal', error.message);
   }
 });
