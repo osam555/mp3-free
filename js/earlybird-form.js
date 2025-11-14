@@ -1,12 +1,10 @@
 // 얼리버드 신청 폼 처리 스크립트
 
-// 이름 가림 처리 함수
+// 이름 가림 처리 함수 (마지막 글자만 표시)
 function maskName(name) {
     if (!name || name.length === 0) return '***';
-    if (name.length === 1) return name[0] + '*';
-    if (name.length === 2) return name[0] + '*';
-    if (name.length === 3) return name[0] + '*' + name[2];
-    return name[0] + '*'.repeat(name.length - 2) + name[name.length - 1];
+    if (name.length === 1) return name[0];
+    return '*'.repeat(name.length - 1) + name[name.length - 1];
 }
 
 // 실시간 신청자 수 및 리스트 업데이트
