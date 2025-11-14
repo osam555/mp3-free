@@ -8,8 +8,8 @@ service firebase.storage {
     match /receipts/{fileName} {
       // 파일 업로드 허용 (크기 5MB 제한)
       allow create: if request.resource.size < 5 * 1024 * 1024
-                    && request.resource.contentType.matches('image/.*')
-                    || request.resource.contentType == 'application/pdf';
+                    && (request.resource.contentType.matches('image/.*')
+                    || request.resource.contentType == 'application/pdf');
 
       // 인증된 사용자만 읽기 가능
       allow read: if request.auth != null;
@@ -22,8 +22,8 @@ service firebase.storage {
     match /reviews/{fileName} {
       // 파일 업로드 허용 (크기 5MB 제한)
       allow create: if request.resource.size < 5 * 1024 * 1024
-                    && request.resource.contentType.matches('image/.*')
-                    || request.resource.contentType == 'application/pdf';
+                    && (request.resource.contentType.matches('image/.*')
+                    || request.resource.contentType == 'application/pdf');
 
       // 인증된 사용자만 읽기 가능
       allow read: if request.auth != null;
