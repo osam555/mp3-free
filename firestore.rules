@@ -1,0 +1,26 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // 얼리버드 신청 컬렉션
+    match /earlybird_applications/{document} {
+      // 누구나 신청 가능 (create)
+      allow create: if true;
+
+      // 읽기 및 업데이트, 삭제는 관리자만 (인증 필요)
+      allow read, update, delete: if request.auth != null;
+    }
+
+    // 방문자 추적 컬렉션
+    match /page_visitors/{document} {
+      // 누구나 방문 기록 생성 가능
+      allow create: if true;
+
+      // 읽기는 관리자만 (인증 필요)
+      allow read: if request.auth != null;
+
+      // 업데이트와 삭제는 불가
+      allow update, delete: if false;
+    }
+  }
+}

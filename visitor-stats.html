@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>방문자 통계 | 대충영어</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <!-- Header -->
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-800 mb-2">📊 방문자 통계</h1>
+                    <p class="text-gray-600">페이지 방문 현황 및 분석</p>
+                </div>
+                <a href="admin.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    얼리버드 관리
+                </a>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 mb-1">오늘 방문자</div>
+                <div class="text-3xl font-bold text-blue-600" id="today-visitors">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 mb-1">주간 방문자 (7일)</div>
+                <div class="text-3xl font-bold text-green-600" id="weekly-visitors">0</div>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 mb-1">월간 방문자 (30일)</div>
+                <div class="text-3xl font-bold text-purple-600" id="monthly-visitors">0</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <!-- Daily Visitors Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">일자별 방문자 (최근 7일)</h2>
+                <div style="height: 300px;">
+                    <canvas id="dailyVisitorsChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Device Chart -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4">디바이스별 방문자</h2>
+                <div style="height: 300px;">
+                    <canvas id="deviceChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Browser Chart -->
+            <div class="bg-white rounded-lg shadow p-6 md:col-span-2">
+                <h2 class="text-xl font-bold mb-4">브라우저별 방문자</h2>
+                <div style="height: 300px;">
+                    <canvas id="browserChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Visitors Table -->
+        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
+            <div class="p-6 border-b">
+                <div class="flex justify-between items-center">
+                    <h2 class="text-xl font-bold">최근 방문자 (20명)</h2>
+                    <button onclick="exportVisitorsToCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+                        📥 CSV 내보내기
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">방문일시</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">페이지</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">디바이스</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">브라우저</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">유입경로</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">해상도</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-visitors-table" class="bg-white divide-y divide-gray-200">
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                                로딩 중...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Config 및 스크립트 -->
+    <script src="js/firebase-config.js"></script>
+    <script src="js/visitor-stats.js"></script>
+</body>
+</html>
