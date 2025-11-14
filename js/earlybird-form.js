@@ -9,8 +9,10 @@ function maskName(name) {
 
 // 실시간 신청자 수 및 리스트 업데이트
 function updateApplicantStats() {
+    // 익명 사용자는 신청자 수를 볼 수 없으므로 기본값 표시
     applicationsRef
         .orderBy('timestamp', 'desc')
+        .limit(20)
         .onSnapshot((snapshot) => {
             const count = snapshot.size;
 
@@ -75,6 +77,15 @@ function updateApplicantStats() {
             }
         }, (error) => {
             console.error('실시간 업데이트 에러:', error);
+            // 권한 오류 시 기본값 표시
+            document.getElementById('applicant-count').textContent = '-';
+            const recentApplicants = document.getElementById('recent-applicants');
+            recentApplicants.innerHTML = `
+                <div class="col-span-2 md:col-span-4 text-center p-6">
+                    <div class="text-4xl mb-2">🎯</div>
+                    <p class="text-gray-600">데이터 로딩 중...</p>
+                </div>
+            `;
         });
 }
 
