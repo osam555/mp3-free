@@ -96,6 +96,8 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const receiptFile = document.getElementById('receipt').files[0];
+    const review1File = document.getElementById('review1').files[0];
+    const review2File = document.getElementById('review2').files[0];
 
     // 영어 학습 목표 (복수 선택)
     const goalsCheckboxes = document.querySelectorAll('input[name="goals"]:checked');
@@ -105,23 +107,47 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
     const ageCheckboxes = document.querySelectorAll('input[name="age"]:checked');
     const ageGroups = Array.from(ageCheckboxes).map(cb => cb.value);
 
-    // 유효성 검사
+    // 유효성 검사 (영수증만 필수)
     if (!name || !email || !phone || !receiptFile || goals.length === 0 || ageGroups.length === 0) {
         showMessage('모든 필수 항목을 입력해주세요.', 'error');
         return;
     }
 
-    // 파일 크기 검사 (5MB)
+    // 파일 형식 검사
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+
+    // 영수증 파일 검사 (필수)
     if (receiptFile.size > 5 * 1024 * 1024) {
         showMessage('영수증 파일 크기는 5MB 이하여야 합니다.', 'error');
         return;
     }
-
-    // 파일 형식 검사
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
     if (!allowedTypes.includes(receiptFile.type)) {
-        showMessage('JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
+        showMessage('영수증은 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
         return;
+    }
+
+    // 후기 1 파일 검사 (선택사항)
+    if (review1File) {
+        if (review1File.size > 5 * 1024 * 1024) {
+            showMessage('후기 1 파일 크기는 5MB 이하여야 합니다.', 'error');
+            return;
+        }
+        if (!allowedTypes.includes(review1File.type)) {
+            showMessage('후기 1은 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
+            return;
+        }
+    }
+
+    // 후기 2 파일 검사 (선택사항)
+    if (review2File) {
+        if (review2File.size > 5 * 1024 * 1024) {
+            showMessage('후기 2 파일 크기는 5MB 이하여야 합니다.', 'error');
+            return;
+        }
+        if (!allowedTypes.includes(review2File.type)) {
+            showMessage('후기 2는 JPG, PNG, PDF 파일만 업로드 가능합니다.', 'error');
+            return;
+        }
     }
 
     // 로딩 상태
@@ -139,13 +165,34 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
             return;
         }
 
-        // 1. 영수증 이미지 업로드
+        // 1. 영수증 및 후기 이미지 업로드
         const timestamp = Date.now();
-        const fileName = `${timestamp}_${receiptFile.name}`;
-        const storageRef = storage.ref(`receipts/${fileName}`);
 
-        const uploadTask = await storageRef.put(receiptFile);
-        const receiptUrl = await uploadTask.ref.getDownloadURL();
+        // 영수증 업로드 (필수)
+        const receiptFileName = `${timestamp}_receipt_${receiptFile.name}`;
+        const receiptStorageRef = storage.ref(`receipts/${receiptFileName}`);
+        const receiptUploadTask = await receiptStorageRef.put(receiptFile);
+        const receiptUrl = await receiptUploadTask.ref.getDownloadURL();
+
+        // 후기 1 업로드 (선택사항)
+        let review1Url = null;
+        let review1FileName = null;
+        if (review1File) {
+            review1FileName = `${timestamp}_review1_${review1File.name}`;
+            const review1StorageRef = storage.ref(`reviews/${review1FileName}`);
+            const review1UploadTask = await review1StorageRef.put(review1File);
+            review1Url = await review1UploadTask.ref.getDownloadURL();
+        }
+
+        // 후기 2 업로드 (선택사항)
+        let review2Url = null;
+        let review2FileName = null;
+        if (review2File) {
+            review2FileName = `${timestamp}_review2_${review2File.name}`;
+            const review2StorageRef = storage.ref(`reviews/${review2FileName}`);
+            const review2UploadTask = await review2StorageRef.put(review2File);
+            review2Url = await review2UploadTask.ref.getDownloadURL();
+        }
 
         // 현재 라운드 확인
         const currentSnapshot = await applicationsRef.get();
@@ -160,13 +207,23 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
             goals,
             ageGroups,
             receiptUrl,
-            receiptFileName: fileName,
+            receiptFileName,
             maskedName: maskName(name),
             round: currentRound,
             status: 'pending',
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             createdAt: new Date().toISOString()
         };
+
+        // 후기가 있는 경우에만 추가
+        if (review1Url) {
+            applicationData.review1Url = review1Url;
+            applicationData.review1FileName = review1FileName;
+        }
+        if (review2Url) {
+            applicationData.review2Url = review2Url;
+            applicationData.review2FileName = review2FileName;
+        }
 
         await applicationsRef.add(applicationData);
 

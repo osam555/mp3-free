@@ -63,7 +63,7 @@ function copyEmail(email) {
 
 // 이메일 수동 발송
 async function sendEmail(docId, name, email) {
-    if (!confirm(`${name}님(${email})에게 WAV 파일 다운로드 링크를 이메일로 발송하시겠습니까?`)) return;
+    if (!confirm(`${name}님(${email})에게 속청 동영상 링크를 이메일로 발송하시겠습니까?`)) return;
 
     try {
         // Firebase Functions의 sendManualEmail 호출
@@ -74,6 +74,25 @@ async function sendEmail(docId, name, email) {
     } catch (error) {
         console.error('이메일 발송 에러:', error);
         alert(`이메일 발송 중 오류가 발생했습니다: ${error.message}`);
+    }
+}
+
+// 영수증 및 후기 확인 후 자동 승인 및 이메일 발송
+async function approveAndSend(docId, name, email) {
+    if (!confirm(`${name}님의 신청을 승인하고 속청 동영상 링크를 이메일로 발송하시겠습니까?\n\n영수증과 후기를 확인하셨나요?`)) return;
+
+    try {
+        // Firestore에서 status를 'approved'로 변경
+        // 이렇게 하면 Firebase Function이 자동으로 이메일을 발송합니다
+        await applicationsRef.doc(docId).update({
+            status: 'approved',
+            approvedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+
+        alert(`✅ ${name}님의 신청이 승인되었습니다.\n이메일이 자동으로 발송됩니다.`);
+    } catch (error) {
+        console.error('승인 에러:', error);
+        alert(`승인 중 오류가 발생했습니다: ${error.message}`);
     }
 }
 
@@ -146,9 +165,13 @@ function renderTable(applications) {
                     ${app.goals.join(', ')}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
-                    <a href="${app.receiptUrl}" target="_blank" class="text-blue-600 hover:underline">
-                        📄 보기
-                    </a>
+                    <div class="flex flex-col gap-1">
+                        <a href="${app.receiptUrl}" target="_blank" class="text-blue-600 hover:underline">
+                            📄 영수증
+                        </a>
+                        ${app.review1Url ? `<a href="${app.review1Url}" target="_blank" class="text-green-600 hover:underline">✍️ 후기1</a>` : ''}
+                        ${app.review2Url ? `<a href="${app.review2Url}" target="_blank" class="text-green-600 hover:underline">✍️ 후기2</a>` : ''}
+                    </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <select onchange="changeStatus('${app.id}', this.value)"
@@ -158,16 +181,25 @@ function renderTable(applications) {
                         <option value="sent" ${app.status === 'sent' ? 'selected' : ''}>발송 완료</option>
                     </select>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm space-x-2">
-                    <button onclick="sendEmail('${app.id}', '${app.name}', '${app.email}')"
-                            class="text-blue-600 hover:text-blue-800 font-semibold"
-                            title="WAV 파일 링크 이메일 발송">
-                        📧 이메일
-                    </button>
-                    <button onclick="deleteApplication('${app.id}', '${app.name}')"
-                            class="text-red-600 hover:text-red-800 font-semibold">
-                        🗑️ 삭제
-                    </button>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex flex-col gap-1">
+                        ${app.status === 'pending' ? `
+                            <button onclick="approveAndSend('${app.id}', '${app.name}', '${app.email}')"
+                                    class="text-green-600 hover:text-green-800 font-semibold text-left"
+                                    title="영수증과 후기 확인 후 승인 및 자동 발송">
+                                ✅ 확인 및 발송
+                            </button>
+                        ` : ''}
+                        <button onclick="sendEmail('${app.id}', '${app.name}', '${app.email}')"
+                                class="text-blue-600 hover:text-blue-800 font-semibold text-left"
+                                title="속청 동영상 링크 이메일 재발송">
+                            📧 ${app.status === 'pending' ? '수동' : '재'}발송
+                        </button>
+                        <button onclick="deleteApplication('${app.id}', '${app.name}')"
+                                class="text-red-600 hover:text-red-800 font-semibold text-left">
+                            🗑️ 삭제
+                        </button>
+                    </div>
                 </td>
             </tr>
         `;

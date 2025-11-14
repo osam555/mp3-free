@@ -94,7 +94,7 @@ function createEmailTemplate(name, round) {
               </p>
 
               <p style="margin: 0 0 30px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
-                오쌤이 직접 개발한 <strong>무손실 WAV 속청 파일</strong>을 아래 링크에서 다운로드 받으실 수 있습니다.
+                오쌤이 직접 개발한 <strong>무손실 WAV로 제작한 속청 동영상</strong>을 아래 링크에서 시청하실 수 있습니다.
               </p>
 
               <!-- Download Button -->
@@ -102,7 +102,7 @@ function createEmailTemplate(name, round) {
                 <tr>
                   <td style="text-align: center; padding: 20px 0;">
                     <a href="${DRIVE_LINK}" style="display: inline-block; background: linear-gradient(135deg, ${roundColor} 0%, #1e40af 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-                      📥 WAV 파일 다운로드
+                      🎬 속청 동영상 보기
                     </a>
                   </td>
                 </tr>
@@ -121,7 +121,7 @@ function createEmailTemplate(name, round) {
               <!-- Features -->
               <div style="margin-top: 40px; padding: 20px; background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); border-radius: 8px; border-left: 4px solid ${roundColor};">
                 <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: bold;">
-                  🎯 무손실 WAV 파일 특징
+                  🎯 무손실 WAV 속청 동영상 특징
                 </h3>
                 <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.8;">
                   <li>MP3 압축으로 손실된 고주파수 복원</li>
@@ -134,13 +134,13 @@ function createEmailTemplate(name, round) {
               <!-- Tips -->
               <div style="margin-top: 30px; padding: 20px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
                 <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: bold;">
-                  💡 사용 팁
+                  💡 시청 팁
                 </h3>
                 <ul style="margin: 0; padding-left: 20px; color: #4b5563; line-height: 1.8;">
-                  <li>다운로드 후 스마트폰이나 MP3 플레이어로 전송하세요</li>
-                  <li>출퇴근 시간, 운동 중, 잠들기 전 활용하세요</li>
-                  <li>매일 30분 이상 듣는 것을 추천합니다</li>
-                  <li>속청이 너무 빠르면 MP3 파일부터 시작하세요</li>
+                  <li>다운로드 후 스마트폰이나 태블릿으로 전송하세요</li>
+                  <li>출퇴근 시간, 운동 중, 잠들기 전 시청하세요</li>
+                  <li>매일 30분 이상 시청하는 것을 추천합니다</li>
+                  <li>속청이 너무 빠르면 재생 속도를 조절하세요</li>
                 </ul>
               </div>
 
@@ -187,7 +187,7 @@ exports.sendEarlybirdEmail = onDocumentUpdated(
       const mailOptions = {
         from: `대충영어 속청 30일 <${gmailEmail}>`,
         to: email,
-        subject: `🎉 [대충영어] ${round}차 얼리버드 승인 - WAV 파일 다운로드`,
+        subject: `🎉 [대충영어] ${round}차 얼리버드 승인 - 속청 동영상`,
         html: createEmailTemplate(name, round),
       };
 
@@ -238,7 +238,7 @@ exports.sendManualEmail = onCall(async (request) => {
     const mailOptions = {
       from: `대충영어 속청 30일 <${gmailEmail}>`,
       to: email,
-      subject: `🎉 [대충영어] ${round}차 얼리버드 승인 - WAV 파일 다운로드`,
+      subject: `🎉 [대충영어] ${round}차 얼리버드 승인 - 속청 동영상`,
       html: createEmailTemplate(name, round),
     };
 
