@@ -14,6 +14,7 @@ const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const cheerio = require('cheerio');
+const puppeteer = require('puppeteer');
 
 // 글로벌 옵션 설정 (리전)
 setGlobalOptions({region: 'us-central1'});
@@ -400,35 +401,42 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
  */
 exports.checkKyobobookRank = onCall(async (request) => {
   const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
-  
-  try {
-    console.log('🔄 순위 체크 시작...');
-    
-    // User-Agent 설정 (봇 차단 방지)
-    let response;
-    try {
-      response = await axios.get(productUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-        },
-        timeout: 15000,
-      });
-      console.log('✅ 페이지 로드 성공');
-    } catch (axiosError) {
-      console.error('❌ 페이지 로드 실패:', axiosError.message);
-      throw new HttpsError('internal', `페이지를 불러올 수 없습니다: ${axiosError.message}`);
-    }
 
-    let $;
-    try {
-      $ = cheerio.load(response.data);
-      console.log('✅ HTML 파싱 성공');
-    } catch (parseError) {
-      console.error('❌ HTML 파싱 실패:', parseError.message);
-      throw new HttpsError('internal', `HTML 파싱 중 오류가 발생했습니다: ${parseError.message}`);
-    }
+  let browser;
+  try {
+    console.log('🔄 순위 체크 시작 (Puppeteer 사용)...');
+
+    // Puppeteer 브라우저 시작
+    browser = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-gpu'
+      ]
+    });
+
+    const page = await browser.newPage();
+
+    // User-Agent 설정
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+    // 페이지 로드
+    await page.goto(productUrl, { waitUntil: 'networkidle2', timeout: 30000 });
+    console.log('✅ 페이지 로드 성공');
+
+    // JavaScript 실행 대기
+    await page.waitForTimeout(3000);
+
+    // 페이지 내용 가져오기
+    const content = await page.content();
+    const $ = cheerio.load(content);
+    console.log('✅ HTML 파싱 성공');
     
     let rank = null;
     let category = null;
@@ -860,6 +868,8 @@ exports.scheduledSendRankReport = onSchedule({
     let category = '주간베스트 외국어';
     
     try {
+      // Fallback: axios로 시도 (Puppeteer 실패 시)
+      console.log('⚠️ Puppeteer 실패, axios로 fallback 시도...');
       const response = await axios.get(productUrl, {
         headers: {
           'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
@@ -871,8 +881,8 @@ exports.scheduledSendRankReport = onSchedule({
 
       const $ = cheerio.load(response.data);
       const bodyText = $('body').text();
-      
-      console.log('📊 순위 추출 시도 중...');
+
+      console.log('📊 순위 추출 시도 중 (axios fallback)...');
       
       // 패턴 1: "주간베스트 외국어 285위" 형태 (공백 허용)
       let rankMatch = bodyText.match(/주간\s*베스트\s*외국어\s*(\d+)\s*위/i);
