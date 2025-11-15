@@ -262,7 +262,75 @@ exports.sendManualEmail = onCall(async (request) => {
 });
 
 /**
- * 신청서 생성 시 라운드 자동 설정
+ * 관리자 알림 이메일 템플릿 생성
+ * @param {string} name - 신청자 이름
+ * @param {string} email - 신청자 이메일
+ * @param {string} phone - 신청자 전화번호
+ * @param {number} round - 라운드
+ * @param {string} receiptUrl - 영수증 URL
+ * @param {string} reviewUrl - 후기 URL (선택)
+ * @return {string} HTML 이메일 내용
+ */
+function createAdminNotificationTemplate(name, email, phone, round, receiptUrl, reviewUrl) {
+  const roundText = round === 1 ? '1차 얼리버드' : '2차 얼리버드';
+  const reviewLink = reviewUrl ? `<a href="${reviewUrl}" style="color: #3B82F6; text-decoration: none;">후기 확인</a>` : '후기 없음';
+
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>새 얼리버드 신청 알림</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #3B82F6 0%, #1e40af 100%); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                🔔 새 얼리버드 신청
+              </h1>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px 0; color: #1f2937; font-size: 16px; line-height: 1.6;">
+                새로운 얼리버드 신청이 접수되었습니다.
+              </p>
+              <div style="background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+                <p style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;"><strong>이름:</strong> ${name}</p>
+                <p style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;"><strong>이메일:</strong> ${email}</p>
+                <p style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;"><strong>전화번호:</strong> ${phone}</p>
+                <p style="margin: 0 0 10px 0; color: #1f2937; font-size: 16px;"><strong>라운드:</strong> ${roundText}</p>
+              </div>
+              <div style="margin: 20px 0;">
+                <a href="${receiptUrl}" target="_blank" style="display: inline-block; background: #3B82F6; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; margin-right: 10px;">
+                  📄 영수증 확인
+                </a>
+                ${reviewUrl ? `<a href="${reviewUrl}" target="_blank" style="display: inline-block; background: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold;">✍️ 후기 확인</a>` : ''}
+              </div>
+              <div style="margin-top: 30px; padding: 20px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <p style="margin: 0; color: #1f2937; font-size: 14px;">
+                  <strong>관리자 대시보드:</strong><br>
+                  <a href="https://mp3-free-earlybird.web.app/admin.html" style="color: #3B82F6; text-decoration: none;">https://mp3-free-earlybird.web.app/admin.html</a>
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * 신청서 생성 시 라운드 자동 설정 및 관리자 알림
  * Firestore Trigger: onCreate
  */
 exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applicationId}', async (event) => {
@@ -273,12 +341,13 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
   }
 
   const applicationId = event.params.applicationId;
+  const applicationData = snapshot.data();
 
   try {
     // 현재 문서 이전의 모든 신청서 개수 확인
     const querySnapshot = await admin.firestore()
       .collection('earlybird_applications')
-      .where('timestamp', '<', snapshot.data().timestamp)
+      .where('timestamp', '<', applicationData.timestamp)
       .get();
 
     const count = querySnapshot.size;
@@ -290,6 +359,33 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
     });
 
     console.log(`✅ Application ${applicationId} assigned to round ${round}`);
+
+    // 관리자에게 알림 이메일 발송
+    const adminEmail = process.env.ADMIN_EMAIL || 'john.wu571@gmail.com'; // 관리자 이메일 (환경 변수 또는 기본값)
+    
+    if (adminEmail) {
+      const mailOptions = {
+        from: `대충영어 속청 30일 <${gmailEmail}>`,
+        to: adminEmail,
+        subject: `🔔 [대충영어] 새 얼리버드 신청 - ${applicationData.name}님`,
+        html: createAdminNotificationTemplate(
+          applicationData.name,
+          applicationData.email,
+          applicationData.phone,
+          round,
+          applicationData.receiptUrl,
+          applicationData.reviewUrl || null
+        ),
+      };
+
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log(`✅ Admin notification sent to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('❌ Error sending admin notification:', emailError);
+        // 알림 실패해도 신청 처리는 계속 진행
+      }
+    }
   } catch (error) {
     console.error('❌ Error setting round:', error);
   }

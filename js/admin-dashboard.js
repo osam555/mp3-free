@@ -143,7 +143,7 @@ function renderTable(applications) {
     if (applications.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                <td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     신청 내역이 없습니다.
                 </td>
             </tr>
@@ -164,44 +164,44 @@ function renderTable(applications) {
             '<span class="px-2 py-1 text-xs font-bold text-white bg-blue-600 rounded">1차</span>';
 
         return `
-            <tr class="hover:bg-gray-50">
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     ${formatDate(app.timestamp)}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     ${roundBadge}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
                     ${app.name}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     <div class="flex items-center gap-2">
                         <span>${app.email}</span>
-                        <button onclick="copyEmail('${app.email}')" class="text-blue-600 hover:text-blue-800" title="이메일 복사">
+                        <button onclick="copyEmail('${app.email}')" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300" title="이메일 복사">
                             📋
                         </button>
                     </div>
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     ${app.phone}
                 </td>
-                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                     ${Array.isArray(app.ageGroups) ? app.ageGroups.join(', ') : (app.ageGroup || '미입력')}
                 </td>
-                <td class="px-6 py-4 text-sm text-gray-900">
+                <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                     ${app.goals.join(', ')}
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                     <div class="flex flex-col gap-1">
-                        <a href="${app.receiptUrl}" target="_blank" class="text-blue-600 hover:underline">
+                        <a href="${app.receiptUrl}" target="_blank" class="text-blue-600 dark:text-blue-400 hover:underline">
                             📄 영수증
                         </a>
-                        ${app.reviewUrl ? `<a href="${app.reviewUrl}" target="_blank" class="text-green-600 hover:underline">✍️ 후기</a>` : ''}
+                        ${app.reviewUrl ? `<a href="${app.reviewUrl}" target="_blank" class="text-green-600 dark:text-green-400 hover:underline">✍️ 후기</a>` : ''}
                     </div>
                 </td>
                 <td class="px-6 py-4 whitespace-nowrap">
                     <select onchange="changeStatus('${app.id}', this.value)"
-                            class="px-3 py-1 rounded font-semibold text-sm ${statusClass}">
+                            class="px-3 py-1 rounded font-semibold text-sm ${statusClass} bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 border dark:border-gray-600">
                         <option value="pending" ${app.status === 'pending' ? 'selected' : ''}>대기 중</option>
                         <option value="approved" ${app.status === 'approved' ? 'selected' : ''}>승인 완료</option>
                         <option value="sent" ${app.status === 'sent' ? 'selected' : ''}>발송 완료</option>
@@ -211,18 +211,18 @@ function renderTable(applications) {
                     <div class="flex flex-col gap-1">
                         ${app.status === 'pending' ? `
                             <button onclick="approveAndSend('${app.id}', '${app.name}', '${app.email}')"
-                                    class="text-green-600 hover:text-green-800 font-semibold text-left"
+                                    class="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 font-semibold text-left"
                                     title="영수증과 후기 확인 후 승인 및 자동 발송">
                                 ✅ 확인 및 발송
                             </button>
                         ` : ''}
                         <button onclick="sendEmail('${app.id}', '${app.name}', '${app.email}')"
-                                class="text-blue-600 hover:text-blue-800 font-semibold text-left"
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold text-left"
                                 title="속청 동영상 링크 이메일 재발송">
                             📧 ${app.status === 'pending' ? '수동' : '재'}발송
                         </button>
                         <button onclick="deleteApplication('${app.id}', '${app.name}')"
-                                class="text-red-600 hover:text-red-800 font-semibold text-left">
+                                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-semibold text-left">
                             🗑️ 삭제
                         </button>
                     </div>

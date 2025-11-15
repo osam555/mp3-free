@@ -4,6 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>얼리버드 관리자 대시보드 | 대충영어</title>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
 
@@ -20,42 +25,48 @@
         .status-pending { background-color: #FEF3C7; color: #92400E; }
         .status-approved { background-color: #DBEAFE; color: #1E40AF; }
         .status-sent { background-color: #D1FAE5; color: #065F46; }
+        .dark .status-pending { background-color: #78350F; color: #FCD34D; }
+        .dark .status-approved { background-color: #1E3A8A; color: #93C5FD; }
+        .dark .status-sent { background-color: #064E3B; color: #6EE7B7; }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- 비밀번호 입력 화면 (인증 전) -->
-    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-50" style="display: none;">
-        <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-            <h2 class="text-2xl font-bold text-center mb-6">🔐 관리자 비밀번호</h2>
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900" style="display: none;">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold text-center mb-6 text-gray-800 dark:text-gray-100">🔐 관리자 비밀번호</h2>
             <form id="login-form" class="space-y-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-2">비밀번호</label>
+                    <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">비밀번호</label>
                     <input type="password" id="admin-password" required autofocus
-                           class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           class="w-full p-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:border-blue-500 dark:focus:border-blue-400 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                            placeholder="비밀번호를 입력하세요">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-all">
+                <button type="submit" class="w-full bg-blue-600 dark:bg-blue-500 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 dark:hover:bg-blue-600 transition-all">
                     확인
                 </button>
             </form>
-            <div id="login-error" class="mt-4 text-red-600 text-center text-sm" style="display: none;"></div>
+            <div id="login-error" class="mt-4 text-red-600 dark:text-red-400 text-center text-sm" style="display: none;"></div>
         </div>
     </div>
 
     <!-- 관리자 대시보드 (인증 후) -->
     <div id="admin-dashboard" class="max-w-7xl mx-auto p-4 md:p-8">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6 transition-colors">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800 mb-2">🎁 얼리버드 관리자 대시보드</h1>
-                    <p class="text-gray-600">교보문고 구매자 특전 신청 관리</p>
+                    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">🎁 얼리버드 관리자 대시보드</h1>
+                    <p class="text-gray-600 dark:text-gray-400">교보문고 구매자 특전 신청 관리</p>
                 </div>
                 <div class="flex gap-2">
-                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                    <button id="dark-mode-toggle" onclick="toggleDarkMode()" class="bg-gray-600 dark:bg-gray-700 text-white px-4 py-2 rounded hover:bg-gray-700 dark:hover:bg-gray-600 transition-all">
+                        🌙 다크 모드
+                    </button>
+                    <button onclick="logout()" class="bg-red-600 dark:bg-red-700 text-white px-4 py-2 rounded hover:bg-red-700 dark:hover:bg-red-600 transition-all">
                         로그아웃
                     </button>
-                    <a href="visitor-stats.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                    <a href="visitor-stats.html" class="bg-blue-600 dark:bg-blue-700 text-white px-4 py-2 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-all">
                         📊 방문자 통계
                     </a>
                 </div>
@@ -64,42 +75,42 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">총 신청자</div>
-                <div class="text-3xl font-bold text-blue-600" id="total-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">총 신청자</div>
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="total-count">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">1차 신청자</div>
-                <div class="text-3xl font-bold text-blue-600" id="round1-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">1차 신청자</div>
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="round1-count">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">2차 신청자</div>
-                <div class="text-3xl font-bold text-purple-600" id="round2-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">2차 신청자</div>
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="round2-count">0</div>
             </div>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">대기 중</div>
-                <div class="text-3xl font-bold text-yellow-600" id="pending-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">대기 중</div>
+                <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400" id="pending-count">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">승인 완료</div>
-                <div class="text-3xl font-bold text-green-600" id="approved-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 완료</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-green-400" id="approved-count">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">발송 완료</div>
-                <div class="text-3xl font-bold text-purple-600" id="sent-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
+                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">발송 완료</div>
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="sent-count">0</div>
             </div>
         </div>
 
         <!-- Filters -->
-        <div class="bg-white rounded-lg shadow p-6 mb-6">
-            <h2 class="text-xl font-bold mb-4">필터</h2>
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6 transition-colors">
+            <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">필터</h2>
             <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-semibold mb-2">상태</label>
-                    <select id="filter-status" class="w-full p-2 border rounded">
+                    <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">상태</label>
+                    <select id="filter-status" class="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                         <option value="all">전체</option>
                         <option value="pending">대기 중</option>
                         <option value="approved">승인 완료</option>
@@ -107,8 +118,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-semibold mb-2">연령대</label>
-                    <select id="filter-age" class="w-full p-2 border rounded">
+                    <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">연령대</label>
+                    <select id="filter-age" class="w-full p-2 border dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100">
                         <option value="all">전체</option>
                         <option value="10대">10대</option>
                         <option value="20대">20대</option>
@@ -119,12 +130,12 @@
                     </select>
                 </div>
                 <div class="flex items-end">
-                    <button onclick="applyFilters()" class="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+                    <button onclick="applyFilters()" class="w-full bg-blue-600 dark:bg-blue-700 text-white py-2 px-4 rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-all">
                         필터 적용
                     </button>
                 </div>
                 <div class="flex items-end">
-                    <button onclick="exportToCSV()" class="w-full bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">
+                    <button onclick="exportToCSV()" class="w-full bg-green-600 dark:bg-green-700 text-white py-2 px-4 rounded hover:bg-green-700 dark:hover:bg-green-600 transition-all">
                         📥 CSV 내보내기
                     </button>
                 </div>
@@ -132,27 +143,27 @@
         </div>
 
         <!-- Applications Table -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden transition-colors">
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">신청일시</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">라운드</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이름</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">이메일</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">전화번호</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">연령대</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">학습목표</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">영수증</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">상태</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">액션</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">신청일시</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">라운드</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">이름</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">이메일</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">전화번호</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">연령대</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">학습목표</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">영수증</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">상태</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">액션</th>
                         </tr>
                     </thead>
-                    <tbody id="applications-table" class="bg-white divide-y divide-gray-200">
+                    <tbody id="applications-table" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <!-- 동적으로 채워짐 -->
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="10" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                                 로딩 중...
                             </td>
                         </tr>
@@ -164,6 +175,7 @@
 
     <!-- Firebase Config 및 스크립트 -->
     <script src="js/firebase-config.js"></script>
+    <script src="js/admin-dark-mode.js"></script>
     <script src="js/admin-password.js"></script>
     <script src="js/admin-dashboard.js"></script>
 </body>
