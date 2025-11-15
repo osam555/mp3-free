@@ -768,6 +768,9 @@ async function loadRankHistoryTable() {
             }
         });
         
+        // 클라이언트에서 정렬 (최신순)
+        allRankHistory.sort((a, b) => b.timestamp - a.timestamp);
+        
         renderRankHistoryTable();
     } catch (error) {
         console.error('순위 히스토리 테이블 로드 에러:', error);
