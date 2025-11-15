@@ -402,17 +402,34 @@ exports.checkKyobobookRank = onCall(async (request) => {
   const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
   
   try {
+    console.log('🔄 순위 체크 시작...');
+    
     // User-Agent 설정 (봇 차단 방지)
-    const response = await axios.get(productUrl, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-      },
-      timeout: 10000,
-    });
+    let response;
+    try {
+      response = await axios.get(productUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+        },
+        timeout: 15000,
+      });
+      console.log('✅ 페이지 로드 성공');
+    } catch (axiosError) {
+      console.error('❌ 페이지 로드 실패:', axiosError.message);
+      throw new HttpsError('internal', `페이지를 불러올 수 없습니다: ${axiosError.message}`);
+    }
 
-    const $ = cheerio.load(response.data);
+    let $;
+    try {
+      $ = cheerio.load(response.data);
+      console.log('✅ HTML 파싱 성공');
+    } catch (parseError) {
+      console.error('❌ HTML 파싱 실패:', parseError.message);
+      throw new HttpsError('internal', `HTML 파싱 중 오류가 발생했습니다: ${parseError.message}`);
+    }
+    
     let rank = null;
     let category = null;
     let lastUpdated = new Date().toISOString();
@@ -467,74 +484,93 @@ exports.checkKyobobookRank = onCall(async (request) => {
     
     // 패턴 5: HTML 요소에서 직접 찾기
     if (!rank) {
-      $('span, div, p, li, td, th').each((i, elem) => {
-        if (rank) return false; // 이미 찾았으면 중단
-        
-        const text = $(elem).text().trim();
-        const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
-        if (match) {
-          rank = parseInt(match[2], 10);
-          category = match[1] || '주간베스트';
-          return false; // 중단
+      try {
+        const elements = $('span, div, p, li, td, th');
+        for (let i = 0; i < elements.length && !rank; i++) {
+          const text = $(elements[i]).text().trim();
+          const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
+          if (match) {
+            rank = parseInt(match[2], 10);
+            category = match[1] || '주간베스트';
+            break;
+          }
         }
-      });
+      } catch (elemError) {
+        console.warn('⚠️ HTML 요소 검색 중 오류:', elemError.message);
+      }
     }
     
     // 패턴 6: 클래스나 ID에 "rank", "best" 등이 포함된 요소 찾기
     if (!rank) {
-      $('[class*="rank"], [class*="best"], [id*="rank"], [id*="best"]').each((i, elem) => {
-        if (rank) return false;
-        
-        const text = $(elem).text().trim();
-        const match = text.match(/(\d+)\s*위/);
-        if (match) {
-          const potentialRank = parseInt(match[1], 10);
-          if (potentialRank >= 1 && potentialRank <= 1000) {
-            rank = potentialRank;
-            category = '주간베스트 외국어';
-            return false;
+      try {
+        const rankElements = $('[class*="rank"], [class*="best"], [id*="rank"], [id*="best"]');
+        for (let i = 0; i < rankElements.length && !rank; i++) {
+          const text = $(rankElements[i]).text().trim();
+          const match = text.match(/(\d+)\s*위/);
+          if (match) {
+            const potentialRank = parseInt(match[1], 10);
+            if (potentialRank >= 1 && potentialRank <= 1000) {
+              rank = potentialRank;
+              category = '주간베스트 외국어';
+              break;
+            }
           }
         }
-      });
+      } catch (rankElemError) {
+        console.warn('⚠️ 순위 요소 검색 중 오류:', rankElemError.message);
+      }
     }
     
     console.log(`순위 추출 결과: ${rank ? `${rank}위` : '없음'}, 카테고리: ${category}`);
 
     // Firestore에 순위 정보 저장
-    const rankData = {
-      rank: rank,
-      category: category || '주간베스트 외국어',
-      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-      checkedAt: lastUpdated,
-      productUrl: productUrl,
-    };
+    try {
+      const rankData = {
+        rank: rank,
+        category: category || '주간베스트 외국어',
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        checkedAt: lastUpdated,
+        productUrl: productUrl,
+      };
 
-    await admin.firestore()
-      .collection('kyobobook_rank')
-      .doc('current')
-      .set(rankData, {merge: true});
+      await admin.firestore()
+        .collection('kyobobook_rank')
+        .doc('current')
+        .set(rankData, {merge: true});
+      console.log('✅ 현재 순위 저장 완료');
 
-    // 히스토리에도 저장
-    await admin.firestore()
-      .collection('kyobobook_rank_history')
-      .add({
-        ...rankData,
-        timestamp: admin.firestore.FieldValue.serverTimestamp(),
-      });
+      // 히스토리에도 저장 (순위가 있을 때만)
+      if (rank) {
+        await admin.firestore()
+          .collection('kyobobook_rank_history')
+          .add({
+            ...rankData,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        console.log('✅ 순위 히스토리 저장 완료');
+      }
 
-    return {
-      success: true,
-      rank: rank,
-      category: category || '주간베스트 외국어',
-      message: rank ? `현재 순위: ${category || '주간베스트 외국어'} ${rank}위` : '순위 정보를 찾을 수 없습니다.',
-    };
+      return {
+        success: true,
+        rank: rank,
+        category: category || '주간베스트 외국어',
+        message: rank ? `현재 순위: ${category || '주간베스트 외국어'} ${rank}위` : '순위 정보를 찾을 수 없습니다.',
+      };
+    } catch (firestoreError) {
+      console.error('❌ Firestore 저장 에러:', firestoreError);
+      throw new HttpsError('internal', `데이터 저장 중 오류가 발생했습니다: ${firestoreError.message}`);
+    }
   } catch (error) {
     console.error('❌ 교보문고 순위 체크 에러:', error);
-    return {
-      success: false,
-      error: error.message,
-      message: '순위 정보를 가져오는 중 오류가 발생했습니다.',
-    };
+    console.error('에러 스택:', error.stack);
+    
+    // HttpsError인 경우 그대로 전달
+    if (error instanceof HttpsError) {
+      throw error;
+    }
+    
+    // 그 외의 경우
+    throw new HttpsError('internal', `순위 정보를 가져오는 중 오류가 발생했습니다: ${error.message}`);
   }
 });
 
