@@ -47,7 +47,15 @@ async function changeStatus(docId, newStatus) {
         alert('상태가 변경되었습니다.');
     } catch (error) {
         console.error('상태 변경 에러:', error);
-        alert('상태 변경 중 오류가 발생했습니다.');
+        console.error('에러 코드:', error.code);
+        console.error('에러 메시지:', error.message);
+        let errorMsg = '상태 변경 중 오류가 발생했습니다.';
+        if (error.code === 'permission-denied') {
+            errorMsg = '권한이 없습니다. Firestore 보안 규칙을 확인하세요.';
+        } else if (error.message) {
+            errorMsg = '상태 변경 중 오류가 발생했습니다: ' + error.message;
+        }
+        alert(errorMsg);
     }
 }
 
@@ -82,6 +90,8 @@ async function approveAndSend(docId, name, email) {
     if (!confirm(`${name}님의 신청을 승인하고 속청 동영상 링크를 이메일로 발송하시겠습니까?\n\n영수증과 후기를 확인하셨나요?`)) return;
 
     try {
+        console.log('승인 시작:', { docId, name, email });
+        
         // Firestore에서 status를 'approved'로 변경
         // 이렇게 하면 Firebase Function이 자동으로 이메일을 발송합니다
         await applicationsRef.doc(docId).update({
@@ -89,10 +99,17 @@ async function approveAndSend(docId, name, email) {
             approvedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
 
+        console.log('승인 완료, 이메일 자동 발송 대기 중...');
         alert(`✅ ${name}님의 신청이 승인되었습니다.\n이메일이 자동으로 발송됩니다.`);
     } catch (error) {
         console.error('승인 에러:', error);
-        alert(`승인 중 오류가 발생했습니다: ${error.message}`);
+        console.error('에러 코드:', error.code);
+        console.error('에러 메시지:', error.message);
+        let errorMsg = `승인 중 오류가 발생했습니다: ${error.message}`;
+        if (error.code === 'permission-denied') {
+            errorMsg = '권한이 없습니다. Firestore 보안 규칙을 확인하세요.';
+        }
+        alert(errorMsg);
     }
 }
 
@@ -101,11 +118,21 @@ async function deleteApplication(docId, name) {
     if (!confirm(`${name}님의 신청을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) return;
 
     try {
+        console.log('삭제 시작:', { docId, name });
         await applicationsRef.doc(docId).delete();
+        console.log('삭제 완료');
         alert('신청이 삭제되었습니다.');
     } catch (error) {
         console.error('삭제 에러:', error);
-        alert('삭제 중 오류가 발생했습니다.');
+        console.error('에러 코드:', error.code);
+        console.error('에러 메시지:', error.message);
+        let errorMsg = '삭제 중 오류가 발생했습니다.';
+        if (error.code === 'permission-denied') {
+            errorMsg = '권한이 없습니다. Firestore 보안 규칙을 확인하세요.';
+        } else if (error.message) {
+            errorMsg = '삭제 중 오류가 발생했습니다: ' + error.message;
+        }
+        alert(errorMsg);
     }
 }
 
@@ -207,8 +234,8 @@ function renderTable(applications) {
 
 // 필터 적용
 function applyFilters() {
-    currentFilter.status = document.getElementById('filter-status').value;
-    currentFilter.age = document.getElementById('filter-age').value;
+    currentFilter.status = document.getElementById('filter-status')?.value || 'all';
+    currentFilter.age = document.getElementById('filter-age')?.value || 'all';
 
     let filtered = [...allApplications];
 
@@ -217,11 +244,16 @@ function applyFilters() {
     }
 
     if (currentFilter.age !== 'all') {
-        filtered = filtered.filter(app => app.ageGroup === currentFilter.age);
+        filtered = filtered.filter(app => {
+            // ageGroups 배열 또는 ageGroup 단일 값 모두 처리
+            const ageGroups = app.ageGroups || (app.ageGroup ? [app.ageGroup] : []);
+            return ageGroups.includes(currentFilter.age);
+        });
     }
 
     renderTable(filtered);
-    updateStats(filtered);
+    // 통계는 전체 데이터 기준으로 표시
+    updateStats(allApplications);
 }
 
 // CSV 내보내기
@@ -263,28 +295,105 @@ function exportToCSV() {
 
 // 실시간 데이터 로드
 function loadApplications() {
-    applicationsRef
-        .orderBy('timestamp', 'desc')
-        .onSnapshot((snapshot) => {
-            allApplications = [];
-            snapshot.forEach((doc) => {
-                allApplications.push({
-                    id: doc.id,
-                    ...doc.data()
-                });
-            });
-
-            applyFilters();
-        }, (error) => {
-            console.error('데이터 로드 에러:', error);
-            document.getElementById('applications-table').innerHTML = `
+    console.log('데이터 로드 시작...');
+    console.log('applicationsRef:', applicationsRef);
+    console.log('db:', typeof db !== 'undefined' ? db : 'undefined');
+    
+    if (!applicationsRef) {
+        console.error('applicationsRef가 정의되지 않았습니다.');
+        const tbody = document.getElementById('applications-table');
+        if (tbody) {
+            tbody.innerHTML = `
                 <tr>
-                    <td colspan="9" class="px-6 py-12 text-center text-red-600">
-                        데이터 로드 중 오류가 발생했습니다: ${error.message}
+                    <td colspan="10" class="px-6 py-12 text-center text-red-600">
+                        Firestore가 초기화되지 않았습니다. 페이지를 새로고침하세요.
                     </td>
                 </tr>
             `;
+        }
+        return;
+    }
+
+    // 로딩 상태 표시
+    const tbody = document.getElementById('applications-table');
+    if (tbody) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="10" class="px-6 py-12 text-center text-gray-500">
+                    데이터 로딩 중...
+                </td>
+            </tr>
+        `;
+    }
+
+    // orderBy로 먼저 시도, 실패하면 orderBy 없이 시도
+    const queryWithOrder = applicationsRef.orderBy('timestamp', 'desc');
+    
+    queryWithOrder.onSnapshot((snapshot) => {
+        console.log('데이터 스냅샷 수신 (정렬됨):', snapshot.size, '개');
+        allApplications = [];
+        
+        snapshot.forEach((doc) => {
+            const data = doc.data();
+            allApplications.push({
+                id: doc.id,
+                ...data
+            });
         });
+
+        console.log('전체 신청자 수:', allApplications.length);
+        applyFilters();
+    }, (error) => {
+        console.warn('orderBy 쿼리 실패, orderBy 없이 재시도:', error.code);
+        
+        // orderBy 없이 재시도
+        applicationsRef.onSnapshot((snapshot) => {
+            console.log('데이터 스냅샷 수신 (정렬 안됨):', snapshot.size, '개');
+            allApplications = [];
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                allApplications.push({
+                    id: doc.id,
+                    ...data
+                });
+            });
+
+            // timestamp 기준으로 정렬 (클라이언트 측에서)
+            allApplications.sort((a, b) => {
+                const aTime = a.timestamp?.toDate ? a.timestamp.toDate().getTime() : (a.createdAt ? new Date(a.createdAt).getTime() : 0);
+                const bTime = b.timestamp?.toDate ? b.timestamp.toDate().getTime() : (b.createdAt ? new Date(b.createdAt).getTime() : 0);
+                return bTime - aTime; // 내림차순
+            });
+
+            console.log('전체 신청자 수:', allApplications.length);
+            applyFilters();
+        }, (fallbackError) => {
+            console.error('데이터 로드 에러 (fallback도 실패):', fallbackError);
+            console.error('에러 코드:', fallbackError.code);
+            console.error('에러 메시지:', fallbackError.message);
+            console.error('전체 에러 객체:', fallbackError);
+            
+            let errorMessage = '데이터 로드 중 오류가 발생했습니다: ' + fallbackError.message;
+            if (fallbackError.code === 'permission-denied') {
+                errorMessage = '권한이 없습니다. Firestore 보안 규칙을 확인하세요.<br>에러 코드: ' + fallbackError.code;
+            } else if (fallbackError.code === 'failed-precondition') {
+                errorMessage = '인덱스가 필요합니다. Firebase Console에서 인덱스를 생성하세요.<br>에러 코드: ' + fallbackError.code + '<br>에러 메시지: ' + fallbackError.message;
+            } else if (fallbackError.code === 'unavailable') {
+                errorMessage = 'Firestore 서비스를 사용할 수 없습니다. 네트워크 연결을 확인하세요.';
+            }
+            
+            if (tbody) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="10" class="px-6 py-12 text-center text-red-600">
+                            ${errorMessage}
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+    });
 }
 
 // 페이지 로드 시 초기화
@@ -297,7 +406,18 @@ window.addEventListener('DOMContentLoaded', () => {
     // 비밀번호 인증이 완료된 경우에만 데이터 로드
     const isAuthenticated = sessionStorage.getItem('admin_authenticated') === 'true';
     if (isAuthenticated) {
-        loadApplications();
+        // Firebase 초기화 확인 후 데이터 로드
+        if (typeof db !== 'undefined' && typeof applicationsRef !== 'undefined') {
+            loadApplications();
+        } else {
+            console.error('Firestore가 초기화되지 않았습니다.');
+            // 잠시 후 재시도
+            setTimeout(() => {
+                if (typeof db !== 'undefined' && typeof applicationsRef !== 'undefined') {
+                    loadApplications();
+                }
+            }, 500);
+        }
     }
     // 인증되지 않은 경우는 admin-password.js에서 처리
 });

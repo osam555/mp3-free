@@ -16,7 +16,14 @@ firebase.initializeApp(firebaseConfig);
 
 // Firestore 및 Storage 인스턴스
 const db = firebase.firestore();
-const storage = firebase.storage();
+
+// Storage는 admin.html에서만 사용하므로 선택적으로 초기화
+let storage = null;
+if (typeof firebase.storage === 'function') {
+    storage = firebase.storage();
+} else {
+    console.warn('Firebase Storage SDK가 로드되지 않았습니다. admin.html에서만 필요합니다.');
+}
 
 // 컬렉션 참조
 const applicationsRef = db.collection('earlybird_applications');
