@@ -613,6 +613,100 @@ exports.checkKyobobookRank = onCall(async (request) => {
         console.warn('⚠️ script 태그 검색 중 오류:', scriptError.message);
       }
     }
+
+    // 패턴 9: JSON 데이터에서 순위 찾기 (API 응답 등)
+    if (!rank) {
+      try {
+        const scripts = $('script').toArray();
+        for (const script of scripts) {
+          const scriptText = $(script).html() || '';
+          // JSON 형태의 데이터 찾기
+          const jsonMatches = scriptText.match(/\{[^}]*["']?rank["']?\s*:\s*(\d+)[^}]*\}/gi);
+          if (jsonMatches) {
+            for (const jsonMatch of jsonMatches) {
+              const rankMatch = jsonMatch.match(/"?rank"?\s*:\s*(\d+)/i);
+              if (rankMatch) {
+                const potentialRank = parseInt(rankMatch[1], 10);
+                if (potentialRank >= 1 && potentialRank <= 1000) {
+                  rank = potentialRank;
+                  category = '주간베스트 외국어';
+                  console.log('✅ 패턴 9 매칭 (JSON 데이터):', rank);
+                  break;
+                }
+              }
+            }
+          }
+        }
+      } catch (jsonError) {
+        console.warn('⚠️ JSON 데이터 검색 중 오류:', jsonError.message);
+      }
+    }
+
+    // 패턴 10: 특정 CSS 클래스나 ID로 순위 요소 찾기 (교보문고 특화)
+    if (!rank) {
+      try {
+        // 교보문고에서 자주 사용하는 클래스명들
+        const kyoboSelectors = [
+          '.rank', '.ranking', '.best-rank', '.bestseller-rank',
+          '[class*="rank"]', '[class*="best"]', '[class*="bestseller"]',
+          '.prod_rank', '.rank_info', '.ranking_info'
+        ];
+
+        for (const selector of kyoboSelectors) {
+          if (rank) break;
+          const elements = $(selector);
+          for (let i = 0; i < elements.length && !rank; i++) {
+            const text = $(elements[i]).text().trim();
+            const match = text.match(/(\d+)\s*위?/);
+            if (match) {
+              const potentialRank = parseInt(match[1], 10);
+              if (potentialRank >= 1 && potentialRank <= 1000) {
+                rank = potentialRank;
+                category = '주간베스트 외국어';
+                console.log(`✅ 패턴 10 매칭 (교보문고 클래스: ${selector}):`, rank);
+                break;
+              }
+            }
+          }
+        }
+      } catch (kyoboError) {
+        console.warn('⚠️ 교보문고 클래스 검색 중 오류:', kyoboError.message);
+      }
+    }
+
+    // 패턴 11: 페이지 내 모든 숫자 + "위" 조합 찾기 (가장 포괄적)
+    if (!rank) {
+      try {
+        const allText = bodyText;
+        // 모든 "숫자위" 패턴 찾기 (예: "1위", "285위", "100위" 등)
+        const allRankMatches = [...allText.matchAll(/(\d+)\s*위/g)];
+
+        console.log(`총 ${allRankMatches.length}개의 "위" 텍스트 발견`);
+
+        // 각 매치를 분석
+        for (const match of allRankMatches) {
+          const potentialRank = parseInt(match[1], 10);
+          if (potentialRank >= 1 && potentialRank <= 1000) {
+            // 주변 컨텍스트 분석 (50자 범위)
+            const context = allText.substring(
+              Math.max(0, match.index - 50),
+              Math.min(allText.length, match.index + 50)
+            );
+
+            // 베스트셀러나 순위 관련 키워드가 있는지 확인
+            if (context.match(/(?:베스트|순위|랭킹|베스트셀러|주간|월간|연간|rank|best)/i)) {
+              rank = potentialRank;
+              category = '주간베스트 외국어';
+              console.log(`✅ 패턴 11 매칭 (컨텍스트 분석): ${rank}위`);
+              console.log(`   컨텍스트: ${context}`);
+              break;
+            }
+          }
+        }
+      } catch (contextError) {
+        console.warn('⚠️ 컨텍스트 분석 중 오류:', contextError.message);
+      }
+    }
     
     // 디버깅: 순위를 찾지 못한 경우 HTML 샘플 저장
     if (!rank) {
@@ -857,10 +951,11 @@ exports.scheduledSendRankReport = onSchedule({
   timeZone: 'Asia/Seoul',
 }, async (event) => {
   console.log('🔄 매일 오전 6시 순위 체크 및 이메일 발송 시작...');
-  
+
   const adminEmail = 'john.wu571@gmail.com';
   const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
-  
+
+  let browser;
   try {
     // 1. 순위 체크
     console.log('📊 교보문고 순위 체크 중...');
@@ -868,22 +963,36 @@ exports.scheduledSendRankReport = onSchedule({
     let category = '주간베스트 외국어';
     
     try {
-      // Fallback: axios로 시도 (Puppeteer 실패 시)
-      console.log('⚠️ Puppeteer 실패, axios로 fallback 시도...');
-      const response = await axios.get(productUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-        },
-        timeout: 10000,
+      // Puppeteer 브라우저 시작 (scheduledSendRankReport용)
+      console.log('🔄 순위 체크 시작 (Puppeteer 사용 - scheduled)...');
+      browser = await puppeteer.launch({
+        headless: 'new',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--no-first-run',
+          '--no-zygote',
+          '--single-process',
+          '--disable-gpu'
+        ]
       });
 
-      const $ = cheerio.load(response.data);
+      const page = await browser.newPage();
+      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+
+      await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+      console.log('✅ 페이지 로드 성공 (scheduled)');
+
+      await page.waitForTimeout(5000);
+
+      const content = await page.content();
+      const $ = cheerio.load(content);
       const bodyText = $('body').text();
 
-      console.log('📊 순위 추출 시도 중 (axios fallback)...');
-      
+      console.log('📊 순위 추출 시도 중 (scheduled)...');
+
       // 패턴 1: "주간베스트 외국어 285위" 형태 (공백 허용)
       let rankMatch = bodyText.match(/주간\s*베스트\s*외국어\s*(\d+)\s*위/i);
       if (rankMatch) {
@@ -891,7 +1000,7 @@ exports.scheduledSendRankReport = onSchedule({
         category = '주간베스트 외국어';
         console.log('✅ 패턴 1 매칭:', currentRank);
       }
-      
+
       // 패턴 1-2: "주간베스트외국어 285위" 형태 (공백 없음)
       if (!currentRank) {
         rankMatch = bodyText.match(/주간베스트외국어\s*(\d+)\s*위/i);
@@ -901,7 +1010,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.log('✅ 패턴 1-2 매칭:', currentRank);
         }
       }
-      
+
       // 패턴 2: "외국어 285위" 형태
       if (!currentRank) {
         rankMatch = bodyText.match(/외국어\s*(\d+)\s*위/i);
@@ -911,7 +1020,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.log('✅ 패턴 2 매칭:', currentRank);
         }
       }
-      
+
       // 패턴 3: "베스트 285위" 형태
       if (!currentRank) {
         rankMatch = bodyText.match(/베스트\s*(\d+)\s*위/i);
@@ -921,7 +1030,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.log('✅ 패턴 3 매칭:', currentRank);
         }
       }
-      
+
       // 패턴 4: 숫자 + "위" 패턴 (주변 텍스트 확인) - 더 넓은 범위
       if (!currentRank) {
         const allRankMatches = [...bodyText.matchAll(/(\d+)\s*위/g)];
@@ -941,7 +1050,7 @@ exports.scheduledSendRankReport = onSchedule({
           }
         }
       }
-      
+
       // 패턴 5: HTML 요소에서 직접 찾기 (더 많은 요소 타입 포함)
       if (!currentRank) {
         try {
@@ -964,7 +1073,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.warn('⚠️ HTML 요소 검색 중 오류:', elemError.message);
         }
       }
-      
+
       // 패턴 6: 클래스나 ID에 "rank", "best", "bestseller" 등이 포함된 요소 찾기
       if (!currentRank) {
         try {
@@ -994,14 +1103,14 @@ exports.scheduledSendRankReport = onSchedule({
           console.warn('⚠️ 순위 요소 검색 중 오류:', rankElemError.message);
         }
       }
-      
+
       // 패턴 7: data 속성에서 순위 찾기
       if (!currentRank) {
         try {
           const dataElements = $('[data-rank], [data-best], [data-bestseller]');
           for (let i = 0; i < dataElements.length && !currentRank; i++) {
-            const rankValue = $(dataElements[i]).attr('data-rank') || 
-                             $(dataElements[i]).attr('data-best') || 
+            const rankValue = $(dataElements[i]).attr('data-rank') ||
+                             $(dataElements[i]).attr('data-best') ||
                              $(dataElements[i]).attr('data-bestseller');
             if (rankValue) {
               const potentialRank = parseInt(rankValue, 10);
@@ -1017,7 +1126,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.warn('⚠️ data 속성 검색 중 오류:', dataError.message);
         }
       }
-      
+
       // 패턴 8: 스크립트 태그에서 순위 찾기
       if (!currentRank) {
         try {
@@ -1039,7 +1148,7 @@ exports.scheduledSendRankReport = onSchedule({
           console.warn('⚠️ script 태그 검색 중 오류:', scriptError.message);
         }
       }
-      
+
       if (currentRank) {
         
         // Firestore에 저장
