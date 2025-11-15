@@ -1,0 +1,6 @@
+# API Keys (보안상 중요!)
+firebase-config.js
+
+# 생성된 아이콘들
+*.png
+!icon-sample.png

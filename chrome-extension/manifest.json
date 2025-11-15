@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "교보문고 순위 자동 수집",
+  "version": "1.0",
+  "description": "교보문고 책 페이지에서 순위를 자동으로 수집하여 Firebase에 저장",
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+  "host_permissions": [
+    "https://product.kyobobook.co.kr/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://product.kyobobook.co.kr/detail/S000218549943*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icon16.png",
+      "48": "icon48.png",
+      "128": "icon128.png"
+    }
+  }
+}
+
