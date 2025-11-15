@@ -431,6 +431,13 @@ let rankChart = null;
 // 교보문고 순위 정보 로드
 async function loadRankInfo() {
     try {
+        // Firestore 초기화 확인
+        if (typeof db === 'undefined') {
+            console.warn('Firestore가 아직 초기화되지 않았습니다.');
+            setTimeout(() => loadRankInfo(), 500);
+            return;
+        }
+        
         const rankDoc = await db.collection('kyobobook_rank').doc('current').get();
         
         if (rankDoc.exists()) {
@@ -439,10 +446,14 @@ async function loadRankInfo() {
             const category = data.category || '주간베스트 외국어';
             const lastUpdated = data.lastUpdated ? data.lastUpdated.toDate() : null;
             
-            document.getElementById('rank-value').textContent = rank ? `${rank}위` : '-';
-            document.getElementById('rank-category').textContent = category;
+            if (document.getElementById('rank-value')) {
+                document.getElementById('rank-value').textContent = rank ? `${rank}위` : '-';
+            }
+            if (document.getElementById('rank-category')) {
+                document.getElementById('rank-category').textContent = category;
+            }
             
-            if (lastUpdated) {
+            if (lastUpdated && document.getElementById('rank-last-updated')) {
                 const dateStr = lastUpdated.toLocaleString('ko-KR', {
                     year: 'numeric',
                     month: '2-digit',
@@ -453,9 +464,15 @@ async function loadRankInfo() {
                 document.getElementById('rank-last-updated').textContent = `마지막 확인: ${dateStr}`;
             }
         } else {
-            document.getElementById('rank-value').textContent = '-';
-            document.getElementById('rank-category').textContent = '';
-            document.getElementById('rank-last-updated').textContent = '아직 확인되지 않음';
+            if (document.getElementById('rank-value')) {
+                document.getElementById('rank-value').textContent = '-';
+            }
+            if (document.getElementById('rank-category')) {
+                document.getElementById('rank-category').textContent = '';
+            }
+            if (document.getElementById('rank-last-updated')) {
+                document.getElementById('rank-last-updated').textContent = '아직 확인되지 않음';
+            }
         }
         
         // 순위 히스토리도 함께 로드
@@ -463,26 +480,61 @@ async function loadRankInfo() {
         await loadRankHistoryTable();
     } catch (error) {
         console.error('순위 정보 로드 에러:', error);
-        document.getElementById('rank-value').textContent = '오류';
+        if (document.getElementById('rank-value')) {
+            document.getElementById('rank-value').textContent = '오류';
+        }
+        // 에러 메시지 표시
+        if (document.getElementById('rank-last-updated')) {
+            document.getElementById('rank-last-updated').textContent = `오류: ${error.message}`;
+        }
     }
 }
 
 // 순위 히스토리 로드 및 그래프 표시
 async function loadRankHistory() {
     try {
-        const period = document.getElementById('rank-period')?.value || '30';
-        let query = db.collection('kyobobook_rank_history')
-            .orderBy('timestamp', 'desc');
+        // Firestore 초기화 확인
+        if (typeof db === 'undefined') {
+            console.warn('Firestore가 아직 초기화되지 않았습니다.');
+            return;
+        }
         
-        // 기간 필터링
+        const period = document.getElementById('rank-period')?.value || '30';
+        
+        // orderBy와 where를 함께 사용할 때 인덱스가 필요하므로, 
+        // 먼저 where로 필터링한 후 클라이언트에서 정렬하는 방식으로 변경
+        let snapshot;
+        
         if (period !== 'all') {
             const days = parseInt(period, 10);
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - days);
-            query = query.where('timestamp', '>=', cutoffDate);
+            
+            try {
+                // 인덱스가 있으면 orderBy 사용
+                snapshot = await db.collection('kyobobook_rank_history')
+                    .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(cutoffDate))
+                    .orderBy('timestamp', 'desc')
+                    .get();
+            } catch (error) {
+                // 인덱스가 없으면 where만 사용하고 클라이언트에서 정렬
+                console.warn('인덱스가 없어 클라이언트에서 정렬합니다:', error);
+                snapshot = await db.collection('kyobobook_rank_history')
+                    .where('timestamp', '>=', firebase.firestore.Timestamp.fromDate(cutoffDate))
+                    .get();
+            }
+        } else {
+            try {
+                snapshot = await db.collection('kyobobook_rank_history')
+                    .orderBy('timestamp', 'desc')
+                    .get();
+            } catch (error) {
+                // 인덱스가 없으면 전체 가져와서 클라이언트에서 정렬
+                console.warn('인덱스가 없어 클라이언트에서 정렬합니다:', error);
+                snapshot = await db.collection('kyobobook_rank_history')
+                    .get();
+            }
         }
-        
-        const snapshot = await query.get();
         
         if (snapshot.empty) {
             console.log('순위 히스토리 데이터가 없습니다.');
@@ -504,7 +556,7 @@ async function loadRankHistory() {
             }
         });
         
-        // 시간순 정렬 (오래된 것부터)
+        // 시간순 정렬 (오래된 것부터) - 클라이언트에서 정렬
         historyData.sort((a, b) => a.timestamp - b.timestamp);
         
         // 통계 업데이트
@@ -683,10 +735,25 @@ let allRankHistory = [];
 
 async function loadRankHistoryTable() {
     try {
-        const snapshot = await db.collection('kyobobook_rank_history')
-            .orderBy('timestamp', 'desc')
-            .limit(100)
-            .get();
+        // Firestore 초기화 확인
+        if (typeof db === 'undefined') {
+            console.warn('Firestore가 아직 초기화되지 않았습니다.');
+            return;
+        }
+        
+        let snapshot;
+        try {
+            snapshot = await db.collection('kyobobook_rank_history')
+                .orderBy('timestamp', 'desc')
+                .limit(100)
+                .get();
+        } catch (error) {
+            // 인덱스가 없으면 전체 가져와서 클라이언트에서 정렬
+            console.warn('인덱스가 없어 클라이언트에서 정렬합니다:', error);
+            snapshot = await db.collection('kyobobook_rank_history')
+                .limit(100)
+                .get();
+        }
         
         allRankHistory = [];
         snapshot.forEach(doc => {
