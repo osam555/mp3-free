@@ -402,41 +402,54 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
 exports.checkKyobobookRank = onCall(async (request) => {
   const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
 
-  let browser;
-  try {
-    console.log('🔄 순위 체크 시작 (Puppeteer 사용)...');
+    let browser;
+    try {
+      console.log('🔄 순위 체크 시작 (Puppeteer 사용)...');
 
-    // Puppeteer 브라우저 시작
-    browser = await puppeteer.launch({
-      headless: true,
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-accelerated-2d-canvas',
-        '--no-first-run',
-        '--no-zygote',
-        '--single-process',
-        '--disable-gpu'
-      ]
-    });
+      // Puppeteer 사용 시도
+      try {
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+          ]
+        });
 
-    const page = await browser.newPage();
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-    // User-Agent 설정
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+        console.log('✅ 페이지 로드 성공');
 
-    // 페이지 로드
-    await page.goto(productUrl, { waitUntil: 'networkidle2', timeout: 30000 });
-    console.log('✅ 페이지 로드 성공');
+        await page.waitForTimeout(5000);
 
-    // JavaScript 실행 대기
-    await page.waitForTimeout(3000);
+        const content = await page.content();
+        const $ = cheerio.load(content);
+        console.log('✅ HTML 파싱 성공');
+      } catch (puppeteerError) {
+        console.warn('⚠️ Puppeteer 로드 실패, axios로 fallback:', puppeteerError.message);
 
-    // 페이지 내용 가져오기
-    const content = await page.content();
-    const $ = cheerio.load(content);
-    console.log('✅ HTML 파싱 성공');
+        // axios fallback
+        const response = await axios.get(productUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Referer': 'https://www.kyobobook.co.kr/'
+          },
+          timeout: 15000,
+        });
+
+        const $ = cheerio.load(response.data);
+        console.log('✅ axios로 페이지 로드 성공');
+      }
     
     let rank = null;
     let category = null;
@@ -708,9 +721,43 @@ exports.checkKyobobookRank = onCall(async (request) => {
       }
     }
     
+    // 패턴 12: 교보문고 특화 검색 (베스트셀러 카테고리 정보)
+    if (!rank) {
+      try {
+        // 교보문고 베스트셀러 관련 특정 텍스트 패턴
+        const kyoboPatterns = [
+          /베스트셀러\s*(\d+)\s*위/i,
+          /주간\s*베스트\s*(\d+)\s*위/i,
+          /외국어\s*베스트\s*(\d+)\s*위/i,
+          /종합\s*(\d+)\s*위/i,
+          /순위\s*[:\-]?\s*(\d+)\s*위/i
+        ];
+
+        for (const pattern of kyoboPatterns) {
+          const match = bodyText.match(pattern);
+          if (match) {
+            const potentialRank = parseInt(match[1], 10);
+            if (potentialRank >= 1 && potentialRank <= 1000) {
+              rank = potentialRank;
+              category = '주간베스트 외국어';
+              console.log(`✅ 패턴 12 매칭 (교보문고 특화): ${rank}위`);
+              break;
+            }
+          }
+        }
+      } catch (kyoboError) {
+        console.warn('⚠️ 교보문고 특화 검색 중 오류:', kyoboError.message);
+      }
+    }
+
     // 디버깅: 순위를 찾지 못한 경우 HTML 샘플 저장
     if (!rank) {
       console.log('⚠️ 순위를 찾을 수 없습니다. HTML 샘플 분석...');
+
+      // 페이지 제목 확인
+      const title = $('title').text();
+      console.log('페이지 제목:', title);
+
       // "위"가 포함된 모든 텍스트 찾기
       const rankTexts = [];
       $('*').each((i, elem) => {
@@ -720,8 +767,25 @@ exports.checkKyobobookRank = onCall(async (request) => {
         }
       });
       if (rankTexts.length > 0) {
-        console.log('"위"가 포함된 텍스트 샘플:', rankTexts.slice(0, 10).join(' | '));
+        console.log('"위"가 포함된 텍스트 샘플 (최대 15개):');
+        rankTexts.slice(0, 15).forEach((text, i) => {
+          console.log(`  ${i+1}: ${text}`);
+        });
       }
+
+      // 베스트셀러 관련 요소 찾기
+      const bestsellerElements = $('[class*="best"], [id*="best"], [class*="rank"], [id*="rank"]');
+      if (bestsellerElements.length > 0) {
+        console.log('베스트셀러 관련 요소 발견:', bestsellerElements.length, '개');
+        bestsellerElements.slice(0, 5).each((i, elem) => {
+          const text = $(elem).text().trim().substring(0, 100);
+          const className = $(elem).attr('class') || '';
+          const id = $(elem).attr('id') || '';
+          console.log(`  요소 ${i+1}: class="${className}" id="${id}" text="${text}"`);
+        });
+      }
+
+      console.log('총 페이지 길이:', bodyText.length, '문자');
     }
     
     console.log(`순위 추출 결과: ${rank ? `${rank}위` : '없음'}, 카테고리: ${category}`);
@@ -963,33 +1027,53 @@ exports.scheduledSendRankReport = onSchedule({
     let category = '주간베스트 외국어';
     
     try {
-      // Puppeteer 브라우저 시작 (scheduledSendRankReport용)
-      console.log('🔄 순위 체크 시작 (Puppeteer 사용 - scheduled)...');
-      browser = await puppeteer.launch({
-        headless: 'new',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu'
-        ]
-      });
+      // Puppeteer 사용 시도 (scheduled)
+      try {
+        console.log('🔄 순위 체크 시작 (Puppeteer 사용 - scheduled)...');
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process',
+            '--disable-gpu'
+          ]
+        });
 
-      const page = await browser.newPage();
-      await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-      await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-      console.log('✅ 페이지 로드 성공 (scheduled)');
+        await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
+        console.log('✅ 페이지 로드 성공 (scheduled)');
 
-      await page.waitForTimeout(5000);
+        await page.waitForTimeout(5000);
 
-      const content = await page.content();
-      const $ = cheerio.load(content);
-      const bodyText = $('body').text();
+        const content = await page.content();
+        const $ = cheerio.load(content);
+        const bodyText = $('body').text();
+        console.log('✅ HTML 파싱 성공 (scheduled)');
+      } catch (puppeteerError) {
+        console.warn('⚠️ Puppeteer 로드 실패 (scheduled), axios로 fallback:', puppeteerError.message);
+
+        // axios fallback
+        const response = await axios.get(productUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Referer': 'https://www.kyobobook.co.kr/'
+          },
+          timeout: 15000,
+        });
+
+        var $ = cheerio.load(response.data);
+        var bodyText = $('body').text();
+        console.log('✅ axios로 페이지 로드 성공 (scheduled)');
+      }
 
       console.log('📊 순위 추출 시도 중 (scheduled)...');
 
@@ -1146,6 +1230,100 @@ exports.scheduledSendRankReport = onSchedule({
           }
         } catch (scriptError) {
           console.warn('⚠️ script 태그 검색 중 오류:', scriptError.message);
+        }
+      }
+
+      // 패턴 9: JSON 데이터에서 순위 찾기 (API 응답 등)
+      if (!currentRank) {
+        try {
+          const scripts = $('script').toArray();
+          for (const script of scripts) {
+            const scriptText = $(script).html() || '';
+            // JSON 형태의 데이터 찾기
+            const jsonMatches = scriptText.match(/\{[^}]*["']?rank["']?\s*:\s*(\d+)[^}]*\}/gi);
+            if (jsonMatches) {
+              for (const jsonMatch of jsonMatches) {
+                const rankMatch = jsonMatch.match(/"?rank"?\s*:\s*(\d+)/i);
+                if (rankMatch) {
+                  const potentialRank = parseInt(rankMatch[1], 10);
+                  if (potentialRank >= 1 && potentialRank <= 1000) {
+                    currentRank = potentialRank;
+                    category = '주간베스트 외국어';
+                    console.log('✅ 패턴 9 매칭 (JSON 데이터):', currentRank);
+                    break;
+                  }
+                }
+              }
+            }
+          }
+        } catch (jsonError) {
+          console.warn('⚠️ JSON 데이터 검색 중 오류:', jsonError.message);
+        }
+      }
+
+      // 패턴 10: 특정 CSS 클래스나 ID로 순위 요소 찾기 (교보문고 특화)
+      if (!currentRank) {
+        try {
+          // 교보문고에서 자주 사용하는 클래스명들
+          const kyoboSelectors = [
+            '.rank', '.ranking', '.best-rank', '.bestseller-rank',
+            '[class*="rank"]', '[class*="best"]', '[class*="bestseller"]',
+            '.prod_rank', '.rank_info', '.ranking_info'
+          ];
+
+          for (const selector of kyoboSelectors) {
+            if (currentRank) break;
+            const elements = $(selector);
+            for (let i = 0; i < elements.length && !currentRank; i++) {
+              const text = $(elements[i]).text().trim();
+              const match = text.match(/(\d+)\s*위?/);
+              if (match) {
+                const potentialRank = parseInt(match[1], 10);
+                if (potentialRank >= 1 && potentialRank <= 1000) {
+                  currentRank = potentialRank;
+                  category = '주간베스트 외국어';
+                  console.log(`✅ 패턴 10 매칭 (교보문고 클래스: ${selector}):`, currentRank);
+                  break;
+                }
+              }
+            }
+          }
+        } catch (kyoboError) {
+          console.warn('⚠️ 교보문고 클래스 검색 중 오류:', kyoboError.message);
+        }
+      }
+
+      // 패턴 11: 페이지 내 모든 숫자 + "위" 조합 찾기 (가장 포괄적)
+      if (!currentRank) {
+        try {
+          const allText = bodyText;
+          // 모든 "숫자위" 패턴 찾기 (예: "1위", "285위", "100위" 등)
+          const allRankMatches = [...allText.matchAll(/(\d+)\s*위/g)];
+
+          console.log(`총 ${allRankMatches.length}개의 "위" 텍스트 발견`);
+
+          // 각 매치를 분석
+          for (const match of allRankMatches) {
+            const potentialRank = parseInt(match[1], 10);
+            if (potentialRank >= 1 && potentialRank <= 1000) {
+              // 주변 컨텍스트 분석 (50자 범위)
+              const context = allText.substring(
+                Math.max(0, match.index - 50),
+                Math.min(allText.length, match.index + 50)
+              );
+
+              // 베스트셀러나 순위 관련 키워드가 있는지 확인
+              if (context.match(/(?:베스트|순위|랭킹|베스트셀러|주간|월간|연간|rank|best)/i)) {
+                currentRank = potentialRank;
+                category = '주간베스트 외국어';
+                console.log(`✅ 패턴 11 매칭 (컨텍스트 분석): ${currentRank}위`);
+                console.log(`   컨텍스트: ${context}`);
+                break;
+              }
+            }
+          }
+        } catch (contextError) {
+          console.warn('⚠️ 컨텍스트 분석 중 오류:', contextError.message);
         }
       }
 
