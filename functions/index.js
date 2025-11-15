@@ -507,17 +507,23 @@ exports.checkKyobobookRank = onCall(async (request) => {
       }
     }
     
-    // 패턴 5: HTML 요소에서 직접 찾기
+    // 패턴 5: HTML 요소에서 직접 찾기 (더 많은 요소 타입 포함)
     if (!rank) {
       try {
-        const elements = $('span, div, p, li, td, th');
-        for (let i = 0; i < elements.length && !rank; i++) {
-          const text = $(elements[i]).text().trim();
-          const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
-          if (match) {
-            rank = parseInt(match[2], 10);
-            category = match[1] || '주간베스트';
-            break;
+        const selectors = ['span', 'div', 'p', 'li', 'td', 'th', 'strong', 'em', 'b', 'a', 'label'];
+        for (const selector of selectors) {
+          if (rank) break;
+          const elements = $(selector);
+          for (let i = 0; i < elements.length && !rank; i++) {
+            const text = $(elements[i]).text().trim();
+            // 더 유연한 패턴: "주간", "베스트", "외국어" 중 하나와 숫자+위 조합
+            const match = text.match(/(주간|베스트|외국어|best|rank).*?(\d+)\s*위/i);
+            if (match) {
+              rank = parseInt(match[2], 10);
+              category = match[1] || '주간베스트';
+              console.log(`✅ 패턴 5 매칭 (${selector}):`, rank, '텍스트:', text.substring(0, 50));
+              break;
+            }
           }
         }
       } catch (elemError) {
@@ -525,24 +531,94 @@ exports.checkKyobobookRank = onCall(async (request) => {
       }
     }
     
-    // 패턴 6: 클래스나 ID에 "rank", "best" 등이 포함된 요소 찾기
+    // 패턴 6: 클래스나 ID에 "rank", "best", "bestseller" 등이 포함된 요소 찾기
     if (!rank) {
       try {
-        const rankElements = $('[class*="rank"], [class*="best"], [id*="rank"], [id*="best"]');
-        for (let i = 0; i < rankElements.length && !rank; i++) {
-          const text = $(rankElements[i]).text().trim();
-          const match = text.match(/(\d+)\s*위/);
-          if (match) {
-            const potentialRank = parseInt(match[1], 10);
-            if (potentialRank >= 1 && potentialRank <= 1000) {
-              rank = potentialRank;
-              category = '주간베스트 외국어';
-              break;
+        const rankSelectors = [
+          '[class*="rank"]', '[class*="best"]', '[class*="bestseller"]',
+          '[id*="rank"]', '[id*="best"]', '[id*="bestseller"]',
+          '[class*="순위"]', '[id*="순위"]'
+        ];
+        for (const selector of rankSelectors) {
+          if (rank) break;
+          const rankElements = $(selector);
+          for (let i = 0; i < rankElements.length && !rank; i++) {
+            const text = $(rankElements[i]).text().trim();
+            const match = text.match(/(\d+)\s*위/);
+            if (match) {
+              const potentialRank = parseInt(match[1], 10);
+              if (potentialRank >= 1 && potentialRank <= 1000) {
+                rank = potentialRank;
+                category = '주간베스트 외국어';
+                console.log(`✅ 패턴 6 매칭 (${selector}):`, rank);
+                break;
+              }
             }
           }
         }
       } catch (rankElemError) {
         console.warn('⚠️ 순위 요소 검색 중 오류:', rankElemError.message);
+      }
+    }
+    
+    // 패턴 7: data 속성에서 순위 찾기
+    if (!rank) {
+      try {
+        const dataElements = $('[data-rank], [data-best], [data-bestseller]');
+        for (let i = 0; i < dataElements.length && !rank; i++) {
+          const rankValue = $(dataElements[i]).attr('data-rank') || 
+                           $(dataElements[i]).attr('data-best') || 
+                           $(dataElements[i]).attr('data-bestseller');
+          if (rankValue) {
+            const potentialRank = parseInt(rankValue, 10);
+            if (potentialRank >= 1 && potentialRank <= 1000) {
+              rank = potentialRank;
+              category = '주간베스트 외국어';
+              console.log('✅ 패턴 7 매칭 (data 속성):', rank);
+              break;
+            }
+          }
+        }
+      } catch (dataError) {
+        console.warn('⚠️ data 속성 검색 중 오류:', dataError.message);
+      }
+    }
+    
+    // 패턴 8: 메타 태그나 스크립트 태그에서 순위 찾기
+    if (!rank) {
+      try {
+        const scripts = $('script').toArray();
+        for (const script of scripts) {
+          const scriptText = $(script).html() || '';
+          const match = scriptText.match(/["']?(?:rank|best|bestseller|순위)["']?\s*[:=]\s*["']?(\d+)["']?/i);
+          if (match) {
+            const potentialRank = parseInt(match[1], 10);
+            if (potentialRank >= 1 && potentialRank <= 1000) {
+              rank = potentialRank;
+              category = '주간베스트 외국어';
+              console.log('✅ 패턴 8 매칭 (script 태그):', rank);
+              break;
+            }
+          }
+        }
+      } catch (scriptError) {
+        console.warn('⚠️ script 태그 검색 중 오류:', scriptError.message);
+      }
+    }
+    
+    // 디버깅: 순위를 찾지 못한 경우 HTML 샘플 저장
+    if (!rank) {
+      console.log('⚠️ 순위를 찾을 수 없습니다. HTML 샘플 분석...');
+      // "위"가 포함된 모든 텍스트 찾기
+      const rankTexts = [];
+      $('*').each((i, elem) => {
+        const text = $(elem).text();
+        if (text.includes('위') && /\d/.test(text)) {
+          rankTexts.push(text.trim().substring(0, 100));
+        }
+      });
+      if (rankTexts.length > 0) {
+        console.log('"위"가 포함된 텍스트 샘플:', rankTexts.slice(0, 10).join(' | '));
       }
     }
     
@@ -856,22 +932,101 @@ exports.scheduledSendRankReport = onSchedule({
         }
       }
       
-      // 패턴 5: HTML 요소에서 직접 찾기
+      // 패턴 5: HTML 요소에서 직접 찾기 (더 많은 요소 타입 포함)
       if (!currentRank) {
         try {
-          const elements = $('span, div, p, li, td, th');
-          for (let i = 0; i < elements.length && !currentRank; i++) {
-            const text = $(elements[i]).text().trim();
-            const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
-            if (match) {
-              currentRank = parseInt(match[2], 10);
-              category = match[1] || '주간베스트';
-              console.log('✅ 패턴 5 매칭:', currentRank);
-              break;
+          const selectors = ['span', 'div', 'p', 'li', 'td', 'th', 'strong', 'em', 'b', 'a', 'label'];
+          for (const selector of selectors) {
+            if (currentRank) break;
+            const elements = $(selector);
+            for (let i = 0; i < elements.length && !currentRank; i++) {
+              const text = $(elements[i]).text().trim();
+              const match = text.match(/(주간|베스트|외국어|best|rank).*?(\d+)\s*위/i);
+              if (match) {
+                currentRank = parseInt(match[2], 10);
+                category = match[1] || '주간베스트';
+                console.log(`✅ 패턴 5 매칭 (${selector}):`, currentRank);
+                break;
+              }
             }
           }
         } catch (elemError) {
           console.warn('⚠️ HTML 요소 검색 중 오류:', elemError.message);
+        }
+      }
+      
+      // 패턴 6: 클래스나 ID에 "rank", "best", "bestseller" 등이 포함된 요소 찾기
+      if (!currentRank) {
+        try {
+          const rankSelectors = [
+            '[class*="rank"]', '[class*="best"]', '[class*="bestseller"]',
+            '[id*="rank"]', '[id*="best"]', '[id*="bestseller"]',
+            '[class*="순위"]', '[id*="순위"]'
+          ];
+          for (const selector of rankSelectors) {
+            if (currentRank) break;
+            const rankElements = $(selector);
+            for (let i = 0; i < rankElements.length && !currentRank; i++) {
+              const text = $(rankElements[i]).text().trim();
+              const match = text.match(/(\d+)\s*위/);
+              if (match) {
+                const potentialRank = parseInt(match[1], 10);
+                if (potentialRank >= 1 && potentialRank <= 1000) {
+                  currentRank = potentialRank;
+                  category = '주간베스트 외국어';
+                  console.log(`✅ 패턴 6 매칭 (${selector}):`, currentRank);
+                  break;
+                }
+              }
+            }
+          }
+        } catch (rankElemError) {
+          console.warn('⚠️ 순위 요소 검색 중 오류:', rankElemError.message);
+        }
+      }
+      
+      // 패턴 7: data 속성에서 순위 찾기
+      if (!currentRank) {
+        try {
+          const dataElements = $('[data-rank], [data-best], [data-bestseller]');
+          for (let i = 0; i < dataElements.length && !currentRank; i++) {
+            const rankValue = $(dataElements[i]).attr('data-rank') || 
+                             $(dataElements[i]).attr('data-best') || 
+                             $(dataElements[i]).attr('data-bestseller');
+            if (rankValue) {
+              const potentialRank = parseInt(rankValue, 10);
+              if (potentialRank >= 1 && potentialRank <= 1000) {
+                currentRank = potentialRank;
+                category = '주간베스트 외국어';
+                console.log('✅ 패턴 7 매칭 (data 속성):', currentRank);
+                break;
+              }
+            }
+          }
+        } catch (dataError) {
+          console.warn('⚠️ data 속성 검색 중 오류:', dataError.message);
+        }
+      }
+      
+      // 패턴 8: 스크립트 태그에서 순위 찾기
+      if (!currentRank) {
+        try {
+          const scripts = $('script').toArray();
+          for (const script of scripts) {
+            const scriptText = $(script).html() || '';
+            const match = scriptText.match(/["']?(?:rank|best|bestseller|순위)["']?\s*[:=]\s*["']?(\d+)["']?/i);
+            if (match) {
+              const potentialRank = parseInt(match[1], 10);
+              if (potentialRank >= 1 && potentialRank <= 1000) {
+                currentRank = potentialRank;
+                category = '주간베스트 외국어';
+                console.log('✅ 패턴 8 매칭 (script 태그):', currentRank);
+                break;
+              }
+            }
+          }
+        } catch (scriptError) {
+          console.warn('⚠️ script 태그 검색 중 오류:', scriptError.message);
         }
       }
       
