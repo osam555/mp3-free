@@ -136,6 +136,13 @@ window.addEventListener('load', () => {
     const rankInfo = extractRank();
     if (rankInfo) {
       saveRankToFirebase(rankInfo.rank, rankInfo.category);
+      
+      // Background script에 알림
+      chrome.runtime.sendMessage({
+        type: 'RANK_COLLECTED',
+        rank: rankInfo.rank,
+        category: rankInfo.category
+      }).catch(err => console.log('Background script 알림 실패:', err));
     } else {
       console.log('ℹ️ 이 페이지에서 순위를 찾을 수 없습니다.');
     }
