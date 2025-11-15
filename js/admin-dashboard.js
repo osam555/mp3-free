@@ -440,7 +440,7 @@ async function loadRankInfo() {
         
         const rankDoc = await db.collection('kyobobook_rank').doc('current').get();
         
-        if (rankDoc.exists()) {
+        if (rankDoc.exists) {
             const data = rankDoc.data();
             const rank = data.rank;
             const category = data.category || '주간베스트 외국어';
