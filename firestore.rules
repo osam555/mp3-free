@@ -37,8 +37,9 @@ service cloud.firestore {
       // 읽기는 공개 (관리자 페이지에서 표시)
       allow read: if true;
 
-      // 쓰기는 Cloud Functions에서만 가능
-      allow create, update: if false;
+      // 쓰기는 비밀번호 인증 시스템 사용 중이므로 허용
+      // 주의: 실제 운영 시에는 더 엄격한 규칙 권장
+      allow create, update: if true;
       allow delete: if false;
     }
 
