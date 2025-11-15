@@ -402,9 +402,9 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
 exports.checkKyobobookRank = onCall(async (request) => {
   const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
 
-    let browser;
-    try {
-      console.log('🔄 순위 체크 시작 (Puppeteer 사용)...');
+  let browser;
+  try {
+    console.log('🔄 순위 체크 시작...');
 
     // axios 우선 사용 (Puppeteer가 제대로 작동하지 않음)
     try {
@@ -883,6 +883,15 @@ exports.checkKyobobookRank = onCall(async (request) => {
     
     // 그 외의 경우
     throw new HttpsError('internal', `순위 정보를 가져오는 중 오류가 발생했습니다: ${error.message}`);
+  } finally {
+    // 브라우저 종료
+    if (browser) {
+      try {
+        await browser.close();
+      } catch (closeError) {
+        console.warn('브라우저 종료 중 오류:', closeError.message);
+      }
+    }
   }
 });
 
