@@ -14,7 +14,8 @@ const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const cheerio = require('cheerio');
-const puppeteer = require('puppeteer');
+const puppeteer = require('puppeteer-core');
+const chromium = require('@sparticuz/chromium');
 
 // 글로벌 옵션 설정 (리전)
 setGlobalOptions({region: 'us-central1'});
@@ -412,17 +413,10 @@ exports.checkKyobobookRank = onCall(async (request) => {
     try {
       console.log('🔄 Puppeteer로 페이지 로드 시도...');
       browser = await puppeteer.launch({
-        headless: 'new',
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-accelerated-2d-canvas',
-          '--no-first-run',
-          '--no-zygote',
-          '--single-process',
-          '--disable-gpu'
-        ]
+        args: chromium.args,
+        defaultViewport: chromium.defaultViewport,
+        executablePath: await chromium.executablePath(),
+        headless: chromium.headless
       });
 
       const page = await browser.newPage();
@@ -1088,17 +1082,10 @@ exports.scheduledSendRankReport = onSchedule({
       try {
         console.log('🔄 Puppeteer로 페이지 로드 시도 (scheduled)...');
         browser = await puppeteer.launch({
-          headless: 'new',
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
-          ]
+          args: chromium.args,
+          defaultViewport: chromium.defaultViewport,
+          executablePath: await chromium.executablePath(),
+          headless: chromium.headless
         });
 
         const page = await browser.newPage();
