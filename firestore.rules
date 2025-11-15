@@ -7,8 +7,12 @@ service cloud.firestore {
       // 누구나 신청 가능 (create)
       allow create: if true;
 
-      // 읽기 및 업데이트, 삭제는 관리자만 (인증 필요)
-      allow read, update, delete: if request.auth != null;
+      // 최근 신청자 목록 조회를 위한 읽기 권한 (공개)
+      // 주의: JavaScript에서 개인정보(name, email, phone 등)는 표시하지 않음
+      allow read: if true;
+
+      // 업데이트, 삭제는 관리자만 (인증 필요)
+      allow update, delete: if request.auth != null;
     }
 
     // 방문자 추적 컬렉션

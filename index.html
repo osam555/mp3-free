@@ -175,6 +175,50 @@
             margin: 2rem 0;
         }
 
+        /* 슬라이드 스타일 */
+        #recent-applicants-slider {
+            min-height: 200px;
+        }
+
+        .applicant-slide {
+            min-width: 100%;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .applicant-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            width: 100%;
+            max-width: 400px;
+            color: white;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .applicant-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .slider-indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .slider-indicator.active {
+            background: #667eea;
+            width: 30px;
+            border-radius: 5px;
+        }
+
         .video-container iframe {
             position: absolute;
             top: 0;
@@ -989,13 +1033,6 @@
 
                         <div class="mt-6 p-4 bg-white rounded-lg">
                             <h3 id="round-display" class="text-xl font-bold text-center mb-2 text-blue-600">1차 얼리버드</h3>
-                            <div class="flex items-center justify-between">
-                                <span class="text-gray-700 font-semibold">현재 신청자</span>
-                                <span id="applicant-count" class="text-3xl font-black text-red-600">-</span>
-                            </div>
-                            <div class="mt-2 bg-gray-200 rounded-full h-3 overflow-hidden">
-                                <div id="progress-bar" class="bg-gradient-to-r from-blue-500 to-purple-600 h-full transition-all duration-500" style="width: 0%"></div>
-                            </div>
                             <p class="text-sm text-gray-600 mt-2 text-center">선착순 100명 한정!</p>
                             <p class="text-xs text-gray-500 mt-1 text-center">1차 완료 시 2차 100명 진행</p>
                         </div>
@@ -1135,18 +1172,32 @@
                     </div>
                 </div>
 
-                <!-- 최근 신청자 리스트 -->
+                <!-- 최근 신청자 슬라이드 -->
                 <div class="glass-card max-w-4xl mx-auto">
                     <h3 class="text-2xl font-bold section-title mb-6 text-center">🎊 최근 신청자 현황</h3>
-                    <div id="recent-applicants" class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <!-- 동적으로 채워짐 -->
-                        <div class="text-center p-3 bg-gray-100 rounded-lg">
-                            <div class="text-2xl mb-1">👤</div>
-                            <div class="text-sm font-semibold text-gray-700">데이터 로딩 중...</div>
+                    <div class="relative overflow-hidden">
+                        <!-- 슬라이드 컨테이너 -->
+                        <div id="recent-applicants-slider" class="flex transition-transform duration-500 ease-in-out">
+                            <!-- 동적으로 채워짐 -->
                         </div>
+                        <!-- 좌우 화살표 버튼 -->
+                        <button id="prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg z-10 transition-all">
+                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                            </svg>
+                        </button>
+                        <button id="next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg z-10 transition-all">
+                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <!-- 인디케이터 -->
+                    <div id="slider-indicators" class="flex justify-center gap-2 mt-4">
+                        <!-- 동적으로 채워짐 -->
                     </div>
                     <p class="text-center text-sm text-gray-500 mt-4">
-                        💡 개인정보 보호를 위해 이름 일부가 가려집니다
+                        💡 개인정보 보호를 위해 이름 마지막 1글자만 표시됩니다
                     </p>
                 </div>
             </section>

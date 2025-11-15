@@ -1,23 +1,165 @@
 // 얼리버드 신청 폼 처리 스크립트
 
-// 이름 가림 처리 함수 (마지막 글자만 표시)
+// 이름 가림 처리 함수 (마지막 1글자만 표시)
 function maskName(name) {
-    if (!name || name.length === 0) return '***';
-    if (name.length === 1) return name[0];
-    return '*'.repeat(name.length - 1) + name[name.length - 1];
+    if (!name || name.length === 0) return '*';
+    // 마지막 1글자만 반환
+    return name[name.length - 1];
 }
 
-// 실시간 신청자 수 및 리스트 업데이트
+// 슬라이드 관련 변수
+let currentSlideIndex = 0;
+let recentApplicantsData = [];
+let autoSlideInterval = null; // 자동 슬라이드 인터벌 관리
+
+// 슬라이드 이동 함수
+function moveSlide(direction) {
+    if (recentApplicantsData.length === 0) return;
+    
+    if (direction === 'next') {
+        currentSlideIndex = (currentSlideIndex + 1) % recentApplicantsData.length;
+    } else if (direction === 'prev') {
+        currentSlideIndex = (currentSlideIndex - 1 + recentApplicantsData.length) % recentApplicantsData.length;
+    }
+    
+    updateSlideDisplay();
+}
+
+// 슬라이드 표시 업데이트
+function updateSlideDisplay() {
+    const slider = document.getElementById('recent-applicants-slider');
+    const indicators = document.getElementById('slider-indicators');
+    
+    if (!slider || recentApplicantsData.length === 0) return;
+    
+    // 슬라이드 위치 이동
+    slider.style.transform = `translateX(-${currentSlideIndex * 100}%)`;
+    
+    // 인디케이터 업데이트
+    if (indicators) {
+        indicators.innerHTML = '';
+        recentApplicantsData.forEach((_, index) => {
+            const indicator = document.createElement('div');
+            indicator.className = `slider-indicator ${index === currentSlideIndex ? 'active' : ''}`;
+            indicator.addEventListener('click', () => {
+                currentSlideIndex = index;
+                updateSlideDisplay();
+            });
+            indicators.appendChild(indicator);
+        });
+    }
+}
+
+// 최근 신청자 데이터 가져오기 및 슬라이드 표시
 function updateApplicantStats() {
-    // 익명 사용자는 읽기 권한이 없으므로 기본 UI 표시
-    document.getElementById('applicant-count').textContent = '-';
-    const recentApplicants = document.getElementById('recent-applicants');
-    recentApplicants.innerHTML = `
-        <div class="col-span-2 md:col-span-4 text-center p-6">
-            <div class="text-4xl mb-2">🎯</div>
-            <p class="text-gray-600">첫 번째 얼리버드가 되어보세요!</p>
-        </div>
-    `;
+    const slider = document.getElementById('recent-applicants-slider');
+    const indicators = document.getElementById('slider-indicators');
+    
+    if (!slider) return;
+    
+    // Firestore에서 최근 신청자 5명 가져오기 시도
+    // 주의: Firestore 보안 규칙에 따라 읽기 권한이 없을 수 있음
+    applicationsRef
+        .orderBy('timestamp', 'desc')
+        .limit(5)
+        .get()
+        .then((snapshot) => {
+            recentApplicantsData = [];
+            
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                recentApplicantsData.push({
+                    name: data.maskedName || maskName(data.name || ''),
+                    ageGroups: data.ageGroups || [],
+                    goals: data.goals || []
+                });
+            });
+            
+            // 슬라이드 UI 생성
+            if (recentApplicantsData.length > 0) {
+                slider.innerHTML = '';
+                recentApplicantsData.forEach((applicant) => {
+                    const slide = document.createElement('div');
+                    slide.className = 'applicant-slide';
+                    
+                    // 연령대 표시 (첫 번째만)
+                    const ageDisplay = applicant.ageGroups.length > 0 
+                        ? applicant.ageGroups[0] 
+                        : '미입력';
+                    
+                    // 영어 목표 표시 (첫 번째만)
+                    const goalDisplay = applicant.goals.length > 0 
+                        ? applicant.goals[0] 
+                        : '미입력';
+                    
+                    slide.innerHTML = `
+                        <div class="applicant-card">
+                            <div class="text-center">
+                                <div class="text-4xl mb-4">👤</div>
+                                <div class="text-2xl font-bold mb-4">${applicant.name}</div>
+                                <div class="space-y-2 text-left">
+                                    <div class="flex items-center">
+                                        <span class="text-lg mr-2">🎂</span>
+                                        <span class="text-lg">연령대: ${ageDisplay}</span>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="text-lg mr-2">🎯</span>
+                                        <span class="text-lg">영어 목표: ${goalDisplay}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    slider.appendChild(slide);
+                });
+                
+                // 인디케이터 생성
+                if (indicators) {
+                    indicators.innerHTML = '';
+                    recentApplicantsData.forEach((_, index) => {
+                        const indicator = document.createElement('div');
+                        indicator.className = `slider-indicator ${index === 0 ? 'active' : ''}`;
+                        indicator.addEventListener('click', () => {
+                            currentSlideIndex = index;
+                            updateSlideDisplay();
+                        });
+                        indicators.appendChild(indicator);
+                    });
+                }
+                
+                // 자동 슬라이드 (5초마다) - 기존 인터벌이 있으면 제거
+                if (autoSlideInterval) {
+                    clearInterval(autoSlideInterval);
+                }
+                if (recentApplicantsData.length > 1) {
+                    autoSlideInterval = setInterval(() => {
+                        moveSlide('next');
+                    }, 5000);
+                }
+            } else {
+                // 데이터가 없을 때 기본 메시지
+                slider.innerHTML = `
+                    <div class="applicant-slide">
+                        <div class="text-center p-6">
+                            <div class="text-4xl mb-2">🎯</div>
+                            <p class="text-gray-600">첫 번째 얼리버드가 되어보세요!</p>
+                        </div>
+                    </div>
+                `;
+            }
+        })
+        .catch((error) => {
+            console.log('신청자 데이터 로드 실패 (읽기 권한 없음 가능):', error);
+            // 읽기 권한이 없을 경우 기본 UI 표시
+            slider.innerHTML = `
+                <div class="applicant-slide">
+                    <div class="text-center p-6">
+                        <div class="text-4xl mb-2">🎯</div>
+                        <p class="text-gray-600">첫 번째 얼리버드가 되어보세요!</p>
+                    </div>
+                </div>
+            `;
+        });
 }
 
 // 중복 신청 확인 (서버 측에서 처리하도록 제거)
@@ -184,9 +326,21 @@ window.addEventListener('DOMContentLoaded', () => {
     // Firebase 초기화 확인
     if (typeof firebase === 'undefined') {
         console.error('Firebase가 로드되지 않았습니다.');
-        document.getElementById('applicant-count').textContent = 'N/A';
         return;
     }
 
+    // 최근 신청자 슬라이드 초기화
     updateApplicantStats();
+    
+    // 슬라이드 버튼 이벤트 리스너
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => moveSlide('prev'));
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => moveSlide('next'));
+    }
 });
