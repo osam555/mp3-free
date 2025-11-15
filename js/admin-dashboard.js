@@ -1,3 +1,74 @@
+// 수동 순위 입력 모달 표시
+function showManualRankModal() {
+    document.getElementById('modal-title').textContent = '수동 순위 입력';
+    document.getElementById('rank-doc-id').value = '';
+    document.getElementById('rank-date').value = new Date().toISOString().slice(0, 16);
+    document.getElementById('rank-rank').value = '';
+    document.getElementById('rank-category-input').value = '주간베스트 외국어';
+    document.getElementById('rank-modal').style.display = 'flex';
+    document.getElementById('rank-modal').classList.add('flex');
+}
+
+// 수동 순위 저장 (기존 saveRank 함수 재사용)
+async function saveManualRank(event) {
+    event.preventDefault();
+
+    const rank = parseInt(document.getElementById('rank-rank').value);
+    const category = document.getElementById('rank-category-input').value || '주간베스트 외국어';
+
+    if (!rank || rank < 1 || rank > 1000) {
+        alert('올바른 순위를 입력해주세요 (1-1000)');
+        return;
+    }
+
+    try {
+        // 현재 순위 업데이트
+        await db.collection('kyobobook_rank').doc('current').set({
+            rank: rank,
+            category: category,
+            lastUpdated: firebase.firestore.FieldValue.serverTimestamp(),
+            checkedAt: new Date().toISOString(),
+            productUrl: 'https://product.kyobobook.co.kr/detail/S000218549943',
+            manualEntry: true // 수동 입력 표시
+        }, {merge: true});
+
+        // 히스토리에도 저장
+        await db.collection('kyobobook_rank_history').add({
+            rank: rank,
+            category: category,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            productUrl: 'https://product.kyobobook.co.kr/detail/S000218549943',
+            manualEntry: true
+        });
+
+        console.log('✅ 수동 순위 저장 완료');
+        alert('순위가 성공적으로 저장되었습니다!');
+
+        // UI 업데이트
+        loadRankInfo();
+        loadRankHistory();
+        loadRankHistoryTable();
+
+        // 모달 닫기
+        closeRankModal();
+
+    } catch (error) {
+        console.error('수동 순위 저장 에러:', error);
+        alert('순위 저장 중 오류가 발생했습니다: ' + error.message);
+    }
+}
+
+// 기존 saveRank 함수를 수동 입력용으로 수정
+function saveRank(event) {
+    // 문서 ID가 없으면 수동 입력으로 처리
+    if (!document.getElementById('rank-doc-id').value) {
+        saveManualRank(event);
+    } else {
+        // 기존 히스토리 편집 기능 (기존 로직 유지)
+        saveRankHistory(event);
+    }
+}
+
 // 관리자 대시보드 스크립트
 
 let allApplications = [];
@@ -913,9 +984,9 @@ function closeRankModal() {
 }
 
 // 순위 저장
-async function saveRank(event) {
+async function saveRankHistory(event) {
     event.preventDefault();
-    
+
     const docId = document.getElementById('rank-doc-id').value;
     const dateValue = document.getElementById('rank-date').value;
     const rank = parseInt(document.getElementById('rank-value-input').value, 10);

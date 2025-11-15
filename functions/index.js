@@ -406,8 +406,47 @@ exports.checkKyobobookRank = onCall(async (request) => {
     try {
       console.log('🔄 순위 체크 시작 (Puppeteer 사용)...');
 
-      // Puppeteer 사용 시도
+    // axios 우선 사용 (Puppeteer가 제대로 작동하지 않음)
+    try {
+      console.log('🔄 axios로 페이지 로드 시도...');
+
+      const response = await axios.get(productUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"macOS"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1',
+          'Referer': 'https://www.google.com/'
+        },
+        timeout: 20000,
+        maxRedirects: 5,
+      });
+
+      console.log('✅ axios로 페이지 로드 성공, 응답 크기:', response.data.length);
+      const $ = cheerio.load(response.data);
+
+      // 응답이 너무 작으면 에러로 처리
+      if (response.data.length < 1000) {
+        console.warn('⚠️ 응답이 너무 작음, 페이지가 제대로 로드되지 않음');
+        throw new Error('페이지 응답이 너무 작음');
+      }
+
+    } catch (axiosError) {
+      console.warn('⚠️ axios 실패:', axiosError.message);
+
+      // Puppeteer fallback 시도
       try {
+        console.log('🔄 Puppeteer fallback 시도...');
         browser = await puppeteer.launch({
           headless: 'new',
           args: [
@@ -418,38 +457,44 @@ exports.checkKyobobookRank = onCall(async (request) => {
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--disable-web-security',
+            '--disable-features=VizDisplayCompositor'
           ]
         });
 
         const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
-        await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-        console.log('✅ 페이지 로드 성공');
-
-        await page.waitForTimeout(5000);
-
-        const content = await page.content();
-        const $ = cheerio.load(content);
-        console.log('✅ HTML 파싱 성공');
-      } catch (puppeteerError) {
-        console.warn('⚠️ Puppeteer 로드 실패, axios로 fallback:', puppeteerError.message);
-
-        // axios fallback
-        const response = await axios.get(productUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Referer': 'https://www.kyobobook.co.kr/'
-          },
-          timeout: 15000,
+        // 더 현실적인 브라우저 설정
+        await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+        await page.setExtraHTTPHeaders({
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         });
 
-        const $ = cheerio.load(response.data);
-        console.log('✅ axios로 페이지 로드 성공');
+        console.log('페이지 이동 중...');
+        await page.goto(productUrl, {
+          waitUntil: 'domcontentloaded',
+          timeout: 30000
+        });
+
+        console.log('JavaScript 실행 대기...');
+        await page.waitForTimeout(8000); // 더 길게 대기
+
+        const content = await page.content();
+        console.log('Puppeteer로 로드된 콘텐츠 길이:', content.length);
+
+        const $ = cheerio.load(content);
+        console.log('✅ Puppeteer로 페이지 로드 성공');
+
+      } catch (puppeteerError) {
+        console.error('❌ Puppeteer도 실패:', puppeteerError.message);
+        throw new Error('페이지 로드 실패: ' + axiosError.message);
       }
+    }
     
     let rank = null;
     let category = null;
@@ -1027,52 +1072,85 @@ exports.scheduledSendRankReport = onSchedule({
     let category = '주간베스트 외국어';
     
     try {
-      // Puppeteer 사용 시도 (scheduled)
+      // axios 우선 사용 (scheduled)
       try {
-        console.log('🔄 순위 체크 시작 (Puppeteer 사용 - scheduled)...');
-        browser = await puppeteer.launch({
-          headless: 'new',
-          args: [
-            '--no-sandbox',
-            '--disable-setuid-sandbox',
-            '--disable-dev-shm-usage',
-            '--disable-accelerated-2d-canvas',
-            '--no-first-run',
-            '--no-zygote',
-            '--single-process',
-            '--disable-gpu'
-          ]
-        });
+        console.log('🔄 axios로 페이지 로드 시도 (scheduled)...');
 
-        const page = await browser.newPage();
-        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
-
-        await page.goto(productUrl, { waitUntil: 'networkidle0', timeout: 30000 });
-        console.log('✅ 페이지 로드 성공 (scheduled)');
-
-        await page.waitForTimeout(5000);
-
-        const content = await page.content();
-        const $ = cheerio.load(content);
-        const bodyText = $('body').text();
-        console.log('✅ HTML 파싱 성공 (scheduled)');
-      } catch (puppeteerError) {
-        console.warn('⚠️ Puppeteer 로드 실패 (scheduled), axios로 fallback:', puppeteerError.message);
-
-        // axios fallback
         const response = await axios.get(productUrl, {
           headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
             'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-            'Referer': 'https://www.kyobobook.co.kr/'
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache',
+            'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+            'Sec-Ch-Ua-Mobile': '?0',
+            'Sec-Ch-Ua-Platform': '"macOS"',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'none',
+            'Sec-Fetch-User': '?1',
+            'Upgrade-Insecure-Requests': '1',
+            'Referer': 'https://www.google.com/'
           },
-          timeout: 15000,
+          timeout: 20000,
+          maxRedirects: 5,
         });
 
+        console.log('✅ axios로 페이지 로드 성공 (scheduled), 응답 크기:', response.data.length);
         var $ = cheerio.load(response.data);
         var bodyText = $('body').text();
-        console.log('✅ axios로 페이지 로드 성공 (scheduled)');
+
+        if (response.data.length < 1000) {
+          console.warn('⚠️ 응답이 너무 작음 (scheduled), 페이지가 제대로 로드되지 않음');
+          throw new Error('페이지 응답이 너무 작음');
+        }
+
+      } catch (axiosError) {
+        console.warn('⚠️ axios 실패 (scheduled):', axiosError.message);
+
+        // Puppeteer fallback
+        try {
+          console.log('🔄 Puppeteer fallback 시도 (scheduled)...');
+          browser = await puppeteer.launch({
+            headless: 'new',
+            args: [
+              '--no-sandbox',
+              '--disable-setuid-sandbox',
+              '--disable-dev-shm-usage',
+              '--disable-accelerated-2d-canvas',
+              '--no-first-run',
+              '--no-zygote',
+              '--single-process',
+              '--disable-gpu',
+              '--disable-web-security',
+              '--disable-features=VizDisplayCompositor'
+            ]
+          });
+
+          const page = await browser.newPage();
+          await page.setUserAgent('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
+          await page.setExtraHTTPHeaders({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+            'Accept-Encoding': 'gzip, deflate, br'
+          });
+
+          await page.goto(productUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+          await page.waitForTimeout(8000);
+
+          const content = await page.content();
+          console.log('Puppeteer로 로드된 콘텐츠 길이 (scheduled):', content.length);
+
+          var $ = cheerio.load(content);
+          var bodyText = $('body').text();
+          console.log('✅ Puppeteer로 페이지 로드 성공 (scheduled)');
+
+        } catch (puppeteerError) {
+          console.error('❌ Puppeteer도 실패 (scheduled):', puppeteerError.message);
+          throw new Error('페이지 로드 실패: ' + axiosError.message);
+        }
       }
 
       console.log('📊 순위 추출 시도 중 (scheduled)...');
