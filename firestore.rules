@@ -31,5 +31,25 @@ service cloud.firestore {
       // 업데이트와 삭제는 불가
       allow update, delete: if false;
     }
+
+    // 교보문고 순위 정보 컬렉션
+    match /kyobobook_rank/{document} {
+      // 읽기는 공개 (관리자 페이지에서 표시)
+      allow read: if true;
+
+      // 쓰기는 Cloud Functions에서만 가능
+      allow create, update: if false;
+      allow delete: if false;
+    }
+
+    // 교보문고 순위 히스토리 컬렉션
+    match /kyobobook_rank_history/{document} {
+      // 읽기는 공개 (관리자 페이지에서 표시)
+      allow read: if true;
+
+      // 쓰기는 비밀번호 인증 시스템 사용 중이므로 허용
+      // 주의: 실제 운영 시에는 더 엄격한 규칙 권장
+      allow create, update, delete: if true;
+    }
   }
 }

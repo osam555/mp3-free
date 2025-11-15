@@ -15,6 +15,13 @@ function toggleDarkMode() {
     localStorage.setItem(DARK_MODE_KEY, newMode.toString());
     applyDarkMode(newMode);
     updateDarkModeButton(newMode);
+    
+    // 차트가 있으면 다시 그리기
+    if (typeof loadRankHistory === 'function') {
+        setTimeout(() => {
+            loadRankHistory();
+        }, 100);
+    }
 }
 
 // 다크 모드 적용

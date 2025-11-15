@@ -8,9 +8,12 @@
 
 const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
+const {onSchedule} = require('firebase-functions/v2/scheduler');
 const {setGlobalOptions} = require('firebase-functions/v2');
 const admin = require('firebase-admin');
 const nodemailer = require('nodemailer');
+const axios = require('axios');
+const cheerio = require('cheerio');
 
 // 글로벌 옵션 설정 (리전)
 setGlobalOptions({region: 'us-central1'});
@@ -388,5 +391,383 @@ exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applica
     }
   } catch (error) {
     console.error('❌ Error setting round:', error);
+  }
+});
+
+/**
+ * 교보문고 주간베스트 외국어 순위 체크
+ * HTTP callable function
+ */
+exports.checkKyobobookRank = onCall(async (request) => {
+  const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
+  
+  try {
+    // User-Agent 설정 (봇 차단 방지)
+    const response = await axios.get(productUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+      },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(response.data);
+    let rank = null;
+    let category = null;
+    let lastUpdated = new Date().toISOString();
+
+    // 순위 정보 추출 시도 (여러 패턴 시도)
+    // 패턴 1: "주간베스트 외국어 285위" 형태
+    const rankText = $('body').text();
+    const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+    
+    if (rankMatch) {
+      rank = parseInt(rankMatch[1], 10);
+      category = '주간베스트 외국어';
+    } else {
+      // 패턴 2: 다른 형태의 순위 표시 찾기
+      $('span, div, p').each((i, elem) => {
+        const text = $(elem).text();
+        const match = text.match(/(주간|베스트|외국어).*?(\d+)위/i);
+        if (match && !rank) {
+          rank = parseInt(match[2], 10);
+          category = match[1] || '주간베스트';
+        }
+      });
+    }
+
+    // Firestore에 순위 정보 저장
+    const rankData = {
+      rank: rank,
+      category: category || '주간베스트 외국어',
+      lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+      checkedAt: lastUpdated,
+      productUrl: productUrl,
+    };
+
+    await admin.firestore()
+      .collection('kyobobook_rank')
+      .doc('current')
+      .set(rankData, {merge: true});
+
+    // 히스토리에도 저장
+    await admin.firestore()
+      .collection('kyobobook_rank_history')
+      .add({
+        ...rankData,
+        timestamp: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+    return {
+      success: true,
+      rank: rank,
+      category: category || '주간베스트 외국어',
+      message: rank ? `현재 순위: ${category || '주간베스트 외국어'} ${rank}위` : '순위 정보를 찾을 수 없습니다.',
+    };
+  } catch (error) {
+    console.error('❌ 교보문고 순위 체크 에러:', error);
+    return {
+      success: false,
+      error: error.message,
+      message: '순위 정보를 가져오는 중 오류가 발생했습니다.',
+    };
+  }
+});
+
+/**
+ * 교보문고 순위 자동 체크 (매일 오전 9시 실행)
+ * Cloud Scheduler를 통해 호출
+ */
+exports.scheduledCheckKyobobookRank = onSchedule({
+  schedule: '0 9 * * *', // 매일 오전 9시 (KST 기준)
+  timeZone: 'Asia/Seoul',
+}, async (event) => {
+  console.log('🔄 교보문고 순위 자동 체크 시작...');
+  
+  const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
+  
+  try {
+    const response = await axios.get(productUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+      },
+      timeout: 10000,
+    });
+
+    const $ = cheerio.load(response.data);
+    let rank = null;
+    let category = null;
+
+    const rankText = $('body').text();
+    const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+    
+    if (rankMatch) {
+      rank = parseInt(rankMatch[1], 10);
+      category = '주간베스트 외국어';
+    }
+
+    if (rank) {
+      const rankData = {
+        rank: rank,
+        category: category || '주간베스트 외국어',
+        lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+        productUrl: productUrl,
+      };
+
+      await admin.firestore()
+        .collection('kyobobook_rank')
+        .doc('current')
+        .set(rankData, {merge: true});
+
+      await admin.firestore()
+        .collection('kyobobook_rank_history')
+        .add({
+          ...rankData,
+          timestamp: admin.firestore.FieldValue.serverTimestamp(),
+        });
+
+      console.log(`✅ 순위 체크 완료: ${category} ${rank}위`);
+    } else {
+      console.log('⚠️ 순위 정보를 찾을 수 없습니다.');
+    }
+  } catch (error) {
+    console.error('❌ 교보문고 순위 자동 체크 에러:', error);
+  }
+});
+
+/**
+ * 순위 리포트 이메일 템플릿 생성
+ */
+function createRankReportTemplate(currentRank, category, weeklyStats) {
+  const today = new Date().toLocaleDateString('ko-KR', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    weekday: 'long'
+  });
+
+  return `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>교보문고 순위 리포트</title>
+</head>
+<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f3f4f6;">
+  <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="background-color: #f3f4f6;">
+    <tr>
+      <td style="padding: 40px 20px;">
+        <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <tr>
+            <td style="background: linear-gradient(135deg, #3B82F6 0%, #1e40af 100%); padding: 40px 30px; text-align: center; border-radius: 16px 16px 0 0;">
+              <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                📚 교보문고 순위 리포트
+              </h1>
+              <p style="margin: 10px 0 0 0; color: #e0e7ff; font-size: 14px;">
+                ${today}
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 40px 30px;">
+              <!-- 현재 순위 -->
+              <div style="background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
+                <h2 style="margin: 0 0 15px 0; color: #1e40af; font-size: 18px; font-weight: bold;">
+                  현재 순위
+                </h2>
+                <div style="font-size: 48px; font-weight: bold; color: #3B82F6; margin: 10px 0;">
+                  ${currentRank ? `${currentRank}위` : '확인 불가'}
+                </div>
+                <p style="margin: 10px 0 0 0; color: #1e40af; font-size: 16px;">
+                  ${category || '주간베스트 외국어'}
+                </p>
+              </div>
+
+              <!-- 주간 통계 -->
+              ${weeklyStats ? `
+              <div style="background-color: #f9fafb; border-radius: 12px; padding: 25px; margin-bottom: 20px;">
+                <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 18px; font-weight: bold; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
+                  📊 주간 통계 (최근 7일)
+                </h3>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                  <div style="text-align: center; padding: 15px; background-color: #ffffff; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">최고 순위</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #10b981;">
+                      ${weeklyStats.bestRank}위
+                    </div>
+                  </div>
+                  <div style="text-align: center; padding: 15px; background-color: #ffffff; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">최저 순위</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #ef4444;">
+                      ${weeklyStats.worstRank}위
+                    </div>
+                  </div>
+                  <div style="text-align: center; padding: 15px; background-color: #ffffff; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">평균 순위</div>
+                    <div style="font-size: 24px; font-weight: bold; color: #3B82F6;">
+                      ${weeklyStats.avgRank}위
+                    </div>
+                  </div>
+                  <div style="text-align: center; padding: 15px; background-color: #ffffff; border-radius: 8px;">
+                    <div style="font-size: 12px; color: #6b7280; margin-bottom: 5px;">순위 변화</div>
+                    <div style="font-size: 24px; font-weight: bold; color: ${weeklyStats.change > 0 ? '#10b981' : weeklyStats.change < 0 ? '#ef4444' : '#6b7280'};">
+                      ${weeklyStats.change > 0 ? `+${weeklyStats.change}위 상승` : weeklyStats.change < 0 ? `${Math.abs(weeklyStats.change)}위 하락` : '변화 없음'}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              ` : ''}
+
+              <!-- 순위 변화 그래프 링크 -->
+              <div style="margin-top: 30px; padding: 20px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                <p style="margin: 0; color: #1f2937; font-size: 14px;">
+                  <strong>관리자 대시보드:</strong><br>
+                  <a href="https://mp3-free-earlybird.web.app/admin.html" style="color: #3B82F6; text-decoration: none;">https://mp3-free-earlybird.web.app/admin.html</a>
+                </p>
+              </div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+  `.trim();
+}
+
+/**
+ * 매일 오전 6시 순위 리포트 이메일 발송
+ * Cloud Scheduler를 통해 호출
+ */
+exports.scheduledSendRankReport = onSchedule({
+  schedule: '0 6 * * *', // 매일 오전 6시 (KST 기준)
+  timeZone: 'Asia/Seoul',
+}, async (event) => {
+  console.log('📧 순위 리포트 이메일 발송 시작...');
+  
+  const adminEmail = 'john.wu571@gmail.com';
+  
+  try {
+    // 현재 순위 가져오기
+    const currentRankDoc = await admin.firestore()
+      .collection('kyobobook_rank')
+      .doc('current')
+      .get();
+    
+    let currentRank = null;
+    let category = '주간베스트 외국어';
+    
+    if (currentRankDoc.exists) {
+      const data = currentRankDoc.data();
+      currentRank = data.rank;
+      category = data.category || '주간베스트 외국어';
+    }
+    
+    // 주간 통계 계산 (최근 7일)
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const weeklySnapshot = await admin.firestore()
+      .collection('kyobobook_rank_history')
+      .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+      .orderBy('timestamp', 'asc')
+      .get();
+    
+    let weeklyStats = null;
+    
+    if (!weeklySnapshot.empty) {
+      const ranks = [];
+      weeklySnapshot.forEach(doc => {
+        const data = doc.data();
+        if (data.rank) {
+          ranks.push(data.rank);
+        }
+      });
+      
+      if (ranks.length > 0) {
+        const bestRank = Math.min(...ranks);
+        const worstRank = Math.max(...ranks);
+        const avgRank = Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length);
+        
+        // 첫 번째와 마지막 비교
+        const firstRank = ranks[0];
+        const lastRank = ranks[ranks.length - 1];
+        const change = firstRank - lastRank; // 양수면 상승, 음수면 하락
+        
+        weeklyStats = {
+          bestRank,
+          worstRank,
+          avgRank,
+          change,
+        };
+      }
+    }
+    
+    // 순위가 없으면 체크 시도
+    if (!currentRank) {
+      console.log('⚠️ 현재 순위 정보가 없습니다. 순위를 체크합니다...');
+      
+      const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
+      try {
+        const response = await axios.get(productUrl, {
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+          },
+          timeout: 10000,
+        });
+
+        const $ = cheerio.load(response.data);
+        const rankText = $('body').text();
+        const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+        
+        if (rankMatch) {
+          currentRank = parseInt(rankMatch[1], 10);
+          category = '주간베스트 외국어';
+          
+          // Firestore에 저장
+          const rankData = {
+            rank: currentRank,
+            category: category,
+            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+            productUrl: productUrl,
+          };
+
+          await admin.firestore()
+            .collection('kyobobook_rank')
+            .doc('current')
+            .set(rankData, {merge: true});
+
+          await admin.firestore()
+            .collection('kyobobook_rank_history')
+            .add({
+              ...rankData,
+              timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            });
+        }
+      } catch (error) {
+        console.error('❌ 순위 체크 에러:', error);
+      }
+    }
+    
+    // 이메일 발송
+    const mailOptions = {
+      from: `대충영어 속청 30일 <${gmailEmail}>`,
+      to: adminEmail,
+      subject: `📚 [대충영어] 교보문고 순위 리포트 - ${currentRank ? `${currentRank}위` : '확인 불가'}`,
+      html: createRankReportTemplate(currentRank, category, weeklyStats),
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`✅ 순위 리포트 이메일 발송 완료: ${adminEmail}`);
+    
+  } catch (error) {
+    console.error('❌ 순위 리포트 이메일 발송 에러:', error);
   }
 });

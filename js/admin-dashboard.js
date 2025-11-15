@@ -420,4 +420,575 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     // 인증되지 않은 경우는 admin-password.js에서 처리
+    
+    // 순위 정보 로드
+    loadRankInfo();
 });
+
+// 순위 차트 변수
+let rankChart = null;
+
+// 교보문고 순위 정보 로드
+async function loadRankInfo() {
+    try {
+        const rankDoc = await db.collection('kyobobook_rank').doc('current').get();
+        
+        if (rankDoc.exists()) {
+            const data = rankDoc.data();
+            const rank = data.rank;
+            const category = data.category || '주간베스트 외국어';
+            const lastUpdated = data.lastUpdated ? data.lastUpdated.toDate() : null;
+            
+            document.getElementById('rank-value').textContent = rank ? `${rank}위` : '-';
+            document.getElementById('rank-category').textContent = category;
+            
+            if (lastUpdated) {
+                const dateStr = lastUpdated.toLocaleString('ko-KR', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('rank-last-updated').textContent = `마지막 확인: ${dateStr}`;
+            }
+        } else {
+            document.getElementById('rank-value').textContent = '-';
+            document.getElementById('rank-category').textContent = '';
+            document.getElementById('rank-last-updated').textContent = '아직 확인되지 않음';
+        }
+        
+        // 순위 히스토리도 함께 로드
+        await loadRankHistory();
+        await loadRankHistoryTable();
+    } catch (error) {
+        console.error('순위 정보 로드 에러:', error);
+        document.getElementById('rank-value').textContent = '오류';
+    }
+}
+
+// 순위 히스토리 로드 및 그래프 표시
+async function loadRankHistory() {
+    try {
+        const period = document.getElementById('rank-period')?.value || '30';
+        let query = db.collection('kyobobook_rank_history')
+            .orderBy('timestamp', 'desc');
+        
+        // 기간 필터링
+        if (period !== 'all') {
+            const days = parseInt(period, 10);
+            const cutoffDate = new Date();
+            cutoffDate.setDate(cutoffDate.getDate() - days);
+            query = query.where('timestamp', '>=', cutoffDate);
+        }
+        
+        const snapshot = await query.get();
+        
+        if (snapshot.empty) {
+            console.log('순위 히스토리 데이터가 없습니다.');
+            updateRankStats([]);
+            updateRankChart([], []);
+            return;
+        }
+        
+        // 데이터 정렬 (시간순)
+        const historyData = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.rank && data.timestamp) {
+                historyData.push({
+                    rank: data.rank,
+                    timestamp: data.timestamp.toDate(),
+                    date: data.timestamp.toDate()
+                });
+            }
+        });
+        
+        // 시간순 정렬 (오래된 것부터)
+        historyData.sort((a, b) => a.timestamp - b.timestamp);
+        
+        // 통계 업데이트
+        updateRankStats(historyData);
+        
+        // 그래프 데이터 준비
+        const labels = historyData.map(item => {
+            return item.timestamp.toLocaleDateString('ko-KR', {
+                month: '2-digit',
+                day: '2-digit'
+            });
+        });
+        const ranks = historyData.map(item => item.rank);
+        
+        // 그래프 업데이트
+        updateRankChart(labels, ranks);
+        
+    } catch (error) {
+        console.error('순위 히스토리 로드 에러:', error);
+    }
+}
+
+// 순위 통계 업데이트
+function updateRankStats(historyData) {
+    if (historyData.length === 0) {
+        document.getElementById('best-rank').textContent = '-';
+        document.getElementById('worst-rank').textContent = '-';
+        document.getElementById('avg-rank').textContent = '-';
+        document.getElementById('rank-change-value').textContent = '-';
+        document.getElementById('rank-change-icon').textContent = '';
+        return;
+    }
+    
+    const ranks = historyData.map(item => item.rank).filter(r => r !== null && r !== undefined);
+    
+    if (ranks.length === 0) {
+        return;
+    }
+    
+    // 최고 순위 (숫자가 작을수록 좋음)
+    const bestRank = Math.min(...ranks);
+    document.getElementById('best-rank').textContent = `${bestRank}위`;
+    
+    // 최저 순위 (숫자가 클수록 나쁨)
+    const worstRank = Math.max(...ranks);
+    document.getElementById('worst-rank').textContent = `${worstRank}위`;
+    
+    // 평균 순위
+    const avgRank = Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length);
+    document.getElementById('avg-rank').textContent = `${avgRank}위`;
+    
+    // 순위 변화 (첫 번째와 마지막 비교)
+    if (ranks.length >= 2) {
+        const firstRank = ranks[0];
+        const lastRank = ranks[ranks.length - 1];
+        const change = firstRank - lastRank; // 양수면 상승, 음수면 하락
+        
+        const changeElement = document.getElementById('rank-change-value');
+        const iconElement = document.getElementById('rank-change-icon');
+        
+        if (change > 0) {
+            // 순위 상승 (숫자가 작아짐 = 좋아짐)
+            changeElement.textContent = `${Math.abs(change)}위 상승`;
+            changeElement.className = 'text-green-600 dark:text-green-400';
+            iconElement.textContent = '📈';
+        } else if (change < 0) {
+            // 순위 하락 (숫자가 커짐 = 나빠짐)
+            changeElement.textContent = `${Math.abs(change)}위 하락`;
+            changeElement.className = 'text-red-600 dark:text-red-400';
+            iconElement.textContent = '📉';
+        } else {
+            // 변화 없음
+            changeElement.textContent = '변화 없음';
+            changeElement.className = 'text-gray-600 dark:text-gray-400';
+            iconElement.textContent = '➡️';
+        }
+    } else {
+        document.getElementById('rank-change-value').textContent = '-';
+        document.getElementById('rank-change-icon').textContent = '';
+    }
+}
+
+// 순위 차트 업데이트
+function updateRankChart(labels, ranks) {
+    const ctx = document.getElementById('rankChart');
+    const isDark = document.documentElement.classList.contains('dark');
+    const textColor = isDark ? '#e5e7eb' : '#1f2937';
+    const gridColor = isDark ? '#374151' : '#e5e7eb';
+    
+    if (rankChart) {
+        rankChart.destroy();
+    }
+    
+    rankChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '순위',
+                data: ranks,
+                borderColor: 'rgb(59, 130, 246)',
+                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                tension: 0.4,
+                fill: true,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                pointBackgroundColor: 'rgb(59, 130, 246)',
+                pointBorderColor: '#fff',
+                pointBorderWidth: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: true,
+                    labels: {
+                        color: textColor,
+                        font: {
+                            size: 14,
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    }
+                },
+                tooltip: {
+                    backgroundColor: isDark ? 'rgba(31, 41, 55, 0.9)' : 'rgba(255, 255, 255, 0.9)',
+                    titleColor: textColor,
+                    bodyColor: textColor,
+                    borderColor: gridColor,
+                    borderWidth: 1,
+                    callbacks: {
+                        label: function(context) {
+                            return `순위: ${context.parsed.y}위`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: false,
+                    reverse: true, // 순위는 작을수록 좋으므로 Y축 반전
+                    ticks: {
+                        color: textColor,
+                        font: {
+                            size: 12,
+                            family: "'Noto Sans KR', sans-serif"
+                        },
+                        callback: function(value) {
+                            return value + '위';
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                },
+                x: {
+                    ticks: {
+                        color: textColor,
+                        font: {
+                            size: 12,
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    },
+                    grid: {
+                        color: gridColor
+                    }
+                }
+            }
+        }
+    });
+}
+
+// 순위 히스토리 테이블 로드
+let allRankHistory = [];
+
+async function loadRankHistoryTable() {
+    try {
+        const snapshot = await db.collection('kyobobook_rank_history')
+            .orderBy('timestamp', 'desc')
+            .limit(100)
+            .get();
+        
+        allRankHistory = [];
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.rank && data.timestamp) {
+                allRankHistory.push({
+                    id: doc.id,
+                    rank: data.rank,
+                    category: data.category || '주간베스트 외국어',
+                    timestamp: data.timestamp.toDate(),
+                });
+            }
+        });
+        
+        renderRankHistoryTable();
+    } catch (error) {
+        console.error('순위 히스토리 테이블 로드 에러:', error);
+        document.getElementById('rank-history-table').innerHTML = `
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-red-500 dark:text-red-400">
+                    데이터 로드 중 오류가 발생했습니다.
+                </td>
+            </tr>
+        `;
+    }
+}
+
+// 순위 히스토리 테이블 렌더링
+function renderRankHistoryTable() {
+    const tbody = document.getElementById('rank-history-table');
+    
+    if (allRankHistory.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="5" class="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    순위 히스토리가 없습니다.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    // 이전 순위와 비교하여 변화 계산
+    tbody.innerHTML = allRankHistory.map((item, index) => {
+        const prevItem = index < allRankHistory.length - 1 ? allRankHistory[index + 1] : null;
+        let changeText = '-';
+        let changeClass = 'text-gray-500 dark:text-gray-400';
+        
+        if (prevItem) {
+            const change = prevItem.rank - item.rank; // 양수면 상승, 음수면 하락
+            if (change > 0) {
+                changeText = `+${change}위 상승`;
+                changeClass = 'text-green-600 dark:text-green-400';
+            } else if (change < 0) {
+                changeText = `${Math.abs(change)}위 하락`;
+                changeClass = 'text-red-600 dark:text-red-400';
+            } else {
+                changeText = '변화 없음';
+            }
+        }
+        
+        const dateStr = item.timestamp.toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        return `
+            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    ${dateStr}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900 dark:text-gray-100">
+                    ${item.rank}위
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                    ${item.category}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm ${changeClass}">
+                    ${changeText}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                    <div class="flex gap-2">
+                        <button onclick="editRank('${item.id}')" 
+                                class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-semibold">
+                            ✏️ 수정
+                        </button>
+                        <button onclick="deleteRank('${item.id}', ${item.rank})" 
+                                class="text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-semibold">
+                            🗑️ 삭제
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 순위 추가 모달 표시
+function showAddRankModal() {
+    document.getElementById('modal-title').textContent = '순위 추가';
+    document.getElementById('rank-doc-id').value = '';
+    document.getElementById('rank-form').reset();
+    
+    // 현재 날짜/시간으로 기본값 설정
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, '0');
+    const day = String(now.getDate()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    document.getElementById('rank-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+    document.getElementById('rank-category-input').value = '주간베스트 외국어';
+    
+    document.getElementById('rank-modal').style.display = 'flex';
+}
+
+// 순위 수정 모달 표시
+async function editRank(docId) {
+    try {
+        const doc = await db.collection('kyobobook_rank_history').doc(docId).get();
+        if (!doc.exists) {
+            alert('순위 데이터를 찾을 수 없습니다.');
+            return;
+        }
+        
+        const data = doc.data();
+        document.getElementById('modal-title').textContent = '순위 수정';
+        document.getElementById('rank-doc-id').value = docId;
+        
+        const timestamp = data.timestamp.toDate();
+        const year = timestamp.getFullYear();
+        const month = String(timestamp.getMonth() + 1).padStart(2, '0');
+        const day = String(timestamp.getDate()).padStart(2, '0');
+        const hours = String(timestamp.getHours()).padStart(2, '0');
+        const minutes = String(timestamp.getMinutes()).padStart(2, '0');
+        
+        document.getElementById('rank-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        document.getElementById('rank-value-input').value = data.rank;
+        document.getElementById('rank-category-input').value = data.category || '주간베스트 외국어';
+        
+        document.getElementById('rank-modal').style.display = 'flex';
+    } catch (error) {
+        console.error('순위 수정 모달 로드 에러:', error);
+        alert('순위 데이터를 불러오는 중 오류가 발생했습니다.');
+    }
+}
+
+// 모달 닫기
+function closeRankModal() {
+    document.getElementById('rank-modal').style.display = 'none';
+}
+
+// 순위 저장
+async function saveRank(event) {
+    event.preventDefault();
+    
+    const docId = document.getElementById('rank-doc-id').value;
+    const dateValue = document.getElementById('rank-date').value;
+    const rank = parseInt(document.getElementById('rank-value-input').value, 10);
+    const category = document.getElementById('rank-category-input').value.trim();
+    
+    if (!rank || rank < 1) {
+        alert('올바른 순위를 입력하세요.');
+        return;
+    }
+    
+    try {
+        const timestamp = new Date(dateValue);
+        
+        const rankData = {
+            rank: rank,
+            category: category,
+            timestamp: firebase.firestore.Timestamp.fromDate(timestamp),
+            productUrl: 'https://product.kyobobook.co.kr/detail/S000218549943',
+        };
+        
+        if (docId) {
+            // 수정
+            await db.collection('kyobobook_rank_history').doc(docId).update(rankData);
+            alert('순위가 수정되었습니다.');
+        } else {
+            // 추가
+            await db.collection('kyobobook_rank_history').add(rankData);
+            alert('순위가 추가되었습니다.');
+        }
+        
+        closeRankModal();
+        await loadRankHistoryTable();
+        await loadRankHistory(); // 그래프도 업데이트
+    } catch (error) {
+        console.error('순위 저장 에러:', error);
+        alert('순위 저장 중 오류가 발생했습니다: ' + error.message);
+    }
+}
+
+// 순위 삭제
+async function deleteRank(docId, rank) {
+    if (!confirm(`${rank}위 데이터를 삭제하시겠습니까?`)) {
+        return;
+    }
+    
+    try {
+        await db.collection('kyobobook_rank_history').doc(docId).delete();
+        alert('순위가 삭제되었습니다.');
+        await loadRankHistoryTable();
+        await loadRankHistory(); // 그래프도 업데이트
+    } catch (error) {
+        console.error('순위 삭제 에러:', error);
+        alert('순위 삭제 중 오류가 발생했습니다: ' + error.message);
+    }
+}
+
+// 순위 히스토리 CSV 내보내기
+function exportRankHistory() {
+    if (allRankHistory.length === 0) {
+        alert('내보낼 데이터가 없습니다.');
+        return;
+    }
+    
+    // CSV 헤더
+    const headers = ['날짜', '순위', '카테고리', '변화'];
+    const rows = [headers.join(',')];
+    
+    // 데이터 행
+    allRankHistory.forEach((item, index) => {
+        const prevItem = index < allRankHistory.length - 1 ? allRankHistory[index + 1] : null;
+        let change = '-';
+        
+        if (prevItem) {
+            const changeValue = prevItem.rank - item.rank;
+            if (changeValue > 0) {
+                change = `+${changeValue}위 상승`;
+            } else if (changeValue < 0) {
+                change = `${Math.abs(changeValue)}위 하락`;
+            } else {
+                change = '변화 없음';
+            }
+        }
+        
+        const dateStr = item.timestamp.toLocaleString('ko-KR', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+        
+        rows.push([
+            dateStr,
+            item.rank,
+            item.category,
+            change
+        ].join(','));
+    });
+    
+    // CSV 파일 생성 및 다운로드
+    const csvContent = rows.join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    const url = URL.createObjectURL(blob);
+    
+    link.setAttribute('href', url);
+    link.setAttribute('download', `교보문고_순위_히스토리_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+// 교보문고 순위 체크
+async function checkKyobobookRank() {
+    const btn = document.getElementById('check-rank-btn');
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '⏳ 확인 중...';
+        
+        const checkRank = firebase.functions().httpsCallable('checkKyobobookRank');
+        const result = await checkRank();
+        
+        if (result.data.success) {
+            if (result.data.rank) {
+                alert(`✅ ${result.data.message}`);
+            } else {
+                alert(`⚠️ ${result.data.message}`);
+            }
+            // 순위 정보 새로고침
+            await loadRankInfo();
+            await loadRankHistory();
+            await loadRankHistoryTable();
+        } else {
+            alert(`❌ ${result.data.message || '순위 확인 중 오류가 발생했습니다.'}`);
+        }
+    } catch (error) {
+        console.error('순위 체크 에러:', error);
+        alert('순위 확인 중 오류가 발생했습니다: ' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
