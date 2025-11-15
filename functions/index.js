@@ -418,24 +418,87 @@ exports.checkKyobobookRank = onCall(async (request) => {
     let lastUpdated = new Date().toISOString();
 
     // 순위 정보 추출 시도 (여러 패턴 시도)
-    // 패턴 1: "주간베스트 외국어 285위" 형태
-    const rankText = $('body').text();
-    const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+    const bodyText = $('body').text();
     
+    // 패턴 1: "주간베스트 외국어 285위" 형태
+    let rankMatch = bodyText.match(/주간베스트\s*외국어\s*(\d+)\s*위/i);
     if (rankMatch) {
       rank = parseInt(rankMatch[1], 10);
       category = '주간베스트 외국어';
-    } else {
-      // 패턴 2: 다른 형태의 순위 표시 찾기
-      $('span, div, p').each((i, elem) => {
-        const text = $(elem).text();
-        const match = text.match(/(주간|베스트|외국어).*?(\d+)위/i);
-        if (match && !rank) {
+    }
+    
+    // 패턴 2: "외국어 285위" 형태
+    if (!rank) {
+      rankMatch = bodyText.match(/외국어\s*(\d+)\s*위/i);
+      if (rankMatch) {
+        rank = parseInt(rankMatch[1], 10);
+        category = '주간베스트 외국어';
+      }
+    }
+    
+    // 패턴 3: "베스트 285위" 형태
+    if (!rank) {
+      rankMatch = bodyText.match(/베스트\s*(\d+)\s*위/i);
+      if (rankMatch) {
+        rank = parseInt(rankMatch[1], 10);
+        category = '주간베스트';
+      }
+    }
+    
+    // 패턴 4: 숫자 + "위" 패턴 (주변 텍스트 확인)
+    if (!rank) {
+      rankMatch = bodyText.match(/(\d+)\s*위/);
+      if (rankMatch) {
+        const potentialRank = parseInt(rankMatch[1], 10);
+        // 합리적인 순위 범위 확인 (1-1000위)
+        if (potentialRank >= 1 && potentialRank <= 1000) {
+          // 주변 텍스트에서 "베스트", "외국어", "주간" 키워드 확인
+          const context = bodyText.substring(
+            Math.max(0, rankMatch.index - 50),
+            Math.min(bodyText.length, rankMatch.index + 50)
+          );
+          if (context.match(/베스트|외국어|주간/i)) {
+            rank = potentialRank;
+            category = '주간베스트 외국어';
+          }
+        }
+      }
+    }
+    
+    // 패턴 5: HTML 요소에서 직접 찾기
+    if (!rank) {
+      $('span, div, p, li, td, th').each((i, elem) => {
+        if (rank) return false; // 이미 찾았으면 중단
+        
+        const text = $(elem).text().trim();
+        const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
+        if (match) {
           rank = parseInt(match[2], 10);
           category = match[1] || '주간베스트';
+          return false; // 중단
         }
       });
     }
+    
+    // 패턴 6: 클래스나 ID에 "rank", "best" 등이 포함된 요소 찾기
+    if (!rank) {
+      $('[class*="rank"], [class*="best"], [id*="rank"], [id*="best"]').each((i, elem) => {
+        if (rank) return false;
+        
+        const text = $(elem).text().trim();
+        const match = text.match(/(\d+)\s*위/);
+        if (match) {
+          const potentialRank = parseInt(match[1], 10);
+          if (potentialRank >= 1 && potentialRank <= 1000) {
+            rank = potentialRank;
+            category = '주간베스트 외국어';
+            return false;
+          }
+        }
+      });
+    }
+    
+    console.log(`순위 추출 결과: ${rank ? `${rank}위` : '없음'}, 카테고리: ${category}`);
 
     // Firestore에 순위 정보 저장
     const rankData = {
@@ -670,12 +733,68 @@ exports.scheduledSendRankReport = onSchedule({
       });
 
       const $ = cheerio.load(response.data);
-      const rankText = $('body').text();
-      const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+      const bodyText = $('body').text();
+      let rankMatch = null;
       
+      // 패턴 1: "주간베스트 외국어 285위" 형태
+      rankMatch = bodyText.match(/주간베스트\s*외국어\s*(\d+)\s*위/i);
       if (rankMatch) {
         currentRank = parseInt(rankMatch[1], 10);
         category = '주간베스트 외국어';
+      }
+      
+      // 패턴 2: "외국어 285위" 형태
+      if (!currentRank) {
+        rankMatch = bodyText.match(/외국어\s*(\d+)\s*위/i);
+        if (rankMatch) {
+          currentRank = parseInt(rankMatch[1], 10);
+          category = '주간베스트 외국어';
+        }
+      }
+      
+      // 패턴 3: "베스트 285위" 형태
+      if (!currentRank) {
+        rankMatch = bodyText.match(/베스트\s*(\d+)\s*위/i);
+        if (rankMatch) {
+          currentRank = parseInt(rankMatch[1], 10);
+          category = '주간베스트';
+        }
+      }
+      
+      // 패턴 4: 숫자 + "위" 패턴 (주변 텍스트 확인)
+      if (!currentRank) {
+        rankMatch = bodyText.match(/(\d+)\s*위/);
+        if (rankMatch) {
+          const potentialRank = parseInt(rankMatch[1], 10);
+          if (potentialRank >= 1 && potentialRank <= 1000) {
+            const context = bodyText.substring(
+              Math.max(0, rankMatch.index - 50),
+              Math.min(bodyText.length, rankMatch.index + 50)
+            );
+            if (context.match(/베스트|외국어|주간/i)) {
+              currentRank = potentialRank;
+              category = '주간베스트 외국어';
+            }
+          }
+        }
+      }
+      
+      // 패턴 5: HTML 요소에서 직접 찾기
+      if (!currentRank) {
+        $('span, div, p, li, td, th').each((i, elem) => {
+          if (currentRank) return false;
+          
+          const text = $(elem).text().trim();
+          const match = text.match(/(주간|베스트|외국어).*?(\d+)\s*위/i);
+          if (match) {
+            currentRank = parseInt(match[2], 10);
+            category = match[1] || '주간베스트';
+            return false;
+          }
+        });
+      }
+      
+      if (currentRank) {
         
         // Firestore에 저장
         const rankData = {
