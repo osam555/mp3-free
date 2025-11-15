@@ -641,34 +641,98 @@ function createRankReportTemplate(currentRank, category, weeklyStats) {
 }
 
 /**
- * 매일 오전 6시 순위 리포트 이메일 발송
+ * 매일 오전 6시 순위 체크 및 리포트 이메일 발송
  * Cloud Scheduler를 통해 호출
  */
 exports.scheduledSendRankReport = onSchedule({
   schedule: '0 6 * * *', // 매일 오전 6시 (KST 기준)
   timeZone: 'Asia/Seoul',
 }, async (event) => {
-  console.log('📧 순위 리포트 이메일 발송 시작...');
+  console.log('🔄 매일 오전 6시 순위 체크 및 이메일 발송 시작...');
   
   const adminEmail = 'john.wu571@gmail.com';
+  const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
   
   try {
-    // 현재 순위 가져오기
-    const currentRankDoc = await admin.firestore()
-      .collection('kyobobook_rank')
-      .doc('current')
-      .get();
-    
+    // 1. 순위 체크
+    console.log('📊 교보문고 순위 체크 중...');
     let currentRank = null;
     let category = '주간베스트 외국어';
     
-    if (currentRankDoc.exists) {
-      const data = currentRankDoc.data();
-      currentRank = data.rank;
-      category = data.category || '주간베스트 외국어';
+    try {
+      const response = await axios.get(productUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+          'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
+        },
+        timeout: 10000,
+      });
+
+      const $ = cheerio.load(response.data);
+      const rankText = $('body').text();
+      const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
+      
+      if (rankMatch) {
+        currentRank = parseInt(rankMatch[1], 10);
+        category = '주간베스트 외국어';
+        
+        // Firestore에 저장
+        const rankData = {
+          rank: currentRank,
+          category: category,
+          lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
+          productUrl: productUrl,
+        };
+
+        await admin.firestore()
+          .collection('kyobobook_rank')
+          .doc('current')
+          .set(rankData, {merge: true});
+
+        await admin.firestore()
+          .collection('kyobobook_rank_history')
+          .add({
+            ...rankData,
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+          });
+
+        console.log(`✅ 순위 체크 완료: ${category} ${currentRank}위`);
+      } else {
+        console.log('⚠️ 순위 정보를 찾을 수 없습니다.');
+        
+        // 기존 순위 정보 가져오기
+        const currentRankDoc = await admin.firestore()
+          .collection('kyobobook_rank')
+          .doc('current')
+          .get();
+        
+        if (currentRankDoc.exists) {
+          const data = currentRankDoc.data();
+          currentRank = data.rank;
+          category = data.category || '주간베스트 외국어';
+          console.log(`📌 기존 순위 정보 사용: ${category} ${currentRank}위`);
+        }
+      }
+    } catch (error) {
+      console.error('❌ 순위 체크 에러:', error);
+      
+      // 기존 순위 정보 가져오기
+      const currentRankDoc = await admin.firestore()
+        .collection('kyobobook_rank')
+        .doc('current')
+        .get();
+      
+      if (currentRankDoc.exists) {
+        const data = currentRankDoc.data();
+        currentRank = data.rank;
+        category = data.category || '주간베스트 외국어';
+        console.log(`📌 기존 순위 정보 사용: ${category} ${currentRank}위`);
+      }
     }
     
-    // 주간 통계 계산 (최근 7일)
+    // 2. 주간 통계 계산 (최근 7일)
+    console.log('📈 주간 통계 계산 중...');
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
@@ -705,58 +769,12 @@ exports.scheduledSendRankReport = onSchedule({
           avgRank,
           change,
         };
+        console.log(`✅ 주간 통계 계산 완료: 최고 ${bestRank}위, 최저 ${worstRank}위, 평균 ${avgRank}위`);
       }
     }
     
-    // 순위가 없으면 체크 시도
-    if (!currentRank) {
-      console.log('⚠️ 현재 순위 정보가 없습니다. 순위를 체크합니다...');
-      
-      const productUrl = 'https://product.kyobobook.co.kr/detail/S000218549943';
-      try {
-        const response = await axios.get(productUrl, {
-          headers: {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Language': 'ko-KR,ko;q=0.9,en-US;q=0.8,en;q=0.7',
-          },
-          timeout: 10000,
-        });
-
-        const $ = cheerio.load(response.data);
-        const rankText = $('body').text();
-        const rankMatch = rankText.match(/주간베스트\s*외국어\s*(\d+)위/i);
-        
-        if (rankMatch) {
-          currentRank = parseInt(rankMatch[1], 10);
-          category = '주간베스트 외국어';
-          
-          // Firestore에 저장
-          const rankData = {
-            rank: currentRank,
-            category: category,
-            lastUpdated: admin.firestore.FieldValue.serverTimestamp(),
-            productUrl: productUrl,
-          };
-
-          await admin.firestore()
-            .collection('kyobobook_rank')
-            .doc('current')
-            .set(rankData, {merge: true});
-
-          await admin.firestore()
-            .collection('kyobobook_rank_history')
-            .add({
-              ...rankData,
-              timestamp: admin.firestore.FieldValue.serverTimestamp(),
-            });
-        }
-      } catch (error) {
-        console.error('❌ 순위 체크 에러:', error);
-      }
-    }
-    
-    // 이메일 발송
+    // 3. 이메일 발송
+    console.log('📧 순위 리포트 이메일 발송 중...');
     const mailOptions = {
       from: `대충영어 속청 30일 <${gmailEmail}>`,
       to: adminEmail,
@@ -768,6 +786,6 @@ exports.scheduledSendRankReport = onSchedule({
     console.log(`✅ 순위 리포트 이메일 발송 완료: ${adminEmail}`);
     
   } catch (error) {
-    console.error('❌ 순위 리포트 이메일 발송 에러:', error);
+    console.error('❌ 순위 체크 및 이메일 발송 에러:', error);
   }
 });
