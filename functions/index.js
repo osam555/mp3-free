@@ -6,7 +6,7 @@
  * 2. sendManualEmail - HTTP callable function for manual email sending from admin dashboard
  */
 
-const {onDocumentUpdated} = require('firebase-functions/v2/firestore');
+const {onDocumentCreated, onDocumentUpdated} = require('firebase-functions/v2/firestore');
 const {onCall, HttpsError} = require('firebase-functions/v2/https');
 const {setGlobalOptions} = require('firebase-functions/v2');
 const admin = require('firebase-admin');
@@ -195,8 +195,9 @@ exports.sendEarlybirdEmail = onDocumentUpdated(
         await transporter.sendMail(mailOptions);
         console.log(`✅ Email sent successfully to ${email}`);
 
-        // Firestore에 이메일 발송 기록 저장
+        // Firestore에 이메일 발송 기록 저장 및 상태를 'sent'로 변경
         await event.data.after.ref.update({
+          status: 'sent',
           emailSent: true,
           emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
         });
@@ -245,8 +246,9 @@ exports.sendManualEmail = onCall(async (request) => {
     await transporter.sendMail(mailOptions);
     console.log(`✅ Manual email sent successfully to ${email}`);
 
-    // Firestore에 이메일 발송 기록 저장
+    // Firestore에 이메일 발송 기록 저장 및 상태를 'sent'로 변경
     await applicationDoc.ref.update({
+      status: 'sent',
       emailSent: true,
       emailSentAt: admin.firestore.FieldValue.serverTimestamp(),
       emailSentManually: true,
@@ -256,5 +258,39 @@ exports.sendManualEmail = onCall(async (request) => {
   } catch (error) {
     console.error('❌ Error sending manual email:', error);
     throw new HttpsError('internal', error.message);
+  }
+});
+
+/**
+ * 신청서 생성 시 라운드 자동 설정
+ * Firestore Trigger: onCreate
+ */
+exports.setApplicationRound = onDocumentCreated('earlybird_applications/{applicationId}', async (event) => {
+  const snapshot = event.data;
+  if (!snapshot) {
+    console.log('No data associated with the event');
+    return;
+  }
+
+  const applicationId = event.params.applicationId;
+
+  try {
+    // 현재 문서 이전의 모든 신청서 개수 확인
+    const querySnapshot = await admin.firestore()
+      .collection('earlybird_applications')
+      .where('timestamp', '<', snapshot.data().timestamp)
+      .get();
+
+    const count = querySnapshot.size;
+    const round = count < 100 ? 1 : 2;
+
+    // round 필드 추가
+    await snapshot.ref.update({
+      round: round
+    });
+
+    console.log(`✅ Application ${applicationId} assigned to round ${round}`);
+  } catch (error) {
+    console.error('❌ Error setting round:', error);
   }
 });

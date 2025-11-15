@@ -1,5 +1,8 @@
 // 방문자 통계 대시보드 스크립트
 
+// Firestore 컬렉션 참조
+const visitorsRef = db.collection('page_visitors');
+
 // 날짜 포맷팅 함수
 function formatDate(date) {
     const year = date.getFullYear();

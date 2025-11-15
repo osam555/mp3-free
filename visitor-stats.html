@@ -27,9 +27,14 @@
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">📊 방문자 통계</h1>
                     <p class="text-gray-600">페이지 방문 현황 및 분석</p>
                 </div>
-                <a href="admin.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    얼리버드 관리
-                </a>
+                <div class="flex gap-2">
+                    <button onclick="checkAdminAuth()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        로그아웃
+                    </button>
+                    <a href="admin.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        얼리버드 관리
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -112,6 +117,19 @@
 
     <!-- Firebase Config 및 스크립트 -->
     <script src="js/firebase-config.js"></script>
+    <script src="js/admin-password.js"></script>
     <script src="js/visitor-stats.js"></script>
+    <script>
+        // 방문자 통계 페이지에서도 비밀번호 인증 확인
+        function checkAdminAuth() {
+            const isAuthenticated = sessionStorage.getItem('admin_authenticated') === 'true';
+            if (isAuthenticated) {
+                sessionStorage.removeItem('admin_authenticated');
+                window.location.href = 'admin.html';
+            } else {
+                window.location.href = 'admin.html';
+            }
+        }
+    </script>
 </body>
 </html>

@@ -294,5 +294,10 @@ window.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    loadApplications();
+    // 비밀번호 인증이 완료된 경우에만 데이터 로드
+    const isAuthenticated = sessionStorage.getItem('admin_authenticated') === 'true';
+    if (isAuthenticated) {
+        loadApplications();
+    }
+    // 인증되지 않은 경우는 admin-password.js에서 처리
 });

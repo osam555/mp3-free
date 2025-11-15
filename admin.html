@@ -23,7 +23,27 @@
     </style>
 </head>
 <body class="bg-gray-50">
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
+    <!-- 비밀번호 입력 화면 (인증 전) -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gray-50" style="display: none;">
+        <div class="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+            <h2 class="text-2xl font-bold text-center mb-6">🔐 관리자 비밀번호</h2>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-semibold mb-2">비밀번호</label>
+                    <input type="password" id="admin-password" required autofocus
+                           class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
+                           placeholder="비밀번호를 입력하세요">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-bold hover:bg-blue-700 transition-all">
+                    확인
+                </button>
+            </form>
+            <div id="login-error" class="mt-4 text-red-600 text-center text-sm" style="display: none;"></div>
+        </div>
+    </div>
+
+    <!-- 관리자 대시보드 (인증 후) -->
+    <div id="admin-dashboard" class="max-w-7xl mx-auto p-4 md:p-8">
         <!-- Header -->
         <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
             <div class="flex justify-between items-center">
@@ -31,9 +51,14 @@
                     <h1 class="text-3xl font-bold text-gray-800 mb-2">🎁 얼리버드 관리자 대시보드</h1>
                     <p class="text-gray-600">교보문고 구매자 특전 신청 관리</p>
                 </div>
-                <a href="visitor-stats.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                    📊 방문자 통계
-                </a>
+                <div class="flex gap-2">
+                    <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+                        로그아웃
+                    </button>
+                    <a href="visitor-stats.html" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+                        📊 방문자 통계
+                    </a>
+                </div>
             </div>
         </div>
 
@@ -139,6 +164,7 @@
 
     <!-- Firebase Config 및 스크립트 -->
     <script src="js/firebase-config.js"></script>
+    <script src="js/admin-password.js"></script>
     <script src="js/admin-dashboard.js"></script>
 </body>
 </html>
