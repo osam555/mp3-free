@@ -1092,10 +1092,19 @@ exports.scheduledSendRankReport = onSchedule({
             'Sec-Fetch-Site': 'none',
             'Sec-Fetch-User': '?1',
             'Upgrade-Insecure-Requests': '1',
-            'Referer': 'https://www.google.com/'
+            'Referer': 'https://www.kyobobook.co.kr/',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Sec-Fetch-Dest': 'document',
+            'Sec-Fetch-Mode': 'navigate',
+            'Sec-Fetch-Site': 'same-origin',
+            'Sec-Fetch-User': '?1'
           },
-          timeout: 20000,
+          timeout: 30000,
           maxRedirects: 5,
+          validateStatus: function (status) {
+            return status >= 200 && status < 400; // 리다이렉트 허용
+          }
         });
 
         console.log('✅ axios로 페이지 로드 성공 (scheduled), 응답 크기:', response.data.length);

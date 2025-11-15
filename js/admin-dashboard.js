@@ -3,7 +3,7 @@ function showManualRankModal() {
     document.getElementById('modal-title').textContent = '수동 순위 입력';
     document.getElementById('rank-doc-id').value = '';
     document.getElementById('rank-date').value = new Date().toISOString().slice(0, 16);
-    document.getElementById('rank-rank').value = '';
+    document.getElementById('rank-value-input').value = '';
     document.getElementById('rank-category-input').value = '주간베스트 외국어';
     document.getElementById('rank-modal').style.display = 'flex';
     document.getElementById('rank-modal').classList.add('flex');
@@ -13,7 +13,7 @@ function showManualRankModal() {
 async function saveManualRank(event) {
     event.preventDefault();
 
-    const rank = parseInt(document.getElementById('rank-rank').value);
+    const rank = parseInt(document.getElementById('rank-value-input').value);
     const category = document.getElementById('rank-category-input').value || '주간베스트 외국어';
 
     if (!rank || rank < 1 || rank > 1000) {
