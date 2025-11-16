@@ -1,15 +1,21 @@
 // 수동 순위 입력 모달 표시
 window.showManualRankModal = function() {
-    document.getElementById('modal-title').textContent = '수동 순위 입력';
+    document.getElementById('modal-title').textContent = '수동 순위 입력 (현재 시간으로 저장)';
     document.getElementById('rank-doc-id').value = '';
-    document.getElementById('rank-date').value = new Date().toISOString().slice(0, 16);
+    
+    const dateInput = document.getElementById('rank-date');
+    dateInput.value = new Date().toISOString().slice(0, 16);
+    dateInput.disabled = true; // 날짜 수정 불가
+    dateInput.style.backgroundColor = '#e5e7eb'; // 회색 배경
+    dateInput.style.cursor = 'not-allowed';
+    
     document.getElementById('rank-value-input').value = '';
     document.getElementById('rank-category-input').value = '주간베스트 외국어';
     document.getElementById('rank-modal').style.display = 'flex';
     document.getElementById('rank-modal').classList.add('flex');
 }
 
-// 수동 순위 저장 (기존 saveRank 함수 재사용)
+// 수동 순위 저장 (현재 시간으로 저장)
 async function saveManualRank(event) {
     event.preventDefault();
 
@@ -22,6 +28,9 @@ async function saveManualRank(event) {
     }
 
     try {
+        // ⚠️ 중요: 수동 입력은 항상 현재 시간(서버 시간)으로 저장
+        // 과거 날짜로 저장하려면 "순위 추가" 버튼 사용
+        
         // 현재 순위 업데이트
         await db.collection('kyobobook_rank').doc('current').set({
             rank: rank,
@@ -32,7 +41,7 @@ async function saveManualRank(event) {
             manualEntry: true // 수동 입력 표시
         }, {merge: true});
 
-        // 히스토리에도 저장
+        // 히스토리에도 저장 (서버 시간 사용)
         await db.collection('kyobobook_rank_history').add({
             rank: rank,
             category: category,
@@ -41,7 +50,7 @@ async function saveManualRank(event) {
             manualEntry: true
         });
 
-        console.log('✅ 수동 순위 저장 완료');
+        console.log('✅ 수동 순위 저장 완료 (현재 시간으로 저장됨)');
         alert('순위가 성공적으로 저장되었습니다!');
 
         // UI 업데이트
@@ -1004,7 +1013,7 @@ function renderRankHistoryTable() {
     }).join('');
 }
 
-// 순위 추가 모달 표시
+// 순위 추가 모달 표시 (과거 날짜 입력 가능)
 window.showAddRankModal = function() {
     try {
         console.log('📝 순위 추가 모달 열기');
@@ -1021,9 +1030,14 @@ window.showAddRankModal = function() {
             return;
         }
         
-        modalTitle.textContent = '순위 추가';
+        modalTitle.textContent = '순위 추가 (히스토리 전용, 과거 날짜 가능)';
         rankDocId.value = '';
         rankForm.reset();
+        
+        // 날짜 입력 활성화
+        rankDate.disabled = false;
+        rankDate.style.backgroundColor = '';
+        rankDate.style.cursor = '';
         
         // 현재 날짜/시간으로 기본값 설정
         const now = new Date();
@@ -1115,9 +1129,9 @@ async function saveRankHistory(event) {
             await db.collection('kyobobook_rank_history').doc(docId).update(rankData);
             alert('순위가 수정되었습니다.');
         } else {
-            // 추가
+            // 추가 (히스토리에만 추가, current는 업데이트하지 않음)
             await db.collection('kyobobook_rank_history').add(rankData);
-            alert('순위가 추가되었습니다.');
+            alert('순위가 히스토리에 추가되었습니다.\n💡 현재 순위를 업데이트하려면 "수동 입력" 버튼을 사용하세요.');
         }
         
         closeRankModal();
