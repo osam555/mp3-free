@@ -1,5 +1,5 @@
 // 수동 순위 입력 모달 표시
-function showManualRankModal() {
+window.showManualRankModal = function() {
     document.getElementById('modal-title').textContent = '수동 순위 입력';
     document.getElementById('rank-doc-id').value = '';
     document.getElementById('rank-date').value = new Date().toISOString().slice(0, 16);
@@ -59,7 +59,7 @@ async function saveManualRank(event) {
 }
 
 // 기존 saveRank 함수를 수동 입력용으로 수정
-function saveRank(event) {
+window.saveRank = function(event) {
     // 문서 ID가 없으면 수동 입력으로 처리
     if (!document.getElementById('rank-doc-id').value) {
         saveManualRank(event);
@@ -977,26 +977,48 @@ function renderRankHistoryTable() {
 }
 
 // 순위 추가 모달 표시
-function showAddRankModal() {
-    document.getElementById('modal-title').textContent = '순위 추가';
-    document.getElementById('rank-doc-id').value = '';
-    document.getElementById('rank-form').reset();
-    
-    // 현재 날짜/시간으로 기본값 설정
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    document.getElementById('rank-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
-    document.getElementById('rank-category-input').value = '주간베스트 외국어';
-    
-    document.getElementById('rank-modal').style.display = 'flex';
+window.showAddRankModal = function() {
+    try {
+        console.log('📝 순위 추가 모달 열기');
+        
+        const modal = document.getElementById('rank-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const rankDocId = document.getElementById('rank-doc-id');
+        const rankForm = document.getElementById('rank-form');
+        const rankDate = document.getElementById('rank-date');
+        const rankCategoryInput = document.getElementById('rank-category-input');
+        
+        if (!modal || !modalTitle || !rankDocId || !rankForm || !rankDate || !rankCategoryInput) {
+            console.error('❌ 모달 요소를 찾을 수 없습니다.');
+            return;
+        }
+        
+        modalTitle.textContent = '순위 추가';
+        rankDocId.value = '';
+        rankForm.reset();
+        
+        // 현재 날짜/시간으로 기본값 설정
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        rankDate.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+        rankCategoryInput.value = '주간베스트 외국어';
+        
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
+        
+        console.log('✅ 모달 열림');
+    } catch (error) {
+        console.error('❌ 모달 열기 에러:', error);
+        alert('모달을 열 수 없습니다: ' + error.message);
+    }
 }
 
 // 순위 수정 모달 표시
-async function editRank(docId) {
+window.editRank = async function(docId) {
     try {
         const doc = await db.collection('kyobobook_rank_history').doc(docId).get();
         if (!doc.exists) {
@@ -1027,8 +1049,13 @@ async function editRank(docId) {
 }
 
 // 모달 닫기
-function closeRankModal() {
-    document.getElementById('rank-modal').style.display = 'none';
+window.closeRankModal = function() {
+    const modal = document.getElementById('rank-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+        console.log('✅ 모달 닫힘');
+    }
 }
 
 // 순위 저장
@@ -1075,7 +1102,7 @@ async function saveRankHistory(event) {
 }
 
 // 순위 삭제
-async function deleteRank(docId, rank) {
+window.deleteRank = async function(docId, rank) {
     if (!confirm(`${rank}위 데이터를 삭제하시겠습니까?`)) {
         return;
     }
@@ -1092,7 +1119,7 @@ async function deleteRank(docId, rank) {
 }
 
 // 순위 히스토리 CSV 내보내기
-function exportRankHistory() {
+window.exportRankHistory = function() {
     if (allRankHistory.length === 0) {
         alert('내보낼 데이터가 없습니다.');
         return;
@@ -1149,7 +1176,7 @@ function exportRankHistory() {
 }
 
 // 교보문고 순위 체크
-async function checkKyobobookRank() {
+window.checkKyobobookRank = async function() {
     const btn = document.getElementById('check-rank-btn');
     const originalText = btn.innerHTML;
     
