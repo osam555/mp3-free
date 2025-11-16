@@ -356,14 +356,18 @@
                         <img id="hero-gif" src="asset/bookstore3.gif" alt="대충영어 속청 30일 서점 진열" loading="lazy" class="w-full h-auto" style="display: block;">
                         
                         <!-- YouTube 플레이어 (숨김) -->
-                        <div id="hero-youtube" class="video-container" style="display: none; margin: 0;">
+                        <div id="hero-youtube" class="video-container" style="display: none; margin: 0; position: relative;">
                             <iframe id="hero-youtube-iframe"
-                                    src="https://www.youtube.com/embed/6xhwSSWzceQ?enablejsapi=1&autoplay=1&rel=0"
+                                    src=""
                                     frameborder="0"
                                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                     allowfullscreen
                                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
                             </iframe>
+                            <!-- 재생 버튼 오버레이 (항상 표시) -->
+                            <div id="play-overlay" style="display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 59, 48, 0.95); color: white; padding: 20px 40px; border-radius: 50px; z-index: 1000; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease; backdrop-filter: blur(10px);">
+                                🔊 클릭하여 음성 재생
+                            </div>
                         </div>
                     </div>
                     <p class="text-center text-gray-700 font-semibold mt-4 text-lg">
@@ -1464,99 +1468,95 @@
         });
     </script>
 
-    <!-- Hero GIF → YouTube 자동 재생 스크립트 -->
+    <!-- Hero GIF → YouTube 수동 재생 스크립트 -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const heroGif = document.getElementById('hero-gif');
             const heroYoutube = document.getElementById('hero-youtube');
             const heroMediaContainer = document.getElementById('hero-media-container');
-            const heroMediaSection = document.getElementById('hero-media-section');
+            const playOverlay = document.getElementById('play-overlay');
+            const iframe = document.getElementById('hero-youtube-iframe');
             
-            let gifPlayCount = 0;
-            let isUserInView = false;
-            let transitionTimer = null;
+            let hasTransitioned = false;
+            let isPlaying = false;
 
-            // GIF 재생 시간 추정 (파일 크기 기반, 일반적으로 3-5초)
-            const estimatedGifDuration = 5000; // 5초로 설정 (필요시 조정)
+            // GIF 재생 완료 시간
+            const GIF_DURATION = 8000; // 8초
 
-            // Intersection Observer로 사용자가 섹션에 머물러 있는지 감지
-            const sectionObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    isUserInView = entry.isIntersecting && entry.intersectionRatio > 0.5;
-                    console.log('Hero 섹션 Viewport:', isUserInView ? '보임' : '숨김');
-                    
-                    // 사용자가 섹션을 벗어나면 타이머 취소
-                    if (!isUserInView && transitionTimer) {
-                        clearTimeout(transitionTimer);
-                        transitionTimer = null;
-                    }
-                });
-            }, {
-                threshold: [0, 0.5, 1.0]
-            });
+            // GIF 1회 재생 완료 후 YouTube 썸네일로 전환
+            setTimeout(() => {
+                if (!hasTransitioned) {
+                    console.log('✅ GIF 재생 완료 → YouTube 썸네일 표시');
+                    showYouTubeThumbnail();
+                }
+            }, GIF_DURATION);
 
-            // 섹션 관찰 시작
-            if (heroMediaSection) {
-                sectionObserver.observe(heroMediaSection);
+            // YouTube 썸네일 표시 (재생 안함)
+            function showYouTubeThumbnail() {
+                if (hasTransitioned) return;
+                
+                hasTransitioned = true;
+                
+                // GIF 숨기기
+                heroGif.style.display = 'none';
+                
+                // YouTube 표시 (iframe은 비어있음, 버튼만 표시)
+                heroYoutube.style.display = 'block';
+                
+                // 썸네일 배경 설정 (선택사항)
+                heroYoutube.style.background = `url('https://img.youtube.com/vi/6xhwSSWzceQ/maxresdefault.jpg') center/cover`;
+                
+                console.log('🖼️ YouTube 썸네일 표시, 버튼 대기 중');
             }
 
-            // GIF 로드 완료 후 재생 카운트 시작
-            if (heroGif) {
-                heroGif.addEventListener('load', () => {
-                    console.log('Hero GIF 로드 완료');
-                    
-                    // GIF 1회 재생 후 YouTube로 전환
-                    transitionTimer = setTimeout(() => {
-                        gifPlayCount++;
-                        console.log('GIF 재생 완료:', gifPlayCount, '회');
+            // 재생 버튼 클릭 이벤트
+            if (playOverlay) {
+                // 호버 효과
+                playOverlay.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translate(-50%, -50%) scale(1.05)';
+                    this.style.background = 'rgba(255, 59, 48, 1)';
+                });
+                
+                playOverlay.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translate(-50%, -50%) scale(1)';
+                    this.style.background = 'rgba(255, 59, 48, 0.95)';
+                });
+                
+                // 클릭 시 YouTube 재생
+                playOverlay.addEventListener('click', function() {
+                    if (!isPlaying && iframe) {
+                        isPlaying = true;
                         
-                        // 사용자가 여전히 섹션에 있으면 YouTube로 전환
-                        if (isUserInView && gifPlayCount === 1) {
-                            console.log('YouTube 자동 재생 시작');
-                            switchToYouTube();
-                        }
-                    }, estimatedGifDuration);
-                });
-
-                // 이미 로드된 경우 (캐시)
-                if (heroGif.complete) {
-                    heroGif.dispatchEvent(new Event('load'));
-                }
-            }
-
-            // YouTube로 전환하는 함수
-            function switchToYouTube() {
-                if (heroGif && heroYoutube) {
-                    // GIF 숨기기
-                    heroGif.style.display = 'none';
-                    
-                    // YouTube 표시
-                    heroYoutube.style.display = 'block';
-                    
-                    // YouTube iframe의 src를 다시 설정하여 자동 재생 시작
-                    const iframe = document.getElementById('hero-youtube-iframe');
-                    if (iframe) {
-                        const currentSrc = iframe.src;
-                        // autoplay=1이 이미 있지만 확실하게 재설정
-                        if (!currentSrc.includes('autoplay=1')) {
-                            iframe.src = currentSrc + '&autoplay=1';
-                        } else {
-                            // src 재설정으로 재생 트리거
-                            iframe.src = iframe.src;
-                        }
+                        console.log('🔊 사용자 클릭 → YouTube 재생 시작');
+                        
+                        // YouTube 재생 (소리 켜짐)
+                        const videoId = '6xhwSSWzceQ';
+                        iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&rel=0&enablejsapi=1&controls=1`;
+                        
+                        // 버튼 페이드아웃
+                        this.style.opacity = '0';
+                        setTimeout(() => {
+                            this.style.display = 'none';
+                        }, 300);
+                        
+                        // 썸네일 배경 제거
+                        heroYoutube.style.background = 'none';
                     }
-                }
+                });
             }
 
-            // 클릭 시에도 YouTube로 전환 (사용자 액션)
+            // GIF 클릭 시 즉시 YouTube 썸네일로 전환
             if (heroMediaContainer) {
                 heroMediaContainer.addEventListener('click', () => {
                     if (heroGif && heroGif.style.display !== 'none') {
-                        console.log('사용자 클릭으로 YouTube 재생');
-                        switchToYouTube();
+                        console.log('👆 GIF 클릭 → YouTube 썸네일로 즉시 전환');
+                        showYouTubeThumbnail();
                     }
                 });
             }
+
+            console.log('🎬 Hero GIF → YouTube 수동 재생 스크립트 초기화 완료');
+            console.log('⏱️ GIF 재생 시간:', GIF_DURATION / 1000, '초');
         });
     </script>
 
