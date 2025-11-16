@@ -794,22 +794,82 @@ exports.sendTestRankEmail = onCall(async (request) => {
  */
 exports.getVisitorIP = onCall(async (request) => {
   try {
-    // Cloud Functions의 request.rawRequest에서 IP 추출
-    const ip = request.rawRequest.headers['x-forwarded-for']?.split(',')[0]?.trim() 
-               || request.rawRequest.connection.remoteAddress 
-               || request.rawRequest.socket.remoteAddress
-               || 'unknown';
-    
-    console.log(`✅ IP 주소 수집: ${ip}`);
-    
+    const headers = request?.rawRequest?.headers || {};
+    // 1) 프록시/엣지 제공 헤더 우선
+    // - x-forwarded-for: "client, proxy1, proxy2"
+    // - cf-connecting-ip, x-real-ip, true-client-ip, fastly-client-ip
+    const headerCandidates = [
+      headers['x-forwarded-for'],
+      headers['cf-connecting-ip'],
+      headers['x-real-ip'],
+      headers['true-client-ip'],
+      headers['fastly-client-ip']
+    ].filter(Boolean);
+
+    let parsedFromHeader = 'unknown';
+    for (const raw of headerCandidates) {
+      // x-forwarded-for 케이스 핸들링
+      const candidates = String(raw).split(',').map(s => s.trim()).filter(Boolean);
+      for (const cand of candidates) {
+        // IPv6-mapped IPv4 (::ffff:1.2.3.4) 제거
+        const normalized = cand.startsWith('::ffff:') ? cand.replace('::ffff:', '') : cand;
+        // 대괄호 IPv6 표기 제거
+        const cleaned = normalized.replace(/^\[|\]$/g, '');
+        if (isPublicIP(cleaned)) {
+          parsedFromHeader = cleaned;
+          break;
+        }
+      }
+      if (parsedFromHeader !== 'unknown') break;
+    }
+
+    // 2) 소켓 정보 (로컬/사설망일 확률 높음)
+    const socketIP =
+      request?.rawRequest?.connection?.remoteAddress ||
+      request?.rawRequest?.socket?.remoteAddress ||
+      'unknown';
+    const normalizedSocket = socketIP.startsWith('::ffff:') ? socketIP.replace('::ffff:', '') : socketIP;
+
+    const finalIP = parsedFromHeader !== 'unknown' ? parsedFromHeader : normalizedSocket;
+    const safeIP = isPublicIP(finalIP) ? finalIP : 'internal';
+
+    console.log(`✅ IP 주소 수집: header=${parsedFromHeader}, socket=${normalizedSocket}, final=${safeIP}`);
+
+    // 절대 throw 하지 않고 항상 success: true로 반환 (클라이언트 UX 안정화)
     return {
       success: true,
-      ip: ip,
+      ip: safeIP || 'unknown',
       timestamp: new Date().toISOString()
     };
-    
   } catch (error) {
     console.error('❌ IP 주소 수집 에러:', error);
-    throw new HttpsError('internal', 'IP 주소를 가져올 수 없습니다.');
+    // 오류 시에도 사용자 경험을 위해 success 유지
+    return {
+      success: true,
+      ip: 'unknown',
+      timestamp: new Date().toISOString(),
+      error: 'capture-failed'
+    };
   }
 });
+
+// 공용 IP 여부 판단 (사설/루프백/링크로컬 제외)
+function isPublicIP(ip) {
+  if (!ip || ip === 'unknown') return false;
+  // IPv6 loopback
+  if (ip === '::1') return false;
+  // IPv4 loopback
+  if (ip === '127.0.0.1') return false;
+  // 사설 IPv4
+  const privateIPv4 = [
+    /^10\./,
+    /^192\.168\./,
+    /^172\.(1[6-9]|2[0-9]|3[0-1])\./
+  ];
+  if (privateIPv4.some(rx => rx.test(ip))) return false;
+  // 링크 로컬(IPv4)
+  if (/^169\.254\./.test(ip)) return false;
+  // 간단 IPv6 사설/링크로컬 체크 (fc00::/7, fe80::/10)
+  if (/^fc|^fd/i.test(ip) || /^fe8/i.test(ip)) return false;
+  return true;
+}
