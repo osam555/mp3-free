@@ -4,7 +4,7 @@
  */
 
 // Firebase 설정 (관리자 페이지와 동일)
-const FIREBASE_API_KEY = 'YOUR_FIREBASE_API_KEY';
+const FIREBASE_API_KEY = 'AIzaSyCQ6McIjpURTjnkprLcVTAytQZk49NG9zo';
 const FIREBASE_PROJECT_ID = 'mp3-free-earlybird';
 
 console.log('🔍 교보문고 순위 추출 스크립트 시작...');
