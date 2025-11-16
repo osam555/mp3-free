@@ -759,8 +759,8 @@ function updateRankStats(historyData) {
 function updateRankChart(labels, ranks) {
     const ctx = document.getElementById('rankChart');
     const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#f3f4f6' : '#111827'; // 다크모드: gray-100, 라이트모드: gray-900 (더 진하게)
-    const gridColor = isDark ? '#4b5563' : '#d1d5db'; // 다크모드: gray-600, 라이트모드: gray-300 (더 진하게)
+    const textColor = isDark ? '#ffffff' : '#111827'; // 다크모드: 흰색, 라이트모드: gray-900
+    const gridColor = isDark ? '#6b7280' : '#d1d5db'; // 다크모드: gray-500 (더 밝게), 라이트모드: gray-300
     
     if (rankChart) {
         rankChart.destroy();
