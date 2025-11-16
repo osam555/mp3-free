@@ -456,15 +456,15 @@ function loadApplications() {
             
             if (tbody) {
                 tbody.innerHTML = `
-                    <tr>
+                <tr>
                         <td colspan="10" class="px-6 py-12 text-center text-red-600">
                             ${errorMessage}
-                        </td>
-                    </tr>
-                `;
+                    </td>
+                </tr>
+            `;
             }
         });
-    });
+        });
 }
 
 // 페이지 로드 시 초기화
@@ -485,7 +485,7 @@ window.addEventListener('DOMContentLoaded', () => {
             // 잠시 후 재시도
             setTimeout(() => {
                 if (typeof db !== 'undefined' && typeof applicationsRef !== 'undefined') {
-                    loadApplications();
+    loadApplications();
                 }
             }, 500);
         }
@@ -742,6 +742,14 @@ function updateRankChart(labels, ranks) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            layout: {
+                padding: {
+                    left: 10,
+                    right: 10,
+                    top: 10,
+                    bottom: 10
+                }
+            },
             plugins: {
                 legend: {
                     display: true,
@@ -774,8 +782,9 @@ function updateRankChart(labels, ranks) {
                         display: true,
                         text: '순위 (위)',
                         color: textColor,
+                        padding: {top: 0, bottom: 10},
                         font: {
-                            size: 14,
+                            size: 16,
                             weight: 'bold',
                             family: "'Noto Sans KR', sans-serif"
                         }
@@ -783,15 +792,17 @@ function updateRankChart(labels, ranks) {
                     ticks: {
                         color: textColor,
                         font: {
-                            size: 12,
+                            size: 13,
                             family: "'Noto Sans KR', sans-serif"
                         },
+                        padding: 8,
                         callback: function(value) {
                             return value + '위';
                         }
                     },
                     grid: {
-                        color: gridColor
+                        color: gridColor,
+                        drawBorder: true
                     }
                 },
                 x: {
@@ -799,8 +810,9 @@ function updateRankChart(labels, ranks) {
                         display: true,
                         text: '날짜',
                         color: textColor,
+                        padding: {top: 10, bottom: 0},
                         font: {
-                            size: 14,
+                            size: 16,
                             weight: 'bold',
                             family: "'Noto Sans KR', sans-serif"
                         }
@@ -808,12 +820,16 @@ function updateRankChart(labels, ranks) {
                     ticks: {
                         color: textColor,
                         font: {
-                            size: 12,
+                            size: 13,
                             family: "'Noto Sans KR', sans-serif"
-                        }
+                        },
+                        padding: 8,
+                        maxRotation: 45,
+                        minRotation: 0
                     },
                     grid: {
-                        color: gridColor
+                        color: gridColor,
+                        drawBorder: true
                     }
                 }
             }
