@@ -75,28 +75,30 @@
         </div>
 
         <!-- 교보문고 순위 카드 -->
-        <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-lg shadow-lg p-6 mb-6 text-white">
-            <div class="flex justify-between items-center">
-                <div>
-                    <h2 class="text-xl font-bold mb-2">📚 교보문고 주간베스트 순위</h2>
-                    <div id="rank-info" class="text-3xl font-bold">
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 dark:from-blue-600 dark:to-purple-700 rounded-lg shadow-lg p-4 md:p-6 mb-6 text-white">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4">
+                <div class="flex-1">
+                    <h2 class="text-lg md:text-xl font-bold mb-2">📚 교보문고 주간베스트 순위</h2>
+                    <div id="rank-info" class="text-2xl md:text-3xl font-bold">
                         <span id="rank-value">-</span>
-                        <span class="text-lg ml-2" id="rank-category"></span>
+                        <span class="text-sm md:text-lg ml-2" id="rank-category"></span>
                     </div>
-                    <p class="text-sm mt-2 opacity-90" id="rank-last-updated">마지막 확인: -</p>
+                    <p class="text-xs md:text-sm mt-2 opacity-90" id="rank-last-updated">마지막 확인: -</p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="checkKyobobookRank()" id="check-rank-btn"
-                            class="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-4 py-2 rounded-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex-1">
-                        🔄 새로고침
-                    </button>
-                    <button onclick="showManualRankModal()" id="manual-rank-btn"
-                            class="bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 px-4 py-2 rounded-lg font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex-1">
-                        ✏️ 수동 입력
-                    </button>
-                </div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 mt-2 text-center">
-                    💡 Chrome 확장 프로그램에서 자동 수집 | 필요시 수동 입력
+                <div class="flex flex-col gap-2">
+                    <div class="flex gap-2">
+                        <button onclick="checkKyobobookRank()" id="check-rank-btn"
+                                class="bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex-1">
+                            🔄 새로고침
+                        </button>
+                        <button onclick="showManualRankModal()" id="manual-rank-btn"
+                                class="bg-white dark:bg-gray-800 text-green-600 dark:text-green-400 px-3 md:px-4 py-2 rounded-lg text-sm md:text-base font-bold hover:bg-gray-100 dark:hover:bg-gray-700 transition-all flex-1">
+                            ✏️ 수동 입력
+                        </button>
+                    </div>
+                    <div class="text-xs text-gray-100 dark:text-gray-200 opacity-80 text-center">
+                        💡 Chrome 확장 프로그램에서 자동 수집 | 필요시 수동 입력
+                    </div>
                 </div>
             </div>
         </div>
@@ -194,33 +196,33 @@
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">총 신청자</div>
-                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="total-count">0</div>
+        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">총 신청자</div>
+                <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400" id="total-count">0</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">1차 신청자</div>
-                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="round1-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">1차 신청자</div>
+                <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400" id="round1-count">0</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">2차 신청자</div>
-                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="round2-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors col-span-2 md:col-span-1">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">2차 신청자</div>
+                <div class="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400" id="round2-count">0</div>
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">대기 중</div>
-                <div class="text-3xl font-bold text-yellow-600 dark:text-yellow-400" id="pending-count">0</div>
+        <div class="grid grid-cols-3 md:grid-cols-3 gap-3 md:gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">대기 중</div>
+                <div class="text-2xl md:text-3xl font-bold text-yellow-600 dark:text-yellow-400" id="pending-count">0</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">승인 완료</div>
-                <div class="text-3xl font-bold text-green-600 dark:text-green-400" id="approved-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">승인 완료</div>
+                <div class="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400" id="approved-count">0</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">발송 완료</div>
-                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="sent-count">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">발송 완료</div>
+                <div class="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400" id="sent-count">0</div>
             </div>
         </div>
 
