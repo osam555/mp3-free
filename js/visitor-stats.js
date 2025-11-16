@@ -1,5 +1,35 @@
 // 방문자 통계 대시보드 스크립트
 
+// 다크모드 상태 확인 및 차트 색상 팔레트 제공 함수
+// - 목적: 현재 테마에 따라 차트의 글자색/그리드색/데이터색을 동적으로 적용
+function isDarkTheme() {
+    return document.documentElement.classList.contains('dark');
+}
+
+// 차트 공통 색상 반환
+function getChartThemeColors() {
+    const dark = isDarkTheme();
+    return {
+        text: dark ? '#e5e7eb' : '#1f2937',           // Tailwind gray-200 / gray-800
+        grid: dark ? 'rgba(229,231,235,0.15)' : 'rgba(31,41,55,0.1)',
+        borderBlue: 'rgb(59, 130, 246)',              // blue-500
+        fillBlue: dark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.10)',
+        barBlue: dark ? 'rgba(59,130,246,0.8)' : 'rgba(59,130,246,0.7)',
+        deviceColors: [
+            'rgb(59, 130, 246)',                      // blue-500
+            'rgb(16, 185, 129)',                      // emerald-500
+            'rgb(245, 158, 11)'                       // amber-500
+        ]
+    };
+}
+
+// 생성된 차트 인스턴스 저장소 (테마 변경 시 업데이트)
+const chartInstances = {
+    daily: null,
+    device: null,
+    browser: null
+};
+
 // Firestore 컬렉션 참조
 const visitorsRef = db.collection('page_visitors');
 
@@ -159,6 +189,8 @@ function createDailyChart(dailyStats) {
     const ctx = document.getElementById('dailyVisitorsChart');
     if (!ctx) return;
 
+    const colors = getChartThemeColors();
+
     // 최근 7일 날짜 생성
     const labels = [];
     const data = [];
@@ -172,15 +204,20 @@ function createDailyChart(dailyStats) {
         data.push(dailyStats[dateKey] || 0);
     }
 
-    new Chart(ctx, {
+    // 기존 차트 제거
+    if (chartInstances.daily) {
+        chartInstances.daily.destroy();
+    }
+
+    chartInstances.daily = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
                 label: '일별 방문자 수',
                 data: data,
-                borderColor: 'rgb(59, 130, 246)',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                borderColor: colors.borderBlue,
+                backgroundColor: colors.fillBlue,
                 tension: 0.4,
                 fill: true
             }]
@@ -195,7 +232,8 @@ function createDailyChart(dailyStats) {
                         font: {
                             family: "'Noto Sans KR', sans-serif",
                             size: 14
-                        }
+                        },
+                        color: colors.text
                     }
                 }
             },
@@ -206,14 +244,22 @@ function createDailyChart(dailyStats) {
                         stepSize: 1,
                         font: {
                             family: "'Noto Sans KR', sans-serif"
-                        }
+                        },
+                        color: colors.text
+                    },
+                    grid: {
+                        color: colors.grid
                     }
                 },
                 x: {
                     ticks: {
                         font: {
                             family: "'Noto Sans KR', sans-serif"
-                        }
+                        },
+                        color: colors.text
+                    },
+                    grid: {
+                        color: colors.grid
                     }
                 }
             }
@@ -226,17 +272,19 @@ function createDeviceChart(deviceStats) {
     const ctx = document.getElementById('deviceChart');
     if (!ctx) return;
 
-    new Chart(ctx, {
+    const colors = getChartThemeColors();
+
+    if (chartInstances.device) {
+        chartInstances.device.destroy();
+    }
+
+    chartInstances.device = new Chart(ctx, {
         type: 'doughnut',
         data: {
             labels: Object.keys(deviceStats),
             datasets: [{
                 data: Object.values(deviceStats),
-                backgroundColor: [
-                    'rgb(59, 130, 246)',
-                    'rgb(16, 185, 129)',
-                    'rgb(245, 158, 11)'
-                ]
+                backgroundColor: colors.deviceColors
             }]
         },
         options: {
@@ -249,7 +297,8 @@ function createDeviceChart(deviceStats) {
                         font: {
                             family: "'Noto Sans KR', sans-serif",
                             size: 12
-                        }
+                        },
+                        color: colors.text
                     }
                 }
             }
@@ -262,14 +311,20 @@ function createBrowserChart(browserStats) {
     const ctx = document.getElementById('browserChart');
     if (!ctx) return;
 
-    new Chart(ctx, {
+    const colors = getChartThemeColors();
+
+    if (chartInstances.browser) {
+        chartInstances.browser.destroy();
+    }
+
+    chartInstances.browser = new Chart(ctx, {
         type: 'bar',
         data: {
             labels: Object.keys(browserStats),
             datasets: [{
                 label: '브라우저별 방문자',
                 data: Object.values(browserStats),
-                backgroundColor: 'rgba(59, 130, 246, 0.7)'
+                backgroundColor: colors.barBlue
             }]
         },
         options: {
@@ -277,7 +332,10 @@ function createBrowserChart(browserStats) {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    display: false,
+                    labels: {
+                        color: colors.text
+                    }
                 }
             },
             scales: {
@@ -287,14 +345,22 @@ function createBrowserChart(browserStats) {
                         stepSize: 1,
                         font: {
                             family: "'Noto Sans KR', sans-serif"
-                        }
+                        },
+                        color: colors.text
+                    },
+                    grid: {
+                        color: colors.grid
                     }
                 },
                 x: {
                     ticks: {
                         font: {
                             family: "'Noto Sans KR', sans-serif"
-                        }
+                        },
+                        color: colors.text
+                    },
+                    grid: {
+                        color: colors.grid
                     }
                 }
             }
@@ -431,4 +497,42 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     // 최근 방문자 테이블 렌더링
     await renderRecentVisitors();
+});
+
+// 테마 변경 시 차트 색상 업데이트
+// - 목적: 다크/라이트 모드 전환에 따라 차트의 텍스트/그리드/데이터 색상을 재적용
+window.addEventListener('themechange', () => {
+    try {
+        // 차트를 다시 그릴 수 있도록 데이터 소스가 필요 -> 기존 인스턴스의 옵션만 업데이트
+        const colors = getChartThemeColors();
+        if (chartInstances.daily) {
+            chartInstances.daily.options.plugins.legend.labels.color = colors.text;
+            chartInstances.daily.options.scales.x.ticks.color = colors.text;
+            chartInstances.daily.options.scales.y.ticks.color = colors.text;
+            chartInstances.daily.options.scales.x.grid.color = colors.grid;
+            chartInstances.daily.options.scales.y.grid.color = colors.grid;
+            chartInstances.daily.data.datasets[0].borderColor = colors.borderBlue;
+            chartInstances.daily.data.datasets[0].backgroundColor = colors.fillBlue;
+            chartInstances.daily.update();
+        }
+        if (chartInstances.device) {
+            chartInstances.device.options.plugins.legend.labels.color = colors.text;
+            // 데이터셋 색상 유지
+            chartInstances.device.update();
+        }
+        if (chartInstances.browser) {
+            // legend는 숨김이지만 방어적으로 적용
+            if (chartInstances.browser.options.plugins.legend.labels) {
+                chartInstances.browser.options.plugins.legend.labels.color = colors.text;
+            }
+            chartInstances.browser.options.scales.x.ticks.color = colors.text;
+            chartInstances.browser.options.scales.y.ticks.color = colors.text;
+            chartInstances.browser.options.scales.x.grid.color = colors.grid;
+            chartInstances.browser.options.scales.y.grid.color = colors.grid;
+            chartInstances.browser.data.datasets[0].backgroundColor = colors.barBlue;
+            chartInstances.browser.update();
+        }
+    } catch (e) {
+        console.warn('테마 변경 차트 업데이트 중 경고:', e);
+    }
 });

@@ -17,17 +17,35 @@
             font-family: 'Noto Sans KR', sans-serif;
         }
     </style>
+    <script>
+        // 다크모드 초기화 스크립트: 시스템/사용자 설정을 바탕으로 html에 dark 클래스 토글
+        (function initTheme() {
+            try {
+                const userTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (userTheme === 'dark' || (!userTheme && systemPrefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100">
     <div class="max-w-7xl mx-auto p-4 md:p-8">
         <!-- Header -->
-        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6">
             <div class="flex justify-between items-center">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-800 mb-2">📊 방문자 통계</h1>
-                    <p class="text-gray-600">페이지 방문 현황 및 분석</p>
+                    <h1 class="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2">📊 방문자 통계</h1>
+                    <p class="text-gray-600 dark:text-gray-300">페이지 방문 현황 및 분석</p>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 items-center">
+                    <!-- 다크모드 토글 버튼 -->
+                    <button id="theme-toggle" class="px-3 py-2 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-600">
+                        🌙/☀️
+                    </button>
                     <button onclick="checkAdminAuth()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                         로그아웃
                     </button>
@@ -40,41 +58,41 @@
 
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">오늘 방문자</div>
-                <div class="text-3xl font-bold text-blue-600" id="today-visitors">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">오늘 방문자</div>
+                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="today-visitors">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">주간 방문자 (7일)</div>
-                <div class="text-3xl font-bold text-green-600" id="weekly-visitors">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">주간 방문자 (7일)</div>
+                <div class="text-3xl font-bold text-green-600 dark:text-green-400" id="weekly-visitors">0</div>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 mb-1">월간 방문자 (30일)</div>
-                <div class="text-3xl font-bold text-purple-600" id="monthly-visitors">0</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">월간 방문자 (30일)</div>
+                <div class="text-3xl font-bold text-purple-600 dark:text-purple-400" id="monthly-visitors">0</div>
             </div>
         </div>
 
         <!-- Charts -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
             <!-- Daily Visitors Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">일자별 방문자 (최근 7일)</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">일자별 방문자 (최근 7일)</h2>
                 <div style="height: 300px;">
                     <canvas id="dailyVisitorsChart"></canvas>
                 </div>
             </div>
 
             <!-- Device Chart -->
-            <div class="bg-white rounded-lg shadow p-6">
-                <h2 class="text-xl font-bold mb-4">디바이스별 방문자</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">디바이스별 방문자</h2>
                 <div style="height: 300px;">
                     <canvas id="deviceChart"></canvas>
                 </div>
             </div>
 
             <!-- Browser Chart -->
-            <div class="bg-white rounded-lg shadow p-6 md:col-span-2">
-                <h2 class="text-xl font-bold mb-4">브라우저별 방문자</h2>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 md:col-span-2">
+                <h2 class="text-xl font-bold mb-4 text-gray-900 dark:text-gray-100">브라우저별 방문자</h2>
                 <div style="height: 300px;">
                     <canvas id="browserChart"></canvas>
                 </div>
@@ -82,30 +100,30 @@
         </div>
 
         <!-- Recent Visitors Table -->
-        <div class="bg-white rounded-lg shadow overflow-hidden mb-6">
-            <div class="p-6 border-b">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden mb-6">
+            <div class="p-6 border-b border-gray-200 dark:border-gray-700">
                 <div class="flex justify-between items-center">
-                    <h2 class="text-xl font-bold">최근 방문자 (20명)</h2>
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-gray-100">최근 방문자 (20명)</h2>
                     <button onclick="exportVisitorsToCSV()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
                         📥 CSV 내보내기
                     </button>
                 </div>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">방문일시</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">페이지</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">디바이스</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">브라우저</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">유입경로</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">해상도</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">방문일시</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">페이지</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">디바이스</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">브라우저</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">유입경로</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">해상도</th>
                         </tr>
                     </thead>
-                    <tbody id="recent-visitors-table" class="bg-white divide-y divide-gray-200">
+                    <tbody id="recent-visitors-table" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-300">
                                 로딩 중...
                             </td>
                         </tr>
@@ -130,6 +148,29 @@
                 window.location.href = 'admin.html';
             }
         }
+        // 다크모드 토글 핸들러: 로컬 스토리지 저장, html.dark 토글, 차트 업데이트 이벤트 발행
+        (function registerThemeToggle() {
+            const btn = document.getElementById('theme-toggle');
+            if (!btn) return;
+            btn.addEventListener('click', function () {
+                const isDark = document.documentElement.classList.toggle('dark');
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+                // 차트 테마 적용을 위해 커스텀 이벤트 전파
+                window.dispatchEvent(new CustomEvent('themechange', { detail: { dark: isDark } }));
+            });
+            // 시스템 테마 변경도 반영
+            if (window.matchMedia) {
+                const mq = window.matchMedia('(prefers-color-scheme: dark)');
+                mq.addEventListener && mq.addEventListener('change', (e) => {
+                    const userTheme = localStorage.getItem('theme');
+                    if (!userTheme) {
+                        if (e.matches) document.documentElement.classList.add('dark');
+                        else document.documentElement.classList.remove('dark');
+                        window.dispatchEvent(new CustomEvent('themechange', { detail: { dark: e.matches } }));
+                    }
+                });
+            }
+        })();
     </script>
 </body>
 </html>
