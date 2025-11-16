@@ -62,6 +62,12 @@ async function saveRankToFirebase(rank, category) {
     if (response.ok) {
       console.log('✅ Firebase에 순위 저장 완료');
       
+      // Chrome Storage에도 저장 (팝업 상태 업데이트용)
+      chrome.storage.local.set({
+        lastRank: rank,
+        lastCollect: new Date().toISOString()
+      }).catch(err => console.log('Storage 저장 실패:', err));
+      
       // 히스토리에도 추가
       await saveRankHistory(rank, category);
       
