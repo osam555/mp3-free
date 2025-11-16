@@ -639,17 +639,32 @@ async function loadRankHistory() {
         // 시간순 정렬 (오래된 것부터) - 클라이언트에서 정렬
         historyData.sort((a, b) => a.timestamp - b.timestamp);
         
-        // 통계 업데이트
+        // 통계 업데이트 (전체 데이터 사용)
         updateRankStats(historyData);
         
+        // 그래프용 데이터: 날짜별로 하루 1개만 표시 (가장 최신 데이터)
+        const dailyData = {};
+        historyData.forEach(item => {
+            const dateKey = item.timestamp.toLocaleDateString('ko-KR'); // "2024. 11. 17." 형식
+            // 같은 날짜에 이미 데이터가 있으면, 더 최신 것으로 덮어씀
+            if (!dailyData[dateKey] || item.timestamp > dailyData[dateKey].timestamp) {
+                dailyData[dateKey] = item;
+            }
+        });
+        
+        // dailyData를 다시 배열로 변환하고 시간순 정렬
+        const dailyDataArray = Object.values(dailyData).sort((a, b) => a.timestamp - b.timestamp);
+        
+        console.log(`📊 전체 데이터: ${historyData.length}개, 그래프 표시: ${dailyDataArray.length}개 (하루 1개)`);
+        
         // 그래프 데이터 준비
-        const labels = historyData.map(item => {
+        const labels = dailyDataArray.map(item => {
             return item.timestamp.toLocaleDateString('ko-KR', {
                 month: 'short',
                 day: 'numeric'
             }).replace('.', '월 ').replace('.', '일');
         });
-        const ranks = historyData.map(item => item.rank);
+        const ranks = dailyDataArray.map(item => item.rank);
         
         // 그래프 업데이트
         updateRankChart(labels, ranks);
