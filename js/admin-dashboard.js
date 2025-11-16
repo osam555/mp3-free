@@ -1340,19 +1340,50 @@ window.sendTestEmail = async function() {
         btn.disabled = true;
         btn.innerHTML = '📧 발송 중...';
         
+        console.log('🧪 테스트 이메일 발송 시작');
+        
+        // Firebase Functions 초기화 확인
+        if (typeof firebase === 'undefined' || typeof firebase.functions !== 'function') {
+            throw new Error('Firebase Functions가 초기화되지 않았습니다.');
+        }
+        
         // Cloud Function 호출
         const sendTestEmailFunction = firebase.functions().httpsCallable('sendTestRankEmail');
+        console.log('📞 Cloud Function 호출 중...');
+        
         const result = await sendTestEmailFunction();
+        console.log('📬 Cloud Function 응답:', result.data);
         
         if (result.data.success) {
-            alert('✅ 테스트 이메일이 발송되었습니다!\n\n수신함을 확인해주세요.');
+            const recipient = document.getElementById('email-recipient').value;
+            alert(`✅ 테스트 이메일이 발송되었습니다!\n\n수신 이메일: ${recipient}\n현재 순위: ${result.data.currentRank}위\n\n📧 수신함을 확인해주세요.`);
         } else {
-            alert('⚠️ 이메일 발송에 실패했습니다.\n\n' + (result.data.message || '알 수 없는 오류'));
+            alert('⚠️ 이메일 발송에 실패했습니다.\n\n' + (result.data.message || result.data.error || '알 수 없는 오류'));
         }
         
     } catch (error) {
         console.error('❌ 테스트 이메일 발송 에러:', error);
-        alert('테스트 이메일 발송 중 오류가 발생했습니다:\n\n' + error.message);
+        
+        let errorMessage = '테스트 이메일 발송 중 오류가 발생했습니다:\n\n';
+        
+        // 상세한 에러 메시지
+        if (error.code === 'functions/not-found') {
+            errorMessage += '❌ Cloud Function이 배포되지 않았습니다.\n\n';
+            errorMessage += '다음 명령어로 Functions를 배포해주세요:\n';
+            errorMessage += 'cd functions\n';
+            errorMessage += 'firebase deploy --only functions:sendTestRankEmail';
+        } else if (error.code === 'functions/unauthenticated') {
+            errorMessage += '❌ 인증 오류가 발생했습니다.';
+        } else if (error.code === 'functions/permission-denied') {
+            errorMessage += '❌ 권한이 없습니다.';
+        } else if (error.code === 'functions/internal') {
+            errorMessage += '❌ 서버 내부 오류가 발생했습니다.\n\n';
+            errorMessage += 'Firebase Console에서 Functions 로그를 확인해주세요.';
+        } else {
+            errorMessage += error.message || error.toString();
+        }
+        
+        alert(errorMessage);
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
