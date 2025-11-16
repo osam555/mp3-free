@@ -98,6 +98,24 @@ async function getTodayVisitors() {
     return filtered.length;
 }
 
+// 어제 방문자 수 가져오기
+// - 어제 00:00:00 이상, 오늘 00:00:00 미만 범위를 조회하여 카운트
+async function getYesterdayVisitors() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    // Firestore 범위 쿼리 (동일 필드에 대한 두 개의 비교 연산자)
+    const snapshot = await visitorsRef
+        .where('timestamp', '>=', yesterday)
+        .where('timestamp', '<', today)
+        .get();
+    // 관리자 IP 필터링
+    const adminIPs = await getAdminIPs();
+    const filtered = filterAdminIPs(snapshot.docs, adminIPs);
+    return filtered.length;
+}
+
 // 주간 방문자 통계 가져오기
 async function getWeeklyStats() {
     const today = new Date();
@@ -170,10 +188,13 @@ async function getMonthlyStats() {
 async function updateStatsCards() {
     try {
         const todayCount = await getTodayVisitors();
+        const yesterdayCount = await getYesterdayVisitors();
         const weeklyStats = await getWeeklyStats();
         const monthlyCount = await getMonthlyStats();
 
         document.getElementById('today-visitors').textContent = todayCount;
+        const yNode = document.getElementById('yesterday-visitors');
+        if (yNode) yNode.textContent = yesterdayCount;
         document.getElementById('weekly-visitors').textContent = weeklyStats.total;
         document.getElementById('monthly-visitors').textContent = monthlyCount;
 
