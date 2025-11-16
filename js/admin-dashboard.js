@@ -655,7 +655,7 @@ function updateRankStats(historyData) {
     if (historyData.length === 0) {
         document.getElementById('best-rank').textContent = '-';
         document.getElementById('worst-rank').textContent = '-';
-        document.getElementById('avg-rank').textContent = '-';
+        document.getElementById('yesterday-rank').textContent = '-';
         document.getElementById('rank-change-value').textContent = '-';
         document.getElementById('rank-change-icon').textContent = '';
         return;
@@ -675,9 +675,9 @@ function updateRankStats(historyData) {
     const worstRank = Math.max(...ranks);
     document.getElementById('worst-rank').textContent = `${worstRank}위`;
     
-    // 평균 순위
-    const avgRank = Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length);
-    document.getElementById('avg-rank').textContent = `${avgRank}위`;
+    // 어제 순위 (두 번째로 최근 순위, 없으면 가장 최근 순위)
+    const yesterdayRank = ranks.length >= 2 ? ranks[ranks.length - 2] : ranks[ranks.length - 1];
+    document.getElementById('yesterday-rank').textContent = `${yesterdayRank}위`;
     
     // 순위 변화 (첫 번째와 마지막 비교)
     if (ranks.length >= 2) {
