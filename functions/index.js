@@ -448,15 +448,337 @@ exports.scheduledCheckKyobobookRank = onSchedule({
 });
 
 /**
- * 매일 오전 6시 순위 체크 및 리포트 이메일 발송 - 비활성화
+ * 매일 오전 6시 순위 리포트 이메일 발송
  * Cloud Scheduler를 통해 호출
- * 현재 교보문고 봇 차단으로 인해 비활성화
+ * Chrome 확장 프로그램 또는 수동 입력된 순위 데이터를 읽어서 발송
  */
 exports.scheduledSendRankReport = onSchedule({
   schedule: '0 6 * * *', // 매일 오전 6시 (KST 기준)
   timeZone: 'Asia/Seoul',
 }, async (event) => {
-  console.log('🔄 매일 오전 6시 순위 체크 및 이메일 발송은 현재 비활성화되었습니다.');
-  console.log('⚠️ 교보문고 봇 차단으로 인해 수동 입력만 가능합니다.');
-  return { success: false, message: '자동 이메일 발송 비활성화됨' };
+  console.log('📧 매일 오전 6시 순위 리포트 이메일 발송 시작');
+  
+  const adminEmail = process.env.ADMIN_EMAIL || 'john.wu571@gmail.com';
+  
+  try {
+    const db = admin.firestore();
+    
+    // 현재 순위 가져오기
+    const currentRankDoc = await db.collection('kyobobook_rank').doc('current').get();
+    
+    if (!currentRankDoc.exists) {
+      console.warn('⚠️ 현재 순위 정보가 없습니다.');
+      return { success: false, message: '순위 정보 없음' };
+    }
+    
+    const currentData = currentRankDoc.data();
+    const currentRank = currentData.rank;
+    const category = currentData.category || '주간베스트 외국어';
+    const lastUpdated = currentData.lastUpdated ? currentData.lastUpdated.toDate() : null;
+    
+    // 최근 7일 순위 히스토리 가져오기
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    const historySnapshot = await db.collection('kyobobook_rank_history')
+      .where('timestamp', '>=', admin.firestore.Timestamp.fromDate(sevenDaysAgo))
+      .orderBy('timestamp', 'desc')
+      .limit(7)
+      .get();
+    
+    const historyData = [];
+    historySnapshot.forEach(doc => {
+      const data = doc.data();
+      historyData.push({
+        rank: data.rank,
+        timestamp: data.timestamp.toDate(),
+        category: data.category
+      });
+    });
+    
+    // 통계 계산
+    const ranks = historyData.map(h => h.rank);
+    const bestRank = ranks.length > 0 ? Math.min(...ranks) : currentRank;
+    const worstRank = ranks.length > 0 ? Math.max(...ranks) : currentRank;
+    const avgRank = ranks.length > 0 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : currentRank;
+    
+    // 어제 순위 (historyData는 최신순이므로 두 번째 항목)
+    const yesterdayRank = historyData.length >= 2 ? historyData[1].rank : currentRank;
+    const rankChange = yesterdayRank - currentRank; // 양수면 상승, 음수면 하락
+    
+    let changeText = '변화 없음';
+    let changeColor = '#6b7280';
+    if (rankChange > 0) {
+      changeText = `${rankChange}위 상승 📈`;
+      changeColor = '#10b981'; // 초록색
+    } else if (rankChange < 0) {
+      changeText = `${Math.abs(rankChange)}위 하락 📉`;
+      changeColor = '#ef4444'; // 빨간색
+    }
+    
+    // 히스토리 테이블 HTML
+    let historyTableRows = '';
+    historyData.forEach(item => {
+      const dateStr = item.timestamp.toLocaleDateString('ko-KR', {
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+      historyTableRows += `
+        <tr>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #4b5563;">${dateStr}</td>
+          <td style="padding: 12px; border-bottom: 1px solid #e5e7eb; color: #1f2937; font-weight: 600;">${item.rank}위</td>
+        </tr>
+      `;
+    });
+    
+    // 이메일 HTML 템플릿
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>교보문고 순위 리포트</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 16px 16px 0 0;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                      📚 교보문고 주간베스트 순위 리포트
+                    </h1>
+                    <p style="margin: 10px 0 0 0; color: #e0e7ff; font-size: 16px;">
+                      ${new Date().toLocaleDateString('ko-KR', { year: 'numeric', month: 'long', day: 'numeric' })}
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- 현재 순위 -->
+                <tr>
+                  <td style="padding: 40px;">
+                    <div style="text-align: center; background-color: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">현재 순위</p>
+                      <h2 style="margin: 0; color: #1f2937; font-size: 48px; font-weight: bold;">${currentRank}위</h2>
+                      <p style="margin: 10px 0 0 0; color: #4b5563; font-size: 16px;">${category}</p>
+                      ${lastUpdated ? `<p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 14px;">마지막 확인: ${lastUpdated.toLocaleString('ko-KR')}</p>` : ''}
+                    </div>
+                    
+                    <!-- 순위 변화 -->
+                    <div style="text-align: center; padding: 20px; background-color: ${changeColor}15; border-radius: 12px; margin-bottom: 30px;">
+                      <p style="margin: 0; color: ${changeColor}; font-size: 20px; font-weight: bold;">${changeText}</p>
+                      <p style="margin: 5px 0 0 0; color: #6b7280; font-size: 14px;">어제 대비 (${yesterdayRank}위 → ${currentRank}위)</p>
+                    </div>
+                    
+                    <!-- 주간 통계 -->
+                    <h3 style="margin: 0 0 20px 0; color: #1f2937; font-size: 18px; font-weight: bold;">📊 주간 통계 (최근 7일)</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom: 30px;">
+                      <tr>
+                        <td style="padding: 15px; background-color: #ecfdf5; border-radius: 8px; text-align: center; width: 33%;">
+                          <p style="margin: 0 0 5px 0; color: #10b981; font-size: 12px; font-weight: 600;">최고 순위</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 24px; font-weight: bold;">${bestRank}위</p>
+                        </td>
+                        <td style="width: 2%;"></td>
+                        <td style="padding: 15px; background-color: #fef2f2; border-radius: 8px; text-align: center; width: 33%;">
+                          <p style="margin: 0 0 5px 0; color: #ef4444; font-size: 12px; font-weight: 600;">최저 순위</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 24px; font-weight: bold;">${worstRank}위</p>
+                        </td>
+                        <td style="width: 2%;"></td>
+                        <td style="padding: 15px; background-color: #eff6ff; border-radius: 8px; text-align: center; width: 33%;">
+                          <p style="margin: 0 0 5px 0; color: #3b82f6; font-size: 12px; font-weight: 600;">평균 순위</p>
+                          <p style="margin: 0; color: #1f2937; font-size: 24px; font-weight: bold;">${avgRank}위</p>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <!-- 최근 히스토리 -->
+                    <h3 style="margin: 0 0 15px 0; color: #1f2937; font-size: 18px; font-weight: bold;">📈 최근 순위 변화</h3>
+                    <table width="100%" cellpadding="0" cellspacing="0" style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                      <thead>
+                        <tr style="background-color: #f9fafb;">
+                          <th style="padding: 12px; text-align: left; color: #6b7280; font-size: 14px; font-weight: 600;">날짜</th>
+                          <th style="padding: 12px; text-align: left; color: #6b7280; font-size: 14px; font-weight: 600;">순위</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        ${historyTableRows || '<tr><td colspan="2" style="padding: 20px; text-align: center; color: #9ca3af;">데이터가 없습니다</td></tr>'}
+                      </tbody>
+                    </table>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 16px 16px; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
+                      <strong>대충영어 속청 30일</strong> | 교보문고 주간베스트
+                    </p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                      이 이메일은 매일 오전 6시에 자동으로 발송됩니다.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+    
+    // 이메일 발송
+    const mailOptions = {
+      from: `대충영어 속청 30일 <${gmailEmail}>`,
+      to: adminEmail,
+      subject: `📊 교보문고 순위 리포트 - ${currentRank}위 (${changeText})`,
+      html: emailHtml
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    console.log(`✅ 순위 리포트 이메일 발송 완료: ${adminEmail}`);
+    console.log(`현재 순위: ${currentRank}위, 어제: ${yesterdayRank}위, 변화: ${changeText}`);
+    
+    return {
+      success: true,
+      currentRank,
+      yesterdayRank,
+      rankChange,
+      emailSent: true
+    };
+    
+  } catch (error) {
+    console.error('❌ 순위 리포트 이메일 발송 에러:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+/**
+ * 테스트 이메일 발송 (HTTP Callable Function)
+ * 관리자 대시보드에서 호출
+ */
+exports.sendTestRankEmail = onCall(async (request) => {
+  console.log('🧪 테스트 이메일 발송 요청');
+  
+  try {
+    const db = admin.firestore();
+    
+    // 설정에서 수신자 이메일 가져오기
+    const settingsDoc = await db.collection('settings').doc('email_schedule').get();
+    let adminEmail = 'john.wu571@gmail.com'; // 기본값
+    
+    if (settingsDoc.exists && settingsDoc.data().recipient) {
+      adminEmail = settingsDoc.data().recipient;
+    }
+    
+    // 현재 순위 가져오기
+    const currentRankDoc = await db.collection('kyobobook_rank').doc('current').get();
+    
+    if (!currentRankDoc.exists) {
+      return {
+        success: false,
+        message: '현재 순위 정보가 없습니다. 먼저 순위를 입력해주세요.'
+      };
+    }
+    
+    const currentData = currentRankDoc.data();
+    const currentRank = currentData.rank;
+    const category = currentData.category || '주간베스트 외국어';
+    const lastUpdated = currentData.lastUpdated ? currentData.lastUpdated.toDate() : null;
+    
+    // 간단한 테스트 이메일 HTML
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>테스트 이메일</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 0;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                
+                <!-- Header -->
+                <tr>
+                  <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px; text-align: center; border-radius: 16px 16px 0 0;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: bold;">
+                      🧪 테스트 이메일
+                    </h1>
+                    <p style="margin: 10px 0 0 0; color: #e0e7ff; font-size: 16px;">
+                      ${new Date().toLocaleString('ko-KR')}
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 40px;">
+                    <div style="text-align: center; background-color: #f9fafb; padding: 30px; border-radius: 12px; margin-bottom: 30px;">
+                      <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">현재 순위</p>
+                      <h2 style="margin: 0; color: #1f2937; font-size: 48px; font-weight: bold;">${currentRank}위</h2>
+                      <p style="margin: 10px 0 0 0; color: #4b5563; font-size: 16px;">${category}</p>
+                      ${lastUpdated ? `<p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 14px;">마지막 확인: ${lastUpdated.toLocaleString('ko-KR')}</p>` : ''}
+                    </div>
+                    
+                    <div style="background-color: #dbeafe; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                      <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                        <strong>✅ 이메일 설정이 정상적으로 작동하고 있습니다!</strong>
+                      </p>
+                      <p style="margin: 10px 0 0 0; color: #1e40af; font-size: 14px;">
+                        매일 설정된 시간에 자동으로 순위 리포트를 받게 됩니다.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="background-color: #f9fafb; padding: 30px; text-align: center; border-radius: 0 0 16px 16px; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 10px 0; color: #6b7280; font-size: 14px;">
+                      <strong>대충영어 속청 30일</strong> | 교보문고 주간베스트
+                    </p>
+                    <p style="margin: 0; color: #9ca3af; font-size: 12px;">
+                      이것은 테스트 이메일입니다.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
+    `;
+    
+    // 이메일 발송
+    const mailOptions = {
+      from: `대충영어 속청 30일 <${gmailEmail}>`,
+      to: adminEmail,
+      subject: `🧪 테스트: 교보문고 순위 리포트 - ${currentRank}위`,
+      html: emailHtml
+    };
+    
+    await transporter.sendMail(mailOptions);
+    
+    console.log(`✅ 테스트 이메일 발송 완료: ${adminEmail}`);
+    
+    return {
+      success: true,
+      message: `테스트 이메일이 ${adminEmail}로 발송되었습니다.`,
+      currentRank
+    };
+    
+  } catch (error) {
+    console.error('❌ 테스트 이메일 발송 에러:', error);
+    return { success: false, error: error.message };
+  }
 });

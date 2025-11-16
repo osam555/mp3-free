@@ -1277,3 +1277,93 @@ window.checkKyobobookRank = async function() {
         btn.innerHTML = originalText;
     }
 }
+
+// 이메일 자동발송 설정 관리
+window.loadEmailSettings = async function() {
+    try {
+        const settingsDoc = await db.collection('settings').doc('email_schedule').get();
+        
+        if (settingsDoc.exists) {
+            const data = settingsDoc.data();
+            document.getElementById('email-enabled').checked = data.enabled || false;
+            document.getElementById('email-recipient').value = data.recipient || 'john.wu571@gmail.com';
+            document.getElementById('email-send-time').value = data.sendTime || '06:00';
+            console.log('✅ 이메일 설정 로드 완료:', data);
+        } else {
+            console.log('⚠️ 저장된 이메일 설정이 없습니다. 기본값 사용');
+        }
+    } catch (error) {
+        console.error('❌ 이메일 설정 로드 에러:', error);
+        alert('이메일 설정을 불러오는 중 오류가 발생했습니다: ' + error.message);
+    }
+};
+
+window.saveEmailSettings = async function() {
+    try {
+        const enabled = document.getElementById('email-enabled').checked;
+        const recipient = document.getElementById('email-recipient').value;
+        const sendTime = document.getElementById('email-send-time').value;
+        
+        if (!recipient) {
+            alert('수신 이메일을 입력해주세요.');
+            return;
+        }
+        
+        if (!sendTime) {
+            alert('발송 시간을 설정해주세요.');
+            return;
+        }
+        
+        const settings = {
+            enabled,
+            recipient,
+            sendTime,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        
+        await db.collection('settings').doc('email_schedule').set(settings, { merge: true });
+        
+        console.log('✅ 이메일 설정 저장 완료:', settings);
+        alert('이메일 설정이 저장되었습니다!\n\n💡 참고: Firebase Functions를 재배포해야 새로운 시간에 발송됩니다.');
+        
+    } catch (error) {
+        console.error('❌ 이메일 설정 저장 에러:', error);
+        alert('이메일 설정 저장 중 오류가 발생했습니다: ' + error.message);
+    }
+};
+
+window.sendTestEmail = async function() {
+    const btn = event.target;
+    const originalText = btn.innerHTML;
+    
+    try {
+        btn.disabled = true;
+        btn.innerHTML = '📧 발송 중...';
+        
+        // Cloud Function 호출
+        const sendTestEmailFunction = firebase.functions().httpsCallable('sendTestRankEmail');
+        const result = await sendTestEmailFunction();
+        
+        if (result.data.success) {
+            alert('✅ 테스트 이메일이 발송되었습니다!\n\n수신함을 확인해주세요.');
+        } else {
+            alert('⚠️ 이메일 발송에 실패했습니다.\n\n' + (result.data.message || '알 수 없는 오류'));
+        }
+        
+    } catch (error) {
+        console.error('❌ 테스트 이메일 발송 에러:', error);
+        alert('테스트 이메일 발송 중 오류가 발생했습니다:\n\n' + error.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+};
+
+// 페이지 로드 시 이메일 설정도 로드
+document.addEventListener('DOMContentLoaded', () => {
+    // 기존 코드...
+    if (sessionStorage.getItem('admin_authenticated') === 'true') {
+        // ... 기존 로드 함수들
+        loadEmailSettings(); // 이메일 설정 로드 추가
+    }
+});

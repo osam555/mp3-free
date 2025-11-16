@@ -52,5 +52,12 @@ service cloud.firestore {
       // 주의: 실제 운영 시에는 더 엄격한 규칙 권장
       allow create, update, delete: if true;
     }
+
+    // 설정 컬렉션 (이메일 자동발송 등)
+    match /settings/{document} {
+      // 읽기/쓰기 모두 허용 (비밀번호 인증 시스템 사용)
+      // 주의: 실제 운영 시에는 더 엄격한 규칙 권장
+      allow read, write: if true;
+    }
   }
 }
