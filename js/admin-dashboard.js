@@ -1107,27 +1107,39 @@ async function checkKyobobookRank() {
     
     try {
         btn.disabled = true;
-        btn.innerHTML = '⏳ 확인 중...';
+        btn.innerHTML = '⏳ 새로고침 중...';
         
-        const checkRank = firebase.functions().httpsCallable('checkKyobobookRank');
-        const result = await checkRank();
+        // Firebase Functions 대신 Firestore에서 직접 데이터 로드
+        // (Chrome 확장에서 수집한 데이터)
+        await loadRankInfo();
+        await loadRankHistory();
+        await loadRankHistoryTable();
         
-        if (result.data.success) {
-            if (result.data.rank) {
-                alert(`✅ ${result.data.message}`);
+        // 최근 업데이트 시간 확인
+        const rankDoc = await db.collection('kyobobook_rank').doc('current').get();
+        if (rankDoc.exists) {
+            const data = rankDoc.data();
+            const lastUpdated = data.lastUpdated?.toDate();
+            const now = new Date();
+            const diffMinutes = Math.floor((now - lastUpdated) / 1000 / 60);
+            
+            let message = '';
+            if (data.extractedBy === 'chrome-extension') {
+                message = `✅ Chrome 확장에서 수집한 최신 데이터입니다.\n\n`;
+                message += `순위: ${data.rank}위\n`;
+                message += `카테고리: ${data.category}\n`;
+                message += `업데이트: ${diffMinutes}분 전`;
             } else {
-                alert(`⚠️ ${result.data.message}`);
+                message = `✅ 순위: ${data.rank}위\n`;
+                message += `업데이트: ${diffMinutes}분 전`;
             }
-            // 순위 정보 새로고침
-            await loadRankInfo();
-            await loadRankHistory();
-            await loadRankHistoryTable();
+            alert(message);
         } else {
-            alert(`❌ ${result.data.message || '순위 확인 중 오류가 발생했습니다.'}`);
+            alert('⚠️ 저장된 순위 정보가 없습니다.\n\nChrome 확장 프로그램에서 "지금 수집하기" 버튼을 클릭하거나,\n수동으로 순위를 입력해주세요.');
         }
     } catch (error) {
-        console.error('순위 체크 에러:', error);
-        alert('순위 확인 중 오류가 발생했습니다: ' + error.message);
+        console.error('순위 로드 에러:', error);
+        alert('순위 정보를 불러오는 중 오류가 발생했습니다: ' + error.message);
     } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
