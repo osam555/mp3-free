@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" class="overflow-x-hidden">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -47,6 +47,17 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
         }
 
         body {
@@ -259,9 +270,32 @@
         .smooth-scroll {
             scroll-behavior: smooth;
         }
+
+        /* 재생 버튼 반응형 스타일 */
+        #play-overlay {
+            padding: 12px 28px;
+            font-size: 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.4);
+        }
+
+        @media (max-width: 640px) {
+            #play-overlay {
+                padding: 10px 20px;
+                font-size: 14px;
+                box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+            }
+        }
+
+        @media (min-width: 768px) {
+            #play-overlay {
+                padding: 16px 36px;
+                font-size: 18px;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            }
+        }
     </style>
 </head>
-<body class="smooth-scroll bg-gray-50">
+<body class="smooth-scroll bg-gray-50 overflow-x-hidden">
 
     <!-- Navigation -->
     <nav class="fixed top-0 w-full shadow-lg z-50" style="background: #1925FA; backdrop-filter: blur(10px);">
@@ -346,7 +380,7 @@
 
     <!-- Main Content -->
     <main class="bg-white">
-        <div class="max-w-7xl mx-auto p-4 md:p-8">
+        <div class="max-w-7xl mx-auto px-4 py-4 md:p-8">
 
             <!-- Bookstore Image Section -->
             <section class="mb-12" id="hero-media-section">
@@ -365,8 +399,8 @@
                                     style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
                             </iframe>
                             <!-- 재생 버튼 오버레이 (항상 표시) -->
-                            <div id="play-overlay" style="display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 59, 48, 0.95); color: white; padding: 20px 40px; border-radius: 50px; z-index: 1000; cursor: pointer; font-size: 18px; font-weight: bold; box-shadow: 0 8px 32px rgba(0,0,0,0.4); transition: all 0.3s ease; backdrop-filter: blur(10px);">
-                                🔊 클릭하여 음성 재생
+                            <div id="play-overlay" style="display: block; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(255, 59, 48, 0.95); color: white; padding: 12px 28px; border-radius: 50px; z-index: 1000; cursor: pointer; font-size: 16px; font-weight: bold; box-shadow: 0 6px 24px rgba(0,0,0,0.4); transition: all 0.3s ease; backdrop-filter: blur(10px);">
+                                🔊 재생 시작
                             </div>
                         </div>
                     </div>
@@ -526,7 +560,7 @@
                     대충 영어 앱: WAV 무손실 음원으로 학습하세요
                 </h2>
                 <p class="text-lg text-center max-w-3xl mx-auto mb-8">
-                    K-Beauty-Mobile 앱은 WAV 무손실 음원을 기반으로<br>
+                    K-Beauty-Mobile 앱은 WAV 무손실 음원을 기반으로
                     속청 훈련과 흥미로운 데이터셋으로 영어 학습의 새로운 패러다임을 제시합니다
                 </p>
 
@@ -795,7 +829,7 @@
                         <canvas id="prenatalChart"></canvas>
                     </div>
                     <p class="mt-6 text-center text-lg">
-                        아날로그 국악이나 자연의 소리를 들려주었을 때 태아는 <span class="safe-text">안정적인 반응</span>을 보인 반면,<br>
+                        아날로그 국악이나 자연의 소리를 들려주었을 때 태아는 <span class="safe-text">안정적인 반응</span>을 보인 반면,
                         MP3 음원 청취 시에는 <span class="warning-text">스트레스 반응</span>을 보이는 경우가 관찰되었습니다.
                     </p>
 
@@ -1036,56 +1070,85 @@
 
 
             <!-- Earlybird Event Section -->
-            <section id="earlybird" class="mb-12">
-                <h2 class="text-3xl md:text-5xl font-black text-center mb-6 section-title">
+            <section id="earlybird" class="mb-8 md:mb-12 px-4 md:px-0">
+                <h2 class="text-2xl md:text-3xl lg:text-5xl font-black text-center mb-4 md:mb-6 section-title">
                     🎁 얼리버드 이벤트: 교보문고 구매자 특전
                 </h2>
-                <p class="text-lg text-center max-w-3xl mx-auto mb-8">
+                <p class="text-base md:text-lg text-center max-w-3xl mx-auto mb-6 md:mb-8 px-2">
                     교보문고에서 '대충영어 속청 30일'을 구매하신 선착순 <span class="font-bold text-red-600">100명</span>에게
                     <span class="font-bold text-blue-700">영어 귀를 3배 이상 빠르게 뚫게 하는 WAV 속청 동영상 원본(500메가)</span>을 제공합니다!
                 </p>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="mb-6 md:mb-8">
                     <!-- 이벤트 안내 -->
-                    <div class="glass-card bg-gradient-to-br from-yellow-50 to-orange-50">
-                        <div class="text-center mb-6">
-                            <div class="text-6xl mb-4">🎯</div>
-                            <h3 class="text-2xl font-bold section-title mb-4">얼리버드 혜택</h3>
+                    <div class="glass-card bg-gradient-to-br from-yellow-50 to-orange-50 max-w-4xl mx-auto">
+                        <div class="text-center mb-4 md:mb-6">
+                            <div class="text-4xl md:text-6xl mb-3 md:mb-4">🎯</div>
+                            <h3 class="text-xl md:text-2xl font-bold section-title mb-3 md:mb-4 px-4">얼리버드 혜택</h3>
                         </div>
-                        <ul class="space-y-3 text-lg">
+                        <ul class="space-y-3 md:space-y-4 text-base md:text-lg px-2">
                             <li class="flex items-start">
-                                <span class="text-2xl mr-3">✅</span>
+                                <span class="text-2xl md:text-3xl mr-3 md:mr-4 flex-shrink-0">✅</span>
                                 <div>
-                                    <strong class="text-blue-700">WAV 무손실 속청 파일 원본</strong><br>
-                                    <span class="text-gray-600 text-base">고음질 무손실 음원으로 제작된 속청 학습 파일</span>
+                                    <strong class="text-blue-700 text-base md:text-lg">WAV 무손실 속청 파일 원본</strong><br>
+                                    <span class="text-gray-600 text-sm md:text-base">고음질 무손실 음원으로 제작된 속청 학습 파일</span>
                                 </div>
                             </li>
                             <li class="flex items-start">
-                                <span class="text-2xl mr-3">⚡</span>
+                                <span class="text-2xl md:text-3xl mr-3 md:mr-4 flex-shrink-0">⚡</span>
                                 <div>
-                                    <strong class="text-blue-700">2~4배속 최적화 음원</strong><br>
-                                    <span class="text-gray-600 text-base">고배속에서도 명료한 학습 효과</span>
+                                    <strong class="text-blue-700 text-base md:text-lg">2~4배속 최적화 음원</strong><br>
+                                    <span class="text-gray-600 text-sm md:text-base">고배속에서도 명료한 학습 효과</span>
                                 </div>
                             </li>
                             <li class="flex items-start">
-                                <span class="text-2xl mr-3">🎧</span>
+                                <span class="text-2xl md:text-3xl mr-3 md:mr-4 flex-shrink-0">🎧</span>
                                 <div>
-                                    <strong class="text-blue-700">청각 피로도 최소화</strong><br>
-                                    <span class="text-gray-600 text-base">장시간 학습에도 편안한 고품질 음원</span>
+                                    <strong class="text-blue-700 text-base md:text-lg">청각 피로도 최소화</strong><br>
+                                    <span class="text-gray-600 text-sm md:text-base">장시간 학습에도 편안한 고품질 음원</span>
                                 </div>
                             </li>
                         </ul>
 
-                        <div class="mt-6 p-4 bg-white rounded-lg">
-                            <h3 id="round-display" class="text-xl font-bold text-center mb-2 text-blue-600">1차 얼리버드</h3>
-                            <p class="text-sm text-gray-600 mt-2 text-center">선착순 100명 한정!</p>
+                        <div class="mt-4 md:mt-6 p-3 md:p-4 bg-white rounded-lg">
+                            <h3 id="round-display" class="text-lg md:text-xl font-bold text-center mb-2 text-blue-600">1차 얼리버드</h3>
+                            <p class="text-xs md:text-sm text-gray-600 mt-1 md:mt-2 text-center">선착순 100명 한정!</p>
                             <p class="text-xs text-gray-500 mt-1 text-center">1차 완료 시 2차 100명 진행</p>
                         </div>
                     </div>
 
+                    <!-- 최근 신청자 슬라이드 -->
+                    <div class="glass-card max-w-4xl mx-auto mt-6">
+                        <h3 class="text-xl md:text-2xl font-bold section-title mb-4 md:mb-6 text-center px-4">🎊 최근 신청자 현황</h3>
+                        <div class="relative overflow-hidden px-2 md:px-0">
+                            <!-- 슬라이드 컨테이너 -->
+                            <div id="recent-applicants-slider" class="flex transition-transform duration-500 ease-in-out">
+                                <!-- 동적으로 채워짐 -->
+                            </div>
+                            <!-- 좌우 화살표 버튼 -->
+                            <button id="prev-btn" class="absolute left-0 md:left-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1.5 md:p-2 shadow-lg z-10 transition-all">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                </svg>
+                            </button>
+                            <button id="next-btn" class="absolute right-0 md:right-2 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-1.5 md:p-2 shadow-lg z-10 transition-all">
+                                <svg class="w-5 h-5 md:w-6 md:h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                </svg>
+                            </button>
+                        </div>
+                        <!-- 인디케이터 -->
+                        <div id="slider-indicators" class="flex justify-center gap-1.5 md:gap-2 mt-3 md:mt-4">
+                            <!-- 동적으로 채워짐 -->
+                        </div>
+                        <p class="text-center text-xs md:text-sm text-gray-500 mt-3 md:mt-4 px-4">
+                            💡 개인정보 보호를 위해 이름 마지막 1글자만 표시됩니다
+                        </p>
+                    </div>
+
                     <!-- 신청 폼 -->
-                    <div class="glass-card">
-                        <h3 class="text-2xl font-bold section-title mb-6 text-center">📝 지금 바로 신청하세요</h3>
+                    <div class="glass-card max-w-4xl mx-auto">
+                        <h3 class="text-xl md:text-2xl font-bold section-title mb-4 md:mb-6 text-center px-4">📝 지금 바로 신청하세요</h3>
 
                         <form id="earlybird-form" class="space-y-4">
                             <!-- 영수증 업로드 -->
@@ -1217,34 +1280,6 @@
                     </div>
                 </div>
 
-                <!-- 최근 신청자 슬라이드 -->
-                <div class="glass-card max-w-4xl mx-auto">
-                    <h3 class="text-2xl font-bold section-title mb-6 text-center">🎊 최근 신청자 현황</h3>
-                    <div class="relative overflow-hidden">
-                        <!-- 슬라이드 컨테이너 -->
-                        <div id="recent-applicants-slider" class="flex transition-transform duration-500 ease-in-out">
-                            <!-- 동적으로 채워짐 -->
-                        </div>
-                        <!-- 좌우 화살표 버튼 -->
-                        <button id="prev-btn" class="absolute left-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg z-10 transition-all">
-                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                            </svg>
-                        </button>
-                        <button id="next-btn" class="absolute right-0 top-1/2 -translate-y-1/2 bg-white bg-opacity-80 hover:bg-opacity-100 rounded-full p-2 shadow-lg z-10 transition-all">
-                            <svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                            </svg>
-                        </button>
-                    </div>
-                    <!-- 인디케이터 -->
-                    <div id="slider-indicators" class="flex justify-center gap-2 mt-4">
-                        <!-- 동적으로 채워짐 -->
-                    </div>
-                    <p class="text-center text-sm text-gray-500 mt-4">
-                        💡 개인정보 보호를 위해 이름 마지막 1글자만 표시됩니다
-                    </p>
-                </div>
             </section>
 
     <footer class="text-center p-6 bg-gray-800 text-gray-300">
