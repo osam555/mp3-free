@@ -675,16 +675,44 @@ function updateRankStats(historyData) {
     const worstRank = Math.max(...ranks);
     document.getElementById('worst-rank').textContent = `${worstRank}위`;
     
-    // 어제 순위 (두 번째로 최근 순위, 없으면 가장 최근 순위)
+    // 어제 순위 (가장 최근 날짜 기준으로 하루 전 데이터 찾기)
     // historyData는 오래된 것부터 정렬되어 있음
-    // 따라서 ranks[ranks.length - 2]가 어제, ranks[ranks.length - 1]이 오늘
     console.log('📊 순위 데이터 (오래된→최근):', ranks);
-    console.log('📅 날짜 데이터:', historyData.map(h => h.timestamp.toLocaleDateString('ko-KR')));
+    console.log('📅 날짜 데이터:', historyData.map(h => h.timestamp.toLocaleDateString('ko-KR') + ' ' + h.timestamp.toLocaleTimeString('ko-KR')));
     
-    const todayRank = ranks[ranks.length - 1]; // 가장 최근 (오늘)
-    const yesterdayRank = ranks.length >= 2 ? ranks[ranks.length - 2] : todayRank; // 두 번째로 최근 (어제)
+    // 가장 최근 데이터
+    const latestData = historyData[historyData.length - 1];
+    const todayRank = latestData.rank;
     
-    console.log(`✅ 오늘: ${todayRank}위, 어제: ${yesterdayRank}위`);
+    // 가장 최근 날짜에서 1일 전 범위 내의 데이터 찾기 (24-48시간 전)
+    const latestDate = latestData.timestamp;
+    const oneDayAgo = new Date(latestDate.getTime() - (24 * 60 * 60 * 1000));
+    const twoDaysAgo = new Date(latestDate.getTime() - (48 * 60 * 60 * 1000));
+    
+    // 1일 전부터 2일 전 사이의 데이터 찾기
+    let yesterdayRank = todayRank; // 기본값
+    for (let i = historyData.length - 2; i >= 0; i--) {
+        const dataTime = historyData[i].timestamp.getTime();
+        if (dataTime <= oneDayAgo.getTime() && dataTime >= twoDaysAgo.getTime()) {
+            yesterdayRank = historyData[i].rank;
+            console.log(`✅ 어제 순위 찾음: ${historyData[i].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
+            break;
+        } else if (dataTime < twoDaysAgo.getTime()) {
+            // 2일 전보다 오래된 데이터면 가장 가까운 것 사용
+            yesterdayRank = historyData[i].rank;
+            console.log(`ℹ️  정확한 어제 데이터 없음, 가장 가까운 이전 데이터 사용: ${historyData[i].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
+            break;
+        }
+    }
+    
+    // 대안: 데이터가 하나뿐이거나 어제 데이터를 못 찾은 경우
+    if (historyData.length >= 2 && yesterdayRank === todayRank) {
+        yesterdayRank = historyData[historyData.length - 2].rank;
+        console.log(`ℹ️  두 번째로 최근 데이터 사용: ${historyData[historyData.length - 2].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
+    }
+    
+    console.log(`✅ 최신: ${latestData.timestamp.toLocaleDateString('ko-KR')} ${todayRank}위`);
+    console.log(`✅ 어제: ${yesterdayRank}위`);
     document.getElementById('yesterday-rank').textContent = `${yesterdayRank}위`;
     
     // 순위 변화 (첫 번째와 마지막 비교)
