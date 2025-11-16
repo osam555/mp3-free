@@ -782,3 +782,31 @@ exports.sendTestRankEmail = onCall(async (request) => {
     return { success: false, error: error.message };
   }
 });
+
+/**
+ * getVisitorIP - HTTP Callable Function
+ * 방문자의 실제 IP 주소를 반환하는 함수
+ * 
+ * 클라이언트에서 호출 시 사용자의 IP 주소를 가져옵니다.
+ */
+exports.getVisitorIP = onCall(async (request) => {
+  try {
+    // Cloud Functions의 request.rawRequest에서 IP 추출
+    const ip = request.rawRequest.headers['x-forwarded-for']?.split(',')[0]?.trim() 
+               || request.rawRequest.connection.remoteAddress 
+               || request.rawRequest.socket.remoteAddress
+               || 'unknown';
+    
+    console.log(`✅ IP 주소 수집: ${ip}`);
+    
+    return {
+      success: true,
+      ip: ip,
+      timestamp: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    console.error('❌ IP 주소 수집 에러:', error);
+    throw new HttpsError('internal', 'IP 주소를 가져올 수 없습니다.');
+  }
+});

@@ -323,6 +323,69 @@
             </div>
         </div>
 
+        <!-- 관리자 IP 설정 -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-6 transition-colors">
+            <div class="flex justify-between items-center mb-4">
+                <div>
+                    <h2 class="text-xl font-bold text-gray-800 dark:text-gray-100">🔒 관리자 IP 설정</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">방문자 통계에서 제외할 관리자 IP 주소를 관리하세요</p>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- 현재 IP 확인 -->
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">🌐 현재 IP 주소</h3>
+                    
+                    <div class="space-y-4">
+                        <div class="bg-white dark:bg-gray-800 p-4 rounded border border-gray-200 dark:border-gray-600">
+                            <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">접속 중인 IP:</p>
+                            <p id="current-ip" class="text-lg font-mono font-bold text-blue-600 dark:text-blue-400">확인 중...</p>
+                        </div>
+                        
+                        <button onclick="checkCurrentIP()" 
+                                class="w-full px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-all font-semibold">
+                            🔄 IP 주소 확인
+                        </button>
+                        
+                        <button onclick="addCurrentIPToAdminList()" 
+                                class="w-full px-4 py-2 bg-green-600 dark:bg-green-700 text-white rounded hover:bg-green-700 dark:hover:bg-green-600 transition-all font-semibold">
+                            ➕ 현재 IP를 관리자로 등록
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 관리자 IP 목록 -->
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-3">📋 등록된 관리자 IP</h3>
+                    
+                    <div id="admin-ip-list" class="space-y-2 mb-4 max-h-64 overflow-y-auto">
+                        <p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">등록된 IP가 없습니다</p>
+                    </div>
+                    
+                    <div class="mt-4 pt-4 border-t dark:border-gray-600">
+                        <label class="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">수동으로 IP 추가</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="manual-ip-input" 
+                                   placeholder="예: 123.456.789.0"
+                                   class="flex-1 px-3 py-2 border rounded dark:bg-gray-800 dark:border-gray-600 dark:text-gray-100 text-sm">
+                            <button onclick="addManualIP()" 
+                                    class="px-4 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded hover:bg-blue-700 dark:hover:bg-blue-600 transition-all font-semibold text-sm">
+                                추가
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                <p class="text-sm text-yellow-800 dark:text-yellow-200">
+                    <strong>⚠️ 주의:</strong> 관리자 IP로 등록된 주소에서의 방문은 방문자 통계에 집계되지 않습니다. 
+                    IP 주소는 네트워크 환경에 따라 변경될 수 있으니 주기적으로 확인해주세요.
+                </p>
+            </div>
+        </div>
+
         <!-- Filters -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-6 transition-colors">
             <h2 class="text-xl font-bold mb-4 text-gray-800 dark:text-gray-100">필터</h2>

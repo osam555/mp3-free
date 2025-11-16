@@ -3,6 +3,35 @@
 // Firestore 컬렉션 참조
 const visitorsRef = db.collection('page_visitors');
 
+// 관리자 IP 목록 캐시 (한 번만 로드)
+let adminIPsCache = null;
+
+// 관리자 IP 목록 가져오기
+async function getAdminIPs() {
+    if (adminIPsCache !== null) {
+        return adminIPsCache;
+    }
+    
+    try {
+        const doc = await db.collection('settings').doc('admin_ips').get();
+        adminIPsCache = doc.exists ? (doc.data().ips || []) : [];
+        console.log('관리자 IP 목록 로드:', adminIPsCache);
+        return adminIPsCache;
+    } catch (error) {
+        console.error('관리자 IP 로드 실패:', error);
+        return [];
+    }
+}
+
+// 방문 데이터에서 관리자 IP 필터링
+function filterAdminIPs(docs, adminIPs) {
+    return docs.filter(doc => {
+        const data = doc.data();
+        const ip = data.ip || 'unknown';
+        return !adminIPs.includes(ip);
+    });
+}
+
 // 날짜 포맷팅 함수
 function formatDate(date) {
     const year = date.getFullYear();
@@ -32,7 +61,11 @@ async function getTodayVisitors() {
         .where('timestamp', '>=', today)
         .get();
 
-    return snapshot.size;
+    // 관리자 IP 필터링
+    const adminIPs = await getAdminIPs();
+    const filtered = filterAdminIPs(snapshot.docs, adminIPs);
+
+    return filtered.length;
 }
 
 // 주간 방문자 통계 가져오기
@@ -47,13 +80,17 @@ async function getWeeklyStats() {
         .orderBy('timestamp', 'asc')
         .get();
 
+    // 관리자 IP 필터링
+    const adminIPs = await getAdminIPs();
+    const filteredDocs = filterAdminIPs(snapshot.docs, adminIPs);
+
     // 일자별 그룹화
     const dailyStats = {};
     const deviceStats = { Desktop: 0, Mobile: 0, Tablet: 0 };
     const browserStats = {};
     const referrerStats = {};
 
-    snapshot.forEach(doc => {
+    filteredDocs.forEach(doc => {
         const data = doc.data();
         const date = data.timestamp.toDate();
         const dateKey = formatDate(date);
@@ -273,10 +310,14 @@ async function renderRecentVisitors() {
     try {
         const snapshot = await visitorsRef
             .orderBy('timestamp', 'desc')
-            .limit(20)
+            .limit(50)
             .get();
 
-        if (snapshot.empty) {
+        // 관리자 IP 필터링 후 20개만 표시
+        const adminIPs = await getAdminIPs();
+        const filteredDocs = filterAdminIPs(snapshot.docs, adminIPs).slice(0, 20);
+
+        if (filteredDocs.length === 0) {
             tbody.innerHTML = `
                 <tr>
                     <td colspan="6" class="px-6 py-12 text-center text-gray-500">
@@ -287,7 +328,7 @@ async function renderRecentVisitors() {
             return;
         }
 
-        tbody.innerHTML = snapshot.docs.map(doc => {
+        tbody.innerHTML = filteredDocs.map(doc => {
             const data = doc.data();
             return `
                 <tr class="hover:bg-gray-50">

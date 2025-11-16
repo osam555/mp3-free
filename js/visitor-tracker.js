@@ -6,6 +6,34 @@ const visitorsRef = db.collection('page_visitors');
 // 방문자 정보 수집 및 저장
 async function trackPageVisit() {
     try {
+        // 관리자 인증 확인 - 관리자는 추적 제외
+        const isAdmin = sessionStorage.getItem('admin_authenticated') === 'true';
+        if (isAdmin) {
+            console.log('관리자 방문: 추적 제외');
+            return;
+        }
+
+        // IP 주소 수집 (Cloud Function 호출)
+        let visitorIP = 'unknown';
+        try {
+            const getVisitorIP = firebase.functions().httpsCallable('getVisitorIP');
+            const ipResult = await getVisitorIP();
+            visitorIP = ipResult.data.ip;
+            console.log('방문자 IP:', visitorIP);
+        } catch (ipError) {
+            console.warn('IP 수집 실패:', ipError);
+        }
+
+        // 관리자 IP 확인 - IP 기반으로도 제외
+        const adminIPsDoc = await db.collection('settings').doc('admin_ips').get();
+        if (adminIPsDoc.exists) {
+            const adminIPs = adminIPsDoc.data().ips || [];
+            if (adminIPs.includes(visitorIP)) {
+                console.log('관리자 IP 감지: 추적 제외', visitorIP);
+                return;
+            }
+        }
+
         // 방문자 정보 수집
         const visitorData = {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -18,6 +46,8 @@ async function trackPageVisit() {
             screenResolution: `${screen.width}x${screen.height}`,
             viewport: `${window.innerWidth}x${window.innerHeight}`,
             platform: navigator.platform,
+            // IP 주소 추가
+            ip: visitorIP,
             // 브라우저 정보 파싱
             browser: getBrowserInfo(),
             device: getDeviceType(),
@@ -28,7 +58,7 @@ async function trackPageVisit() {
         // Firestore에 저장
         await visitorsRef.add(visitorData);
 
-        console.log('방문자 추적 완료');
+        console.log('방문자 추적 완료 (IP:', visitorIP, ')');
     } catch (error) {
         console.error('방문자 추적 에러:', error);
     }

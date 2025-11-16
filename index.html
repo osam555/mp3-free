@@ -349,10 +349,22 @@
         <div class="max-w-7xl mx-auto p-4 md:p-8">
 
             <!-- Bookstore Image Section -->
-            <section class="mb-12">
+            <section class="mb-12" id="hero-media-section">
                 <div class="glass-card max-w-3xl md:max-w-5xl mx-auto">
-                    <div class="image-card">
-                        <img src="asset/bookstore3.gif" alt="대충영어 속청 30일 서점 진열" loading="lazy" class="w-full h-auto">
+                    <div class="image-card" id="hero-media-container" style="position: relative; cursor: pointer;">
+                        <!-- GIF 이미지 (초기 표시) -->
+                        <img id="hero-gif" src="asset/bookstore3.gif" alt="대충영어 속청 30일 서점 진열" loading="lazy" class="w-full h-auto" style="display: block;">
+                        
+                        <!-- YouTube 플레이어 (숨김) -->
+                        <div id="hero-youtube" class="video-container" style="display: none; margin: 0;">
+                            <iframe id="hero-youtube-iframe"
+                                    src="https://www.youtube.com/embed/6xhwSSWzceQ?enablejsapi=1&autoplay=1&rel=0"
+                                    frameborder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;">
+                            </iframe>
+                        </div>
                     </div>
                     <p class="text-center text-gray-700 font-semibold mt-4 text-lg">
                         교보문고 예약판매 시작, 얼리버드 100명에게 영어귀 3배 빨리 뚫리는 wav 원음 영상 제공
@@ -1449,6 +1461,102 @@
                 card.style.transition = 'all 0.6s ease-out';
                 observer.observe(card);
             });
+        });
+    </script>
+
+    <!-- Hero GIF → YouTube 자동 재생 스크립트 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const heroGif = document.getElementById('hero-gif');
+            const heroYoutube = document.getElementById('hero-youtube');
+            const heroMediaContainer = document.getElementById('hero-media-container');
+            const heroMediaSection = document.getElementById('hero-media-section');
+            
+            let gifPlayCount = 0;
+            let isUserInView = false;
+            let transitionTimer = null;
+
+            // GIF 재생 시간 추정 (파일 크기 기반, 일반적으로 3-5초)
+            const estimatedGifDuration = 5000; // 5초로 설정 (필요시 조정)
+
+            // Intersection Observer로 사용자가 섹션에 머물러 있는지 감지
+            const sectionObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    isUserInView = entry.isIntersecting && entry.intersectionRatio > 0.5;
+                    console.log('Hero 섹션 Viewport:', isUserInView ? '보임' : '숨김');
+                    
+                    // 사용자가 섹션을 벗어나면 타이머 취소
+                    if (!isUserInView && transitionTimer) {
+                        clearTimeout(transitionTimer);
+                        transitionTimer = null;
+                    }
+                });
+            }, {
+                threshold: [0, 0.5, 1.0]
+            });
+
+            // 섹션 관찰 시작
+            if (heroMediaSection) {
+                sectionObserver.observe(heroMediaSection);
+            }
+
+            // GIF 로드 완료 후 재생 카운트 시작
+            if (heroGif) {
+                heroGif.addEventListener('load', () => {
+                    console.log('Hero GIF 로드 완료');
+                    
+                    // GIF 1회 재생 후 YouTube로 전환
+                    transitionTimer = setTimeout(() => {
+                        gifPlayCount++;
+                        console.log('GIF 재생 완료:', gifPlayCount, '회');
+                        
+                        // 사용자가 여전히 섹션에 있으면 YouTube로 전환
+                        if (isUserInView && gifPlayCount === 1) {
+                            console.log('YouTube 자동 재생 시작');
+                            switchToYouTube();
+                        }
+                    }, estimatedGifDuration);
+                });
+
+                // 이미 로드된 경우 (캐시)
+                if (heroGif.complete) {
+                    heroGif.dispatchEvent(new Event('load'));
+                }
+            }
+
+            // YouTube로 전환하는 함수
+            function switchToYouTube() {
+                if (heroGif && heroYoutube) {
+                    // GIF 숨기기
+                    heroGif.style.display = 'none';
+                    
+                    // YouTube 표시
+                    heroYoutube.style.display = 'block';
+                    
+                    // YouTube iframe의 src를 다시 설정하여 자동 재생 시작
+                    const iframe = document.getElementById('hero-youtube-iframe');
+                    if (iframe) {
+                        const currentSrc = iframe.src;
+                        // autoplay=1이 이미 있지만 확실하게 재설정
+                        if (!currentSrc.includes('autoplay=1')) {
+                            iframe.src = currentSrc + '&autoplay=1';
+                        } else {
+                            // src 재설정으로 재생 트리거
+                            iframe.src = iframe.src;
+                        }
+                    }
+                }
+            }
+
+            // 클릭 시에도 YouTube로 전환 (사용자 액션)
+            if (heroMediaContainer) {
+                heroMediaContainer.addEventListener('click', () => {
+                    if (heroGif && heroGif.style.display !== 'none') {
+                        console.log('사용자 클릭으로 YouTube 재생');
+                        switchToYouTube();
+                    }
+                });
+            }
         });
     </script>
 

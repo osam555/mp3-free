@@ -411,19 +411,19 @@ function loadApplications() {
     
     queryWithOrder.onSnapshot((snapshot) => {
         console.log('데이터 스냅샷 수신 (정렬됨):', snapshot.size, '개');
-        allApplications = [];
+            allApplications = [];
         
-        snapshot.forEach((doc) => {
+            snapshot.forEach((doc) => {
             const data = doc.data();
-            allApplications.push({
-                id: doc.id,
+                allApplications.push({
+                    id: doc.id,
                 ...data
+                });
             });
-        });
 
         console.log('전체 신청자 수:', allApplications.length);
-        applyFilters();
-    }, (error) => {
+            applyFilters();
+        }, (error) => {
         console.warn('orderBy 쿼리 실패, orderBy 없이 재시도:', error.code);
         
         // orderBy 없이 재시도
@@ -488,7 +488,7 @@ window.addEventListener('DOMContentLoaded', () => {
     if (isAuthenticated) {
         // Firebase 초기화 확인 후 데이터 로드
         if (typeof db !== 'undefined' && typeof applicationsRef !== 'undefined') {
-            loadApplications();
+    loadApplications();
         } else {
             console.error('Firestore가 초기화되지 않았습니다.');
             // 잠시 후 재시도
@@ -1396,5 +1396,151 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sessionStorage.getItem('admin_authenticated') === 'true') {
         // ... 기존 로드 함수들
         loadEmailSettings(); // 이메일 설정 로드 추가
+        loadAdminIPs(); // 관리자 IP 목록 로드
+        checkCurrentIP(); // 현재 IP 확인
     }
 });
+
+// ==================== 관리자 IP 관리 기능 ====================
+
+// 현재 IP 주소 확인
+window.checkCurrentIP = async function() {
+    try {
+        const getVisitorIP = firebase.functions().httpsCallable('getVisitorIP');
+        const result = await getVisitorIP();
+        
+        if (result.data && result.data.success) {
+            const currentIPElement = document.getElementById('current-ip');
+            if (currentIPElement) {
+                currentIPElement.textContent = result.data.ip;
+            }
+            console.log('현재 IP 주소:', result.data.ip);
+            return result.data.ip;
+        }
+    } catch (error) {
+        console.error('IP 주소 확인 실패:', error);
+        const currentIPElement = document.getElementById('current-ip');
+        if (currentIPElement) {
+            currentIPElement.textContent = '확인 실패';
+        }
+        alert('IP 주소를 확인할 수 없습니다: ' + error.message);
+    }
+};
+
+// 관리자 IP 목록 로드
+window.loadAdminIPs = async function() {
+    try {
+        const doc = await db.collection('settings').doc('admin_ips').get();
+        const adminIPs = doc.exists ? (doc.data().ips || []) : [];
+        
+        const listContainer = document.getElementById('admin-ip-list');
+        if (!listContainer) return;
+        
+        if (adminIPs.length === 0) {
+            listContainer.innerHTML = '<p class="text-sm text-gray-500 dark:text-gray-400 text-center py-4">등록된 IP가 없습니다</p>';
+            return;
+        }
+        
+        listContainer.innerHTML = adminIPs.map(ip => `
+            <div class="flex items-center justify-between bg-white dark:bg-gray-800 p-3 rounded border border-gray-200 dark:border-gray-600">
+                <span class="font-mono text-sm text-gray-700 dark:text-gray-300">${ip}</span>
+                <button onclick="removeAdminIP('${ip}')" 
+                        class="px-3 py-1 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-semibold transition-all">
+                    삭제
+                </button>
+            </div>
+        `).join('');
+        
+        console.log('관리자 IP 목록 로드 완료:', adminIPs);
+    } catch (error) {
+        console.error('관리자 IP 목록 로드 실패:', error);
+        alert('관리자 IP 목록을 불러올 수 없습니다: ' + error.message);
+    }
+};
+
+// 현재 IP를 관리자 목록에 추가
+window.addCurrentIPToAdminList = async function() {
+    try {
+        const currentIP = await checkCurrentIP();
+        if (!currentIP || currentIP === '확인 실패') {
+            alert('먼저 IP 주소를 확인해주세요.');
+            return;
+        }
+        
+        await addAdminIP(currentIP);
+    } catch (error) {
+        console.error('현재 IP 추가 실패:', error);
+        alert('IP 추가에 실패했습니다: ' + error.message);
+    }
+};
+
+// 수동으로 IP 추가
+window.addManualIP = async function() {
+    const input = document.getElementById('manual-ip-input');
+    if (!input) return;
+    
+    const ip = input.value.trim();
+    if (!ip) {
+        alert('IP 주소를 입력해주세요.');
+        return;
+    }
+    
+    // 간단한 IP 형식 검증
+    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$|^([0-9a-f:]+)$/i;
+    if (!ipPattern.test(ip)) {
+        alert('올바른 IP 주소 형식이 아닙니다.');
+        return;
+    }
+    
+    await addAdminIP(ip);
+    input.value = '';
+};
+
+// 관리자 IP 추가 (공통 함수)
+async function addAdminIP(ip) {
+    try {
+        const docRef = db.collection('settings').doc('admin_ips');
+        const doc = await docRef.get();
+        const currentIPs = doc.exists ? (doc.data().ips || []) : [];
+        
+        if (currentIPs.includes(ip)) {
+            alert('이미 등록된 IP 주소입니다.');
+            return;
+        }
+        
+        currentIPs.push(ip);
+        await docRef.set({ ips: currentIPs });
+        
+        console.log('관리자 IP 추가 완료:', ip);
+        alert(`IP 주소가 등록되었습니다: ${ip}`);
+        
+        await loadAdminIPs();
+    } catch (error) {
+        console.error('IP 추가 실패:', error);
+        alert('IP 추가에 실패했습니다: ' + error.message);
+    }
+}
+
+// 관리자 IP 삭제
+window.removeAdminIP = async function(ip) {
+    if (!confirm(`이 IP 주소를 삭제하시겠습니까?\n${ip}`)) {
+        return;
+    }
+    
+    try {
+        const docRef = db.collection('settings').doc('admin_ips');
+        const doc = await docRef.get();
+        const currentIPs = doc.exists ? (doc.data().ips || []) : [];
+        
+        const updatedIPs = currentIPs.filter(existingIP => existingIP !== ip);
+        await docRef.set({ ips: updatedIPs });
+        
+        console.log('관리자 IP 삭제 완료:', ip);
+        alert(`IP 주소가 삭제되었습니다: ${ip}`);
+        
+        await loadAdminIPs();
+    } catch (error) {
+        console.error('IP 삭제 실패:', error);
+        alert('IP 삭제에 실패했습니다: ' + error.message);
+    }
+};
