@@ -722,8 +722,8 @@ function updateRankStats(historyData) {
 function updateRankChart(labels, ranks) {
     const ctx = document.getElementById('rankChart');
     const isDark = document.documentElement.classList.contains('dark');
-    const textColor = isDark ? '#e5e7eb' : '#1f2937';
-    const gridColor = isDark ? '#374151' : '#e5e7eb';
+    const textColor = isDark ? '#f3f4f6' : '#1f2937'; // 다크모드에서 더 밝은 색상
+    const gridColor = isDark ? '#4b5563' : '#e5e7eb'; // 다크모드에서 더 밝은 그리드
     
     if (rankChart) {
         rankChart.destroy();
@@ -790,27 +790,29 @@ function updateRankChart(labels, ranks) {
                         display: true,
                         text: '순위 (위)',
                         color: textColor,
-                        padding: {top: 0, bottom: 10},
+                        padding: {top: 0, bottom: 15},
                         font: {
-                            size: 16,
-                            weight: 'bold',
+                            size: 18,
+                            weight: '900', // 더 굵게
                             family: "'Noto Sans KR', sans-serif"
                         }
                     },
                     ticks: {
                         color: textColor,
                         font: {
-                            size: 13,
+                            size: 14,
+                            weight: '600', // 약간 굵게
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        padding: 8,
+                        padding: 10,
                         callback: function(value) {
                             return value + '위';
                         }
                     },
                     grid: {
                         color: gridColor,
-                        drawBorder: true
+                        drawBorder: true,
+                        lineWidth: 1
                     }
                 },
                 x: {
@@ -818,26 +820,28 @@ function updateRankChart(labels, ranks) {
                         display: true,
                         text: '날짜',
                         color: textColor,
-                        padding: {top: 10, bottom: 0},
+                        padding: {top: 15, bottom: 0},
                         font: {
-                            size: 16,
-                            weight: 'bold',
+                            size: 18,
+                            weight: '900', // 더 굵게
                             family: "'Noto Sans KR', sans-serif"
                         }
                     },
                     ticks: {
                         color: textColor,
                         font: {
-                            size: 13,
+                            size: 14,
+                            weight: '600', // 약간 굵게
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        padding: 8,
+                        padding: 10,
                         maxRotation: 45,
                         minRotation: 0
                     },
                     grid: {
                         color: gridColor,
-                        drawBorder: true
+                        drawBorder: true,
+                        lineWidth: 1
                     }
                 }
             }
