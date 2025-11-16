@@ -102,24 +102,24 @@
         </div>
 
         <!-- 순위 변화 통계 카드 -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">최고 순위</div>
-                <div class="text-3xl font-bold text-green-600 dark:text-green-400" id="best-rank">-</div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">최고 순위</div>
+                <div class="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400" id="best-rank">-</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">최저 순위</div>
-                <div class="text-3xl font-bold text-red-600 dark:text-red-400" id="worst-rank">-</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">최저 순위</div>
+                <div class="text-2xl md:text-3xl font-bold text-red-600 dark:text-red-400" id="worst-rank">-</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">어제 순위</div>
-                <div class="text-3xl font-bold text-blue-600 dark:text-blue-400" id="yesterday-rank">-</div>
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">어제 순위</div>
+                <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400" id="yesterday-rank">-</div>
             </div>
-            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 transition-colors">
-                <div class="text-sm text-gray-600 dark:text-gray-400 mb-1">순위 변화</div>
-                <div class="text-3xl font-bold" id="rank-change">
+            <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6 transition-colors">
+                <div class="text-xs md:text-sm text-gray-600 dark:text-gray-400 mb-1">순위 변화</div>
+                <div class="text-2xl md:text-3xl font-bold" id="rank-change">
                     <span id="rank-change-value">-</span>
-                    <span id="rank-change-icon" class="text-lg"></span>
+                    <span id="rank-change-icon" class="text-base md:text-lg"></span>
                 </div>
             </div>
         </div>
@@ -142,9 +142,16 @@
                     </button>
                 </div>
             </div>
-            <div class="relative" style="height: 400px;">
+            <div class="relative" style="height: 300px; min-height: 250px;">
                 <canvas id="rankChart"></canvas>
             </div>
+            <style>
+                @media (min-width: 768px) {
+                    #rankChart { 
+                        min-height: 400px !important;
+                    }
+                }
+            </style>
         </div>
 
         <!-- 순위 히스토리 관리 -->

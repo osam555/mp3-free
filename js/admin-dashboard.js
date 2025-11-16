@@ -676,7 +676,15 @@ function updateRankStats(historyData) {
     document.getElementById('worst-rank').textContent = `${worstRank}위`;
     
     // 어제 순위 (두 번째로 최근 순위, 없으면 가장 최근 순위)
-    const yesterdayRank = ranks.length >= 2 ? ranks[ranks.length - 2] : ranks[ranks.length - 1];
+    // historyData는 오래된 것부터 정렬되어 있음
+    // 따라서 ranks[ranks.length - 2]가 어제, ranks[ranks.length - 1]이 오늘
+    console.log('📊 순위 데이터 (오래된→최근):', ranks);
+    console.log('📅 날짜 데이터:', historyData.map(h => h.timestamp.toLocaleDateString('ko-KR')));
+    
+    const todayRank = ranks[ranks.length - 1]; // 가장 최근 (오늘)
+    const yesterdayRank = ranks.length >= 2 ? ranks[ranks.length - 2] : todayRank; // 두 번째로 최근 (어제)
+    
+    console.log(`✅ 오늘: ${todayRank}위, 어제: ${yesterdayRank}위`);
     document.getElementById('yesterday-rank').textContent = `${yesterdayRank}위`;
     
     // 순위 변화 (첫 번째와 마지막 비교)
