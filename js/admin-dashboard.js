@@ -636,9 +636,9 @@ async function loadRankHistory() {
         // 그래프 데이터 준비
         const labels = historyData.map(item => {
             return item.timestamp.toLocaleDateString('ko-KR', {
-                month: '2-digit',
-                day: '2-digit'
-            });
+                month: 'short',
+                day: 'numeric'
+            }).replace('.', '월 ').replace('.', '일');
         });
         const ranks = historyData.map(item => item.rank);
         
@@ -770,6 +770,16 @@ function updateRankChart(labels, ranks) {
                 y: {
                     beginAtZero: false,
                     reverse: true, // 순위는 작을수록 좋으므로 Y축 반전
+                    title: {
+                        display: true,
+                        text: '순위 (위)',
+                        color: textColor,
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    },
                     ticks: {
                         color: textColor,
                         font: {
@@ -785,6 +795,16 @@ function updateRankChart(labels, ranks) {
                     }
                 },
                 x: {
+                    title: {
+                        display: true,
+                        text: '날짜',
+                        color: textColor,
+                        font: {
+                            size: 14,
+                            weight: 'bold',
+                            family: "'Noto Sans KR', sans-serif"
+                        }
+                    },
                     ticks: {
                         color: textColor,
                         font: {
