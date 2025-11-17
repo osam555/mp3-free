@@ -294,6 +294,21 @@
             }
         }
     </style>
+    <style>
+        .hero-slide-image {
+            opacity: 0;
+            transform: translateX(40px);
+            transition: opacity 0.7s ease, transform 0.7s ease;
+        }
+        .hero-slide-image.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        .hero-slide-image.slide-out {
+            opacity: 0;
+            transform: translateX(-40px);
+        }
+    </style>
 </head>
 <body class="smooth-scroll bg-gray-50 overflow-x-hidden">
 
@@ -348,6 +363,64 @@
     </nav>
 
     <script>
+        document.addEventListener('DOMContentLoaded', function setupHeroMediaCycle() {
+            const firstImage = document.getElementById('hero-image-1');
+            const gifImage = document.getElementById('hero-image-2');
+            const youtubeWrapper = document.getElementById('hero-youtube');
+            const youtubeIframe = document.getElementById('hero-youtube-iframe');
+            const playOverlay = document.getElementById('play-overlay');
+            const mediaWrapper = document.getElementById('hero-media-container');
+            const videoUrl = 'https://www.youtube-nocookie.com/embed/YTzTnUBTzTE?rel=0&modestbranding=1&autoplay=1';
+
+            if (!firstImage || !gifImage || !youtubeWrapper || !mediaWrapper) return;
+
+            const showElement = (el) => { 
+                if (!el) return; 
+                el.classList.remove('slide-out');
+                el.style.display = 'block'; 
+                requestAnimationFrame(() => el.classList.add('show'));
+            };
+            const hideElement = (el) => { 
+                if (!el) return;
+                el.classList.remove('show');
+                el.classList.add('slide-out');
+                setTimeout(() => { 
+                    el.style.display = 'none'; 
+                    el.classList.remove('slide-out');
+                }, 600);
+            };
+
+            const startSequence = () => {
+                showElement(firstImage);
+                hideElement(gifImage);
+                hideElement(youtubeWrapper);
+                playOverlay.style.display = 'block';
+
+                setTimeout(() => {
+                    hideElement(firstImage);
+                    showElement(gifImage);
+
+                    const gifDuration = parseInt(gifImage.dataset.duration, 10) || 5000;
+                    setTimeout(() => {
+                        hideElement(gifImage);
+                        showElement(youtubeWrapper);
+                        youtubeIframe.src = videoUrl;
+                        playOverlay.style.display = 'none';
+                    }, gifDuration);
+                }, 3000);
+            };
+
+            startSequence();
+
+            mediaWrapper.addEventListener('click', () => {
+                hideElement(firstImage);
+                hideElement(gifImage);
+                showElement(youtubeWrapper);
+                youtubeIframe.src = videoUrl;
+                playOverlay.style.display = 'none';
+            });
+        });
+
         // Mobile menu toggle
         document.getElementById('mobile-menu-btn').addEventListener('click', function() {
             const menu = document.getElementById('mobile-menu');
@@ -385,10 +458,11 @@
             <!-- Bookstore Image Section -->
             <section class="mb-12" id="hero-media-section">
                 <div class="glass-card max-w-3xl md:max-w-5xl mx-auto">
-                    <div class="image-card" id="hero-media-container" style="position: relative; cursor: pointer;">
-                        <!-- GIF 이미지 (초기 표시) -->
-                        <img id="hero-gif" src="asset/bookstore3.gif" alt="대충영어 속청 30일 서점 진열" loading="lazy" class="w-full h-auto" style="display: block;">
-                        
+                    <div class="image-card" id="hero-media-container" style="position: relative; cursor: pointer; overflow: hidden;">
+                        <!-- Image carousel items -->
+                        <img id="hero-image-1" src="asset/bookevent1.png" alt="대충영어 이벤트 안내 이미지" loading="lazy" class="w-full h-auto hero-slide-image show">
+                        <img id="hero-image-2" src="asset/bookstore3.gif" alt="대충영어 속청 30일 서점 진열" loading="lazy" class="w-full h-auto hero-slide-image" style="display: none;" data-duration="8000">
+
                         <!-- YouTube 플레이어 (숨김) -->
                         <div id="hero-youtube" class="video-container" style="display: none; margin: 0; position: relative;">
                             <iframe id="hero-youtube-iframe"
@@ -410,11 +484,15 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
+                        <a href="https://blog.naver.com/osam_english/224079062888" target="_blank" rel="noopener noreferrer"
+                           class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg hover:from-amber-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-200">
+                            🎓 대충영어 체험과정 이벤트 보기
+                        </a>
                         <a href="https://product.kyobobook.co.kr/detail/S000218549943"
                            target="_blank"
                            rel="noopener noreferrer"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200">
-                            📚 교보문고에서 구매하기
+                            📚 교보문고 보기
                         </a>
                         <a href="#earlybird"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg shadow-lg hover:from-purple-700 hover:to-purple-800 transform hover:scale-105 transition-all duration-200">
