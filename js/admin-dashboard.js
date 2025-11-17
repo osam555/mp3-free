@@ -1409,6 +1409,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 현재 IP 주소 확인
 window.checkCurrentIP = async function() {
+    const currentIPElement = document.getElementById('current-ip');
+    
     try {
         const getVisitorIP = firebase.functions().httpsCallable('getVisitorIP');
         const result = await getVisitorIP();
@@ -1417,22 +1419,48 @@ window.checkCurrentIP = async function() {
             let ip = result.data.ip;
             // Cloud Functions가 'internal' 또는 'unknown'을 반환하면 브라우저 공개 IP API로 폴백
             if (!ip || ip === 'unknown' || ip === 'internal') {
+                console.log('서버에서 internal/unknown 반환, 공개 IP API로 폴백 시도...');
                 try {
                     ip = await fetchPublicIPWithFallback();
-                } catch (_) {}
+                    console.log('✅ 공개 IP 폴백 성공:', ip);
+                } catch (fallbackError) {
+                    console.warn('공개 IP 폴백 실패:', fallbackError);
+                    // 폴백 실패 시에도 서버에서 받은 값 표시
+                    if (currentIPElement) {
+                        currentIPElement.textContent = ip || '확인 실패';
+                    }
+                    return ip || 'unknown';
+                }
             }
-            const currentIPElement = document.getElementById('current-ip');
-            if (currentIPElement) currentIPElement.textContent = ip || '확인 실패';
-            console.log('현재 IP 주소:', ip);
+            
+            if (currentIPElement) {
+                currentIPElement.textContent = ip || '확인 실패';
+            }
+            console.log('✅ 현재 IP 주소:', ip);
             return ip;
+        } else {
+            // 서버 응답은 있지만 success가 false인 경우
+            throw new Error(result.data?.error || '서버에서 IP를 반환하지 못했습니다');
         }
     } catch (error) {
-        console.error('IP 주소 확인 실패:', error);
-        const currentIPElement = document.getElementById('current-ip');
-        if (currentIPElement) {
-            currentIPElement.textContent = '확인 실패';
+        console.error('IP 주소 확인 실패, 공개 IP API로 폴백 시도...', error);
+        
+        // 에러 발생 시에도 공개 IP API로 폴백 시도
+        try {
+            const fallbackIP = await fetchPublicIPWithFallback();
+            console.log('✅ 공개 IP 폴백 성공:', fallbackIP);
+            if (currentIPElement) {
+                currentIPElement.textContent = fallbackIP;
+            }
+            return fallbackIP;
+        } catch (fallbackError) {
+            console.error('공개 IP 폴백도 실패:', fallbackError);
+            if (currentIPElement) {
+                currentIPElement.textContent = '확인 실패';
+            }
+            // 사용자에게는 조용히 실패 처리 (alert 제거)
+            return 'unknown';
         }
-        alert('IP 주소를 확인할 수 없습니다: ' + error.message);
     }
 };
 
