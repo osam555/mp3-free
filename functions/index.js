@@ -540,8 +540,7 @@ exports.scheduledSendRankReport = onSchedule({
     const avgRank = ranks.length > 0 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : currentRank;
     
     // 어제 순위 계산: 어제 날짜 범위(00:00:00 ~ 23:59:59) 내의 최신 데이터 찾기
-    const now = new Date();
-    const kstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    // 이미 위에서 계산된 kstTime 재사용
     const yesterdayStart = new Date(kstTime);
     yesterdayStart.setDate(yesterdayStart.getDate() - 1);
     yesterdayStart.setHours(0, 0, 0, 0); // 어제 00:00:00
