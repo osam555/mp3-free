@@ -539,8 +539,31 @@ exports.scheduledSendRankReport = onSchedule({
     const worstRank = ranks.length > 0 ? Math.max(...ranks) : currentRank;
     const avgRank = ranks.length > 0 ? Math.round(ranks.reduce((a, b) => a + b, 0) / ranks.length) : currentRank;
     
-    // 어제 순위 (historyData는 최신순이므로 두 번째 항목)
-    const yesterdayRank = historyData.length >= 2 ? historyData[1].rank : currentRank;
+    // 어제 순위 계산: 어제 날짜 범위(00:00:00 ~ 23:59:59) 내의 최신 데이터 찾기
+    const now = new Date();
+    const kstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    const yesterdayStart = new Date(kstTime);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    yesterdayStart.setHours(0, 0, 0, 0); // 어제 00:00:00
+    const yesterdayEnd = new Date(yesterdayStart);
+    yesterdayEnd.setHours(23, 59, 59, 999); // 어제 23:59:59
+    
+    // 어제 날짜 범위 내의 데이터 중 가장 최신 것 찾기
+    let yesterdayRank = currentRank; // 기본값
+    const yesterdayData = historyData
+      .filter(item => {
+        const itemTime = item.timestamp.getTime();
+        return itemTime >= yesterdayStart.getTime() && itemTime <= yesterdayEnd.getTime();
+      })
+      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // 최신순 정렬
+    
+    if (yesterdayData.length > 0) {
+      yesterdayRank = yesterdayData[0].rank; // 가장 최신 데이터
+      console.log(`✅ 어제 순위 찾음: ${yesterdayData[0].timestamp.toLocaleString('ko-KR')} ${yesterdayRank}위`);
+    } else {
+      console.log(`⚠️ 어제 날짜(${yesterdayStart.toLocaleDateString('ko-KR')}) 범위 내 데이터 없음, 현재 순위 사용`);
+    }
+    
     const rankChange = yesterdayRank - currentRank; // 양수면 상승, 음수면 하락
     
     let changeText = '변화 없음';

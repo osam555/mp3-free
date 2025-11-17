@@ -699,40 +699,36 @@ function updateRankStats(historyData) {
     const worstRank = Math.max(...ranks);
     document.getElementById('worst-rank').textContent = `${worstRank}위`;
     
-    // 어제 순위 (가장 최근 날짜 기준으로 하루 전 데이터 찾기)
-    // historyData는 오래된 것부터 정렬되어 있음
+    // 어제 순위 계산: 어제 날짜 범위(00:00:00 ~ 23:59:59) 내의 최신 데이터 찾기
+    const now = new Date();
+    const yesterdayStart = new Date(now);
+    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
+    yesterdayStart.setHours(0, 0, 0, 0); // 어제 00:00:00
+    const yesterdayEnd = new Date(yesterdayStart);
+    yesterdayEnd.setHours(23, 59, 59, 999); // 어제 23:59:59
+    
     console.log('📊 순위 데이터 (오래된→최근):', ranks);
     console.log('📅 날짜 데이터:', historyData.map(h => h.timestamp.toLocaleDateString('ko-KR') + ' ' + h.timestamp.toLocaleTimeString('ko-KR')));
+    console.log(`🔍 어제 날짜 범위: ${yesterdayStart.toLocaleString('ko-KR')} ~ ${yesterdayEnd.toLocaleString('ko-KR')}`);
     
     // 가장 최근 데이터
     const latestData = historyData[historyData.length - 1];
     const todayRank = latestData.rank;
     
-    // 가장 최근 날짜에서 1일 전 범위 내의 데이터 찾기 (24-48시간 전)
-    const latestDate = latestData.timestamp;
-    const oneDayAgo = new Date(latestDate.getTime() - (24 * 60 * 60 * 1000));
-    const twoDaysAgo = new Date(latestDate.getTime() - (48 * 60 * 60 * 1000));
-    
-    // 1일 전부터 2일 전 사이의 데이터 찾기
+    // 어제 날짜 범위 내의 데이터 중 가장 최신 것 찾기
     let yesterdayRank = todayRank; // 기본값
-    for (let i = historyData.length - 2; i >= 0; i--) {
-        const dataTime = historyData[i].timestamp.getTime();
-        if (dataTime <= oneDayAgo.getTime() && dataTime >= twoDaysAgo.getTime()) {
-            yesterdayRank = historyData[i].rank;
-            console.log(`✅ 어제 순위 찾음: ${historyData[i].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
-            break;
-        } else if (dataTime < twoDaysAgo.getTime()) {
-            // 2일 전보다 오래된 데이터면 가장 가까운 것 사용
-            yesterdayRank = historyData[i].rank;
-            console.log(`ℹ️  정확한 어제 데이터 없음, 가장 가까운 이전 데이터 사용: ${historyData[i].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
-            break;
-        }
-    }
+    const yesterdayData = historyData
+        .filter(item => {
+            const itemTime = item.timestamp.getTime();
+            return itemTime >= yesterdayStart.getTime() && itemTime <= yesterdayEnd.getTime();
+        })
+        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // 최신순 정렬
     
-    // 대안: 데이터가 하나뿐이거나 어제 데이터를 못 찾은 경우
-    if (historyData.length >= 2 && yesterdayRank === todayRank) {
-        yesterdayRank = historyData[historyData.length - 2].rank;
-        console.log(`ℹ️  두 번째로 최근 데이터 사용: ${historyData[historyData.length - 2].timestamp.toLocaleDateString('ko-KR')} ${yesterdayRank}위`);
+    if (yesterdayData.length > 0) {
+        yesterdayRank = yesterdayData[0].rank; // 가장 최신 데이터
+        console.log(`✅ 어제 순위 찾음: ${yesterdayData[0].timestamp.toLocaleString('ko-KR')} ${yesterdayRank}위`);
+    } else {
+        console.log(`⚠️ 어제 날짜(${yesterdayStart.toLocaleDateString('ko-KR')}) 범위 내 데이터 없음, 현재 순위 사용`);
     }
     
     console.log(`✅ 최신: ${latestData.timestamp.toLocaleDateString('ko-KR')} ${todayRank}위`);
