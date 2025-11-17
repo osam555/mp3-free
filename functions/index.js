@@ -315,7 +315,7 @@ function createAdminNotificationTemplate(name, email, phone, round, receiptUrl, 
                 <a href="${receiptUrl}" target="_blank" style="display: inline-block; background: #3B82F6; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; margin-right: 10px;">
                   📄 영수증 확인
                 </a>
-                <a href="https://mp3-free-earlybird.web.app/admin.html?email=${encodeURIComponent(email)}" target="_blank" style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; margin-right: 10px;">
+                <a href="https://mp3-free.app/admin.html?email=${encodeURIComponent(email)}" target="_blank" style="display: inline-block; background: #111827; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; margin-right: 10px;">
                   🔧 어드민 열기
                 </a>
                 ${reviewUrl ? `<a href="${reviewUrl}" target="_blank" style="display: inline-block; background: #10b981; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: bold;">✍️ 후기 확인</a>` : ''}
@@ -323,7 +323,7 @@ function createAdminNotificationTemplate(name, email, phone, round, receiptUrl, 
               <div style="margin-top: 30px; padding: 20px; background-color: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
                 <p style="margin: 0; color: #1f2937; font-size: 14px;">
                   <strong>관리자 대시보드:</strong><br>
-                  <a href="https://mp3-free-earlybird.web.app/admin.html" style="color: #3B82F6; text-decoration: none;">https://mp3-free-earlybird.web.app/admin.html</a>
+                  <a href="https://mp3-free.app/admin.html" style="color: #3B82F6; text-decoration: none;">https://mp3-free.app/admin.html</a>
                 </p>
               </div>
             </td>
