@@ -1285,12 +1285,16 @@ window.loadEmailSettings = async function() {
         
         if (settingsDoc.exists) {
             const data = settingsDoc.data();
-            document.getElementById('email-enabled').checked = data.enabled || false;
+            document.getElementById('email-enabled').checked = data.enabled !== false; // 기본값 true
             document.getElementById('email-recipient').value = data.recipient || 'john.wu571@gmail.com';
-            document.getElementById('email-send-time').value = data.sendTime || '06:00';
+            document.getElementById('email-send-time').value = data.sendTime || '09:00'; // 기본값 오전 9시
             console.log('✅ 이메일 설정 로드 완료:', data);
         } else {
-            console.log('⚠️ 저장된 이메일 설정이 없습니다. 기본값 사용');
+            // 기본값 설정
+            document.getElementById('email-enabled').checked = true;
+            document.getElementById('email-recipient').value = 'john.wu571@gmail.com';
+            document.getElementById('email-send-time').value = '09:00';
+            console.log('⚠️ 저장된 이메일 설정이 없습니다. 기본값 사용 (09:00)');
         }
     } catch (error) {
         console.error('❌ 이메일 설정 로드 에러:', error);
@@ -1324,7 +1328,7 @@ window.saveEmailSettings = async function() {
         await db.collection('settings').doc('email_schedule').set(settings, { merge: true });
         
         console.log('✅ 이메일 설정 저장 완료:', settings);
-        alert('이메일 설정이 저장되었습니다!\n\n💡 참고: Firebase Functions를 재배포해야 새로운 시간에 발송됩니다.');
+        alert(`✅ 이메일 설정이 저장되었습니다!\n\n📧 발송 시간: ${sendTime}\n📬 수신 이메일: ${recipient}\n\n설정한 시간에 자동으로 최신 순위를 수집하여 이메일이 발송됩니다.`);
         
     } catch (error) {
         console.error('❌ 이메일 설정 저장 에러:', error);
@@ -1410,12 +1414,17 @@ window.checkCurrentIP = async function() {
         const result = await getVisitorIP();
         
         if (result.data && result.data.success) {
-            const currentIPElement = document.getElementById('current-ip');
-            if (currentIPElement) {
-                currentIPElement.textContent = result.data.ip;
+            let ip = result.data.ip;
+            // Cloud Functions가 'internal' 또는 'unknown'을 반환하면 브라우저 공개 IP API로 폴백
+            if (!ip || ip === 'unknown' || ip === 'internal') {
+                try {
+                    ip = await fetchPublicIPWithFallback();
+                } catch (_) {}
             }
-            console.log('현재 IP 주소:', result.data.ip);
-            return result.data.ip;
+            const currentIPElement = document.getElementById('current-ip');
+            if (currentIPElement) currentIPElement.textContent = ip || '확인 실패';
+            console.log('현재 IP 주소:', ip);
+            return ip;
         }
     } catch (error) {
         console.error('IP 주소 확인 실패:', error);
@@ -1426,6 +1435,28 @@ window.checkCurrentIP = async function() {
         alert('IP 주소를 확인할 수 없습니다: ' + error.message);
     }
 };
+
+// 공개 IP 조회 (폴백 체인) - 브라우저에서 직접 공개 IP API 호출
+async function fetchPublicIPWithFallback() {
+    const withTimeout = (promise, ms = 3000) => {
+        return new Promise((resolve, reject) => {
+            const t = setTimeout(() => reject(new Error('timeout')), ms);
+            promise.then(v => { clearTimeout(t); resolve(v); }).catch(e => { clearTimeout(t); reject(e); });
+        });
+    };
+    const fetchers = [
+        async () => (await withTimeout(fetch('https://api.ipify.org?format=json'))).json().then(r => r.ip),
+        async () => (await withTimeout(fetch('https://ipinfo.io/json'))).json().then(r => r.ip),
+        async () => (await withTimeout(fetch('https://ifconfig.me/ip'))).text().then(t => t.trim())
+    ];
+    for (const fn of fetchers) {
+        try {
+            const ip = await fn();
+            if (ip && typeof ip === 'string') return ip;
+        } catch (_) {}
+    }
+    return 'unknown';
+}
 
 // 관리자 IP 목록 로드
 window.loadAdminIPs = async function() {

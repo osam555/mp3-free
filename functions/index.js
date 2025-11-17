@@ -451,20 +451,54 @@ exports.scheduledCheckKyobobookRank = onSchedule({
 });
 
 /**
- * 매일 오전 6시 순위 리포트 이메일 발송
+ * 순위 리포트 이메일 자동발송 (설정된 시간에 실행)
+ * 매 시간마다 실행되며, 설정된 시간과 일치할 때만 이메일 발송
  * Cloud Scheduler를 통해 호출
  * Chrome 확장 프로그램 또는 수동 입력된 순위 데이터를 읽어서 발송
  */
 exports.scheduledSendRankReport = onSchedule({
-  schedule: '0 6 * * *', // 매일 오전 6시 (KST 기준)
+  schedule: '0 * * * *', // 매 시간 정각 (KST 기준)
   timeZone: 'Asia/Seoul',
 }, async (event) => {
-  console.log('📧 매일 오전 6시 순위 리포트 이메일 발송 시작');
-  
-  const adminEmail = process.env.ADMIN_EMAIL || 'john.wu571@gmail.com';
+  console.log('📧 순위 리포트 이메일 자동발송 체크 시작');
   
   try {
     const db = admin.firestore();
+    
+    // 이메일 발송 설정 확인
+    const settingsDoc = await db.collection('settings').doc('email_schedule').get();
+    if (!settingsDoc.exists) {
+      console.log('⚠️ 이메일 발송 설정이 없습니다. 기본값 사용');
+    }
+    
+    const settings = settingsDoc.exists ? settingsDoc.data() : {};
+    const enabled = settings.enabled !== false; // 기본값 true
+    const sendTime = settings.sendTime || '09:00'; // 기본값 오전 9시
+    const adminEmail = settings.recipient || process.env.ADMIN_EMAIL || 'john.wu571@gmail.com';
+    
+    // 이메일 발송이 비활성화된 경우 종료
+    if (!enabled) {
+      console.log('ℹ️ 이메일 자동발송이 비활성화되어 있습니다.');
+      return { success: false, message: '이메일 발송 비활성화됨' };
+    }
+    
+    // 현재 시간 확인 (KST)
+    // Firebase Functions는 UTC에서 실행되므로, KST는 UTC+9
+    const now = new Date();
+    const kstTime = new Date(now.toLocaleString('en-US', { timeZone: 'Asia/Seoul' }));
+    const currentHour = String(kstTime.getHours()).padStart(2, '0');
+    const currentMinute = String(kstTime.getMinutes()).padStart(2, '0');
+    const currentTime = `${currentHour}:${currentMinute}`;
+    
+    console.log(`현재 시간 (KST): ${currentTime}, 설정된 발송 시간: ${sendTime}`);
+    
+    // 설정된 시간과 일치하지 않으면 종료
+    if (currentTime !== sendTime) {
+      console.log(`⏰ 아직 발송 시간이 아닙니다. (현재: ${currentTime}, 설정: ${sendTime})`);
+      return { success: false, message: `발송 시간 아님 (현재: ${currentTime}, 설정: ${sendTime})` };
+    }
+    
+    console.log(`✅ 발송 시간 일치! 순위 리포트 이메일 발송 시작 (${sendTime})`);
     
     // 현재 순위 가져오기
     const currentRankDoc = await db.collection('kyobobook_rank').doc('current').get();
@@ -622,7 +656,7 @@ exports.scheduledSendRankReport = onSchedule({
                       <strong>대충영어 속청 30일</strong> | 교보문고 주간베스트
                     </p>
                     <p style="margin: 0; color: #9ca3af; font-size: 12px;">
-                      이 이메일은 매일 오전 6시에 자동으로 발송됩니다.
+                      이 이메일은 매일 ${sendTime}에 자동으로 발송됩니다.
                     </p>
                   </td>
                 </tr>
