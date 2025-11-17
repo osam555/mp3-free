@@ -13,7 +13,7 @@ async function trackPageVisit() {
             return;
         }
 
-        // IP 주소 수집 (Cloud Function 호출)
+        // IP 주소 수집 (Cloud Function 호출) + 퍼블릭 IP API 폴백
         let visitorIP = 'unknown';
         try {
             const getVisitorIP = firebase.functions().httpsCallable('getVisitorIP');
@@ -22,6 +22,16 @@ async function trackPageVisit() {
             console.log('방문자 IP:', visitorIP);
         } catch (ipError) {
             console.warn('IP 수집 실패:', ipError);
+        }
+
+        // Cloud Functions가 'internal' 또는 'unknown'이면 공개 IP API로 폴백
+        if (!visitorIP || visitorIP === 'unknown' || visitorIP === 'internal') {
+            try {
+                visitorIP = await fetchPublicIPWithFallback();
+                console.log('공개 IP 폴백 결과:', visitorIP);
+            } catch (fallbackError) {
+                console.warn('공개 IP 폴백 실패:', fallbackError);
+            }
         }
 
         // 관리자 IP 확인 - IP 기반으로도 제외
@@ -62,6 +72,29 @@ async function trackPageVisit() {
     } catch (error) {
         console.error('방문자 추적 에러:', error);
     }
+}
+
+// 공개 IP 조회 (폴백 체인) - 브라우저에서 직접 공개 IP API 호출
+async function fetchPublicIPWithFallback() {
+    // 단일 요청에 타임아웃 적용
+    const withTimeout = (promise, ms = 3000) => {
+        return new Promise((resolve, reject) => {
+            const t = setTimeout(() => reject(new Error('timeout')), ms);
+            promise.then(v => { clearTimeout(t); resolve(v); }).catch(e => { clearTimeout(t); reject(e); });
+        });
+    };
+    const fetchers = [
+        async () => (await withTimeout(fetch('https://api.ipify.org?format=json'))).json().then(r => r.ip),
+        async () => (await withTimeout(fetch('https://ipinfo.io/json'))).json().then(r => r.ip),
+        async () => (await withTimeout(fetch('https://ifconfig.me/ip'))).text().then(t => t.trim())
+    ];
+    for (const fn of fetchers) {
+        try {
+            const ip = await fn();
+            if (ip && typeof ip === 'string') return ip;
+        } catch (_) {}
+    }
+    return 'unknown';
 }
 
 // 브라우저 정보 파싱
