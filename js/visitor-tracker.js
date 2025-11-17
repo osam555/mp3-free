@@ -44,6 +44,8 @@ async function trackPageVisit() {
             }
         }
 
+        const trafficSource = detectTrafficSource(document.referrer);
+
         // 방문자 정보 수집
         const visitorData = {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
@@ -51,6 +53,7 @@ async function trackPageVisit() {
             page: window.location.pathname,
             url: window.location.href,
             referrer: document.referrer || 'direct',
+            trafficSource,
             userAgent: navigator.userAgent,
             language: navigator.language,
             screenResolution: `${screen.width}x${screen.height}`,
@@ -72,6 +75,40 @@ async function trackPageVisit() {
     } catch (error) {
         console.error('방문자 추적 에러:', error);
     }
+}
+
+// 유입 경로 라벨링
+function detectTrafficSource(rawReferrer) {
+    const params = new URLSearchParams(window.location.search);
+    const utm = (params.get('utm_source') || '').toLowerCase();
+    const referrer = rawReferrer || '';
+    const hostname = (() => {
+        try {
+            return referrer ? new URL(referrer).hostname.toLowerCase() : '';
+        } catch (_) {
+            return '';
+        }
+    })();
+
+    const labelFromKeyword = (value) => {
+        if (!value) return null;
+        if (value.includes('kakao')) return 'KakaoTalk';
+        if (value.includes('katalk')) return 'KakaoTalk';
+        if (value.includes('facebook') || value.includes('fb')) return 'Facebook';
+        if (value.includes('instagram') || value.includes('ig')) return 'Instagram';
+        if (value.includes('naver')) return 'Naver';
+        if (value.includes('google')) return 'Google';
+        if (value.includes('youtube')) return 'YouTube';
+        return value.charAt(0).toUpperCase() + value.slice(1);
+    };
+
+    const utmLabel = labelFromKeyword(utm);
+    if (utmLabel) return utmLabel;
+
+    const refLabel = labelFromKeyword(hostname);
+    if (refLabel) return refLabel;
+
+    return referrer ? hostname || 'Other' : 'Direct';
 }
 
 // 공개 IP 조회 (폴백 체인) - 브라우저에서 직접 공개 IP API 호출

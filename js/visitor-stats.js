@@ -7,20 +7,31 @@ function isDarkTheme() {
 }
 
 // 차트 공통 색상 반환
-function getChartThemeColors() {
+function getChartThemeColors(applyGlobalDefaults = false) {
     const dark = isDarkTheme();
-    return {
-        text: dark ? '#e5e7eb' : '#1f2937',           // Tailwind gray-200 / gray-800
-        grid: dark ? 'rgba(229,231,235,0.15)' : 'rgba(31,41,55,0.1)',
+    const colors = {
+        text: dark ? '#f8fafc' : '#0f172a',           // brighten dark text, deepen light
+        axis: dark ? '#ffffff' : '#0f172a',
+        grid: dark ? 'rgba(255,255,255,0.35)' : 'rgba(15,23,42,0.1)',
+        borderLine: dark ? 'rgba(248,250,252,0.7)' : 'rgba(15,23,42,0.2)',
+        legend: dark ? '#f8fafc' : '#0f172a',
         borderBlue: 'rgb(59, 130, 246)',              // blue-500
-        fillBlue: dark ? 'rgba(59,130,246,0.15)' : 'rgba(59,130,246,0.10)',
-        barBlue: dark ? 'rgba(59,130,246,0.8)' : 'rgba(59,130,246,0.7)',
+        fillBlue: dark ? 'rgba(59,130,246,0.18)' : 'rgba(59,130,246,0.10)',
+        barBlue: dark ? 'rgba(59,130,246,0.85)' : 'rgba(59,130,246,0.7)',
         deviceColors: [
             'rgb(59, 130, 246)',                      // blue-500
             'rgb(16, 185, 129)',                      // emerald-500
             'rgb(245, 158, 11)'                       // amber-500
         ]
     };
+
+    if (applyGlobalDefaults && typeof Chart !== 'undefined') {
+        Chart.defaults.color = colors.axis;
+        Chart.defaults.borderColor = colors.grid;
+        Chart.defaults.font.family = "'Noto Sans KR', sans-serif";
+    }
+
+    return colors;
 }
 
 // 생성된 차트 인스턴스 저장소 (테마 변경 시 업데이트)
@@ -80,6 +91,27 @@ function formatDateTime(timestamp) {
     const hours = String(date.getHours()).padStart(2, '0');
     const minutes = String(date.getMinutes()).padStart(2, '0');
     return `${year}-${month}-${day} ${hours}:${minutes}`;
+}
+
+function getTrafficSourceLabel(data) {
+    if (!data) return 'Direct';
+    if (data.trafficSource) return data.trafficSource;
+    const ref = data.referrer || '';
+    if (!ref || ref === 'direct') return 'Direct';
+    const normalize = (value) => value.replace(/^www\./, '');
+    let host = '';
+    try {
+        host = normalize(new URL(ref).hostname.toLowerCase());
+    } catch (_) {
+        host = normalize(ref.toLowerCase());
+    }
+    if (host.includes('kakao')) return 'KakaoTalk';
+    if (host.includes('facebook') || host.includes('fb')) return 'Facebook';
+    if (host.includes('instagram') || host.includes('ig')) return 'Instagram';
+    if (host.includes('naver')) return 'Naver';
+    if (host.includes('google')) return 'Google';
+    if (host.includes('youtube')) return 'YouTube';
+    return host ? host.charAt(0).toUpperCase() + host.slice(1) : 'Other';
 }
 
 // 오늘 방문자 수 가져오기
@@ -157,7 +189,7 @@ async function getWeeklyStats() {
         }
 
         // 유입 경로별 카운트
-        const referrer = data.referrer === 'direct' ? 'Direct' : new URL(data.referrer || 'direct').hostname;
+        const referrer = getTrafficSourceLabel(data);
         referrerStats[referrer] = (referrerStats[referrer] || 0) + 1;
     });
 
@@ -210,7 +242,7 @@ function createDailyChart(dailyStats) {
     const ctx = document.getElementById('dailyVisitorsChart');
     if (!ctx) return;
 
-    const colors = getChartThemeColors();
+    const colors = getChartThemeColors(true);
 
     // 최근 7일 날짜 생성
     const labels = [];
@@ -254,33 +286,57 @@ function createDailyChart(dailyStats) {
                             family: "'Noto Sans KR', sans-serif",
                             size: 14
                         },
-                        color: colors.text
+                        color: colors.legend
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '방문자 수',
+                        color: colors.axis,
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {bottom: 10}
+                    },
                     ticks: {
                         stepSize: 1,
                         font: {
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        color: colors.text
+                        color: colors.axis
                     },
                     grid: {
-                        color: colors.grid
+                        color: colors.grid,
+                        borderColor: colors.borderLine
                     }
                 },
                 x: {
+                    title: {
+                        display: true,
+                        text: '날짜',
+                        color: colors.axis,
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {top: 10}
+                    },
                     ticks: {
                         font: {
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        color: colors.text
+                        color: colors.axis
                     },
                     grid: {
-                        color: colors.grid
+                        color: colors.grid,
+                        borderColor: colors.borderLine
                     }
                 }
             }
@@ -293,7 +349,7 @@ function createDeviceChart(deviceStats) {
     const ctx = document.getElementById('deviceChart');
     if (!ctx) return;
 
-    const colors = getChartThemeColors();
+    const colors = getChartThemeColors(true);
 
     if (chartInstances.device) {
         chartInstances.device.destroy();
@@ -319,7 +375,7 @@ function createDeviceChart(deviceStats) {
                             family: "'Noto Sans KR', sans-serif",
                             size: 12
                         },
-                        color: colors.text
+                        color: colors.legend
                     }
                 }
             }
@@ -332,7 +388,7 @@ function createBrowserChart(browserStats) {
     const ctx = document.getElementById('browserChart');
     if (!ctx) return;
 
-    const colors = getChartThemeColors();
+    const colors = getChartThemeColors(true);
 
     if (chartInstances.browser) {
         chartInstances.browser.destroy();
@@ -355,33 +411,57 @@ function createBrowserChart(browserStats) {
                 legend: {
                     display: false,
                     labels: {
-                        color: colors.text
+                        color: colors.legend
                     }
                 }
             },
             scales: {
                 y: {
                     beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '방문자 수',
+                        color: colors.axis,
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {bottom: 10}
+                    },
                     ticks: {
                         stepSize: 1,
                         font: {
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        color: colors.text
+                        color: colors.axis
                     },
                     grid: {
-                        color: colors.grid
+                        color: colors.grid,
+                        borderColor: colors.borderLine
                     }
                 },
                 x: {
+                    title: {
+                        display: true,
+                        text: '브라우저',
+                        color: colors.axis,
+                        font: {
+                            family: "'Noto Sans KR', sans-serif",
+                            size: 14,
+                            weight: '600'
+                        },
+                        padding: {top: 10}
+                    },
                     ticks: {
                         font: {
                             family: "'Noto Sans KR', sans-serif"
                         },
-                        color: colors.text
+                        color: colors.axis
                     },
                     grid: {
-                        color: colors.grid
+                        color: colors.grid,
+                        borderColor: colors.borderLine
                     }
                 }
             }
@@ -407,7 +487,7 @@ async function renderRecentVisitors() {
         if (filteredDocs.length === 0) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="6" class="px-6 py-12 text-center text-gray-500">
+                    <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-100">
                         방문 기록이 없습니다.
                     </td>
                 </tr>
@@ -418,23 +498,23 @@ async function renderRecentVisitors() {
         tbody.innerHTML = filteredDocs.map(doc => {
             const data = doc.data();
             return `
-                <tr class="hover:bg-gray-50">
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         ${formatDateTime(data.timestamp)}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         ${data.page || '/'}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         ${data.device || 'Unknown'}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
                         ${data.browser || 'Unknown'}
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        ${data.referrer === 'direct' ? 'Direct' : data.referrer}
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
+                        ${getTrafficSourceLabel(data)}
                     </td>
-                    <td class="px-6 py-4 text-sm text-gray-900">
+                    <td class="px-6 py-4 text-sm text-gray-900 dark:text-gray-100">
                         ${data.viewport || 'N/A'}
                     </td>
                 </tr>
@@ -444,7 +524,7 @@ async function renderRecentVisitors() {
         console.error('최근 방문자 로드 에러:', error);
         tbody.innerHTML = `
             <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-red-600">
+                <td colspan="6" class="px-6 py-12 text-center text-red-600 dark:text-red-300">
                     데이터 로드 중 오류가 발생했습니다: ${error.message}
                 </td>
             </tr>
@@ -470,7 +550,7 @@ async function exportVisitorsToCSV() {
             return [
                 formatDateTime(data.timestamp),
                 data.page || '/',
-                data.referrer || 'N/A',
+                getTrafficSourceLabel(data),
                 data.device || 'Unknown',
                 data.browser || 'Unknown',
                 data.viewport || 'N/A',
@@ -525,31 +605,47 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('themechange', () => {
     try {
         // 차트를 다시 그릴 수 있도록 데이터 소스가 필요 -> 기존 인스턴스의 옵션만 업데이트
-        const colors = getChartThemeColors();
+        const colors = getChartThemeColors(true);
         if (chartInstances.daily) {
-            chartInstances.daily.options.plugins.legend.labels.color = colors.text;
-            chartInstances.daily.options.scales.x.ticks.color = colors.text;
-            chartInstances.daily.options.scales.y.ticks.color = colors.text;
+            chartInstances.daily.options.plugins.legend.labels.color = colors.legend;
+            chartInstances.daily.options.scales.x.ticks.color = colors.axis;
+            chartInstances.daily.options.scales.y.ticks.color = colors.axis;
+            if (chartInstances.daily.options.scales.x.title) {
+                chartInstances.daily.options.scales.x.title.color = colors.axis;
+            }
+            if (chartInstances.daily.options.scales.y.title) {
+                chartInstances.daily.options.scales.y.title.color = colors.axis;
+            }
             chartInstances.daily.options.scales.x.grid.color = colors.grid;
             chartInstances.daily.options.scales.y.grid.color = colors.grid;
+            chartInstances.daily.options.scales.x.grid.borderColor = colors.borderLine;
+            chartInstances.daily.options.scales.y.grid.borderColor = colors.borderLine;
             chartInstances.daily.data.datasets[0].borderColor = colors.borderBlue;
             chartInstances.daily.data.datasets[0].backgroundColor = colors.fillBlue;
             chartInstances.daily.update();
         }
         if (chartInstances.device) {
-            chartInstances.device.options.plugins.legend.labels.color = colors.text;
+            chartInstances.device.options.plugins.legend.labels.color = colors.legend;
             // 데이터셋 색상 유지
             chartInstances.device.update();
         }
         if (chartInstances.browser) {
             // legend는 숨김이지만 방어적으로 적용
             if (chartInstances.browser.options.plugins.legend.labels) {
-                chartInstances.browser.options.plugins.legend.labels.color = colors.text;
+                chartInstances.browser.options.plugins.legend.labels.color = colors.legend;
             }
-            chartInstances.browser.options.scales.x.ticks.color = colors.text;
-            chartInstances.browser.options.scales.y.ticks.color = colors.text;
+            chartInstances.browser.options.scales.x.ticks.color = colors.axis;
+            chartInstances.browser.options.scales.y.ticks.color = colors.axis;
+            if (chartInstances.browser.options.scales.x.title) {
+                chartInstances.browser.options.scales.x.title.color = colors.axis;
+            }
+            if (chartInstances.browser.options.scales.y.title) {
+                chartInstances.browser.options.scales.y.title.color = colors.axis;
+            }
             chartInstances.browser.options.scales.x.grid.color = colors.grid;
             chartInstances.browser.options.scales.y.grid.color = colors.grid;
+            chartInstances.browser.options.scales.x.grid.borderColor = colors.borderLine;
+            chartInstances.browser.options.scales.y.grid.borderColor = colors.borderLine;
             chartInstances.browser.data.datasets[0].backgroundColor = colors.barBlue;
             chartInstances.browser.update();
         }

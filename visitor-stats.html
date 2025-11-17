@@ -26,7 +26,7 @@
             --text-light: #0f172a;    /* slate-900 */
             --text-dark: #f8fafc;     /* slate-50 */
             --muted-light: #475569;   /* slate-600 */
-            --muted-dark: #cbd5f5;    /* slate-200 */
+            --muted-dark: #f8fafc;    /* almost white for high contrast */
             --border-light: #e2e8f0;  /* slate-200 */
             --border-dark: #475569;   /* slate-600 */
         }
@@ -113,7 +113,7 @@
                     <p class="text-gray-600 dark:text-gray-300 text-sm md:text-base">페이지 방문 현황 및 분석</p>
                 </div>
                 <div class="w-full md:w-auto">
-                    <div class="grid grid-cols-2 gap-2 sm:grid-cols-4 md:flex md:flex-wrap md:gap-2 md:justify-end">
+                    <div class="grid grid-cols-4 gap-2">
                         <!-- 홈화면 버튼 -->
                         <a href="index.html" class="w-full inline-flex items-center justify-center bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-600 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-gray-600 transition-all text-sm md:text-base">
                             🏠 홈
@@ -139,20 +139,20 @@
         <!-- 모바일: 2열(오늘/어제 한 줄, 주간/월간 한 줄) | 데스크톱: 4열 -->
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">오늘 방문자</div>
-                <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-blue-400" id="today-visitors">0</div>
+                <div class="text-sm text-gray-600 dark:text-gray-100 mb-1">오늘 방문자</div>
+                <div class="text-2xl md:text-3xl font-bold text-blue-600 dark:text-white" id="today-visitors">0</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">어제 방문자</div>
-                <div class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-indigo-400" id="yesterday-visitors">0</div>
+                <div class="text-sm text-gray-600 dark:text-gray-100 mb-1">어제 방문자</div>
+                <div class="text-2xl md:text-3xl font-bold text-indigo-600 dark:text-white" id="yesterday-visitors">0</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">주간 방문자 (7일)</div>
-                <div class="text-2xl md:text-3xl font-bold text-green-600 dark:text-green-400" id="weekly-visitors">0</div>
+                <div class="text-sm text-gray-600 dark:text-gray-100 mb-1">주간 방문자 (7일)</div>
+                <div class="text-2xl md:text-3xl font-bold text-green-600 dark:text-white" id="weekly-visitors">0</div>
             </div>
             <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <div class="text-sm text-gray-600 dark:text-gray-300 mb-1">월간 방문자 (30일)</div>
-                <div class="text-2xl md:text-3xl font-bold text-purple-600 dark:text-purple-400" id="monthly-visitors">0</div>
+                <div class="text-sm text-gray-600 dark:text-gray-100 mb-1">월간 방문자 (30일)</div>
+                <div class="text-2xl md:text-3xl font-bold text-purple-600 dark:text-white" id="monthly-visitors">0</div>
             </div>
         </div>
 
@@ -197,17 +197,17 @@
                 <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                     <thead class="bg-gray-50 dark:bg-gray-700">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">방문일시</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">페이지</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">디바이스</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">브라우저</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">유입경로</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">해상도</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">방문일시</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">페이지</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">디바이스</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">브라우저</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">유입경로</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-100 uppercase">해상도</th>
                         </tr>
                     </thead>
                     <tbody id="recent-visitors-table" class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-300">
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-500 dark:text-gray-100">
                                 로딩 중...
                             </td>
                         </tr>
