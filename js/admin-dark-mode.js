@@ -38,10 +38,13 @@ function toggleDarkMode() {
 // 다크 모드 적용
 function applyDarkMode(enabled) {
     const html = document.documentElement;
+    const body = document.body;
     if (enabled) {
         html.classList.add('dark');
+        if (body) body.classList.add('dark');
     } else {
         html.classList.remove('dark');
+        if (body) body.classList.remove('dark');
     }
 }
 

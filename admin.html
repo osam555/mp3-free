@@ -20,8 +20,21 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
 
     <style>
+        html {
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        html.dark {
+            background-color: #111827; /* bg-gray-900 */
+        }
         body {
             font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f9fafb; /* bg-gray-50 */
+            color: #111827; /* text-gray-900 */
+            min-height: 100vh;
+        }
+        body.dark, html.dark body {
+            background-color: #111827; /* bg-gray-900 */
+            color: #f3f4f6; /* text-gray-100 */
         }
         .status-pending { background-color: #FEF3C7; color: #92400E; }
         .status-approved { background-color: #DBEAFE; color: #1E40AF; }
@@ -36,10 +49,13 @@
             try {
                 const userTheme = localStorage.getItem('theme');
                 const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-                if (userTheme === 'dark' || (!userTheme && systemPrefersDark)) {
+                const isDark = userTheme === 'dark' || (!userTheme && systemPrefersDark);
+                if (isDark) {
                     document.documentElement.classList.add('dark');
+                    document.body.classList.add('dark');
                 } else {
                     document.documentElement.classList.remove('dark');
+                    document.body.classList.remove('dark');
                 }
             } catch (e) {}
         })();
