@@ -30,6 +30,20 @@
         .dark .status-approved { background-color: #1E3A8A; color: #93C5FD; }
         .dark .status-sent { background-color: #064E3B; color: #6EE7B7; }
     </style>
+    <script>
+        // 다크모드 초기화 스크립트: 페이지 로드 시 즉시 적용 (FOUC 방지)
+        (function initTheme() {
+            try {
+                const userTheme = localStorage.getItem('theme');
+                const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                if (userTheme === 'dark' || (!userTheme && systemPrefersDark)) {
+                    document.documentElement.classList.add('dark');
+                } else {
+                    document.documentElement.classList.remove('dark');
+                }
+            } catch (e) {}
+        })();
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors">
     <!-- 비밀번호 입력 화면 (인증 전) -->
