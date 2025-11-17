@@ -678,8 +678,8 @@ async function loadRankHistory() {
 function updateRankStats(historyData) {
     if (historyData.length === 0) {
         document.getElementById('best-rank').textContent = '-';
-        document.getElementById('worst-rank').textContent = '-';
-        document.getElementById('yesterday-rank').textContent = '-';
+        document.getElementById('one-day-ago-rank').textContent = '-';
+        document.getElementById('two-days-ago-rank').textContent = '-';
         document.getElementById('rank-change-value').textContent = '-';
         document.getElementById('rank-change-icon').textContent = '';
         return;
@@ -695,45 +695,38 @@ function updateRankStats(historyData) {
     const bestRank = Math.min(...ranks);
     document.getElementById('best-rank').textContent = `${bestRank}위`;
     
-    // 최저 순위 (숫자가 클수록 나쁨)
-    const worstRank = Math.max(...ranks);
-    document.getElementById('worst-rank').textContent = `${worstRank}위`;
-    
-    // 어제 순위 계산: 어제 날짜 범위(00:00:00 ~ 23:59:59) 내의 최신 데이터 찾기
     const now = new Date();
-    const yesterdayStart = new Date(now);
-    yesterdayStart.setDate(yesterdayStart.getDate() - 1);
-    yesterdayStart.setHours(0, 0, 0, 0); // 어제 00:00:00
-    const yesterdayEnd = new Date(yesterdayStart);
-    yesterdayEnd.setHours(23, 59, 59, 999); // 어제 23:59:59
-    
-    console.log('📊 순위 데이터 (오래된→최근):', ranks);
-    console.log('📅 날짜 데이터:', historyData.map(h => h.timestamp.toLocaleDateString('ko-KR') + ' ' + h.timestamp.toLocaleTimeString('ko-KR')));
-    console.log(`🔍 어제 날짜 범위: ${yesterdayStart.toLocaleString('ko-KR')} ~ ${yesterdayEnd.toLocaleString('ko-KR')}`);
-    
-    // 가장 최근 데이터
     const latestData = historyData[historyData.length - 1];
-    const todayRank = latestData.rank;
+    const todayRank = latestData?.rank ?? null;
     
-    // 어제 날짜 범위 내의 데이터 중 가장 최신 것 찾기
-    let yesterdayRank = todayRank; // 기본값
-    const yesterdayData = historyData
-        .filter(item => {
-            const itemTime = item.timestamp.getTime();
-            return itemTime >= yesterdayStart.getTime() && itemTime <= yesterdayEnd.getTime();
-        })
-        .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime()); // 최신순 정렬
+    const findRankByDaysAgo = (daysAgo, fallbackRank) => {
+        const start = new Date(now);
+        start.setDate(start.getDate() - daysAgo);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(start);
+        end.setHours(23, 59, 59, 999);
+        
+        const dayData = historyData
+            .filter(item => {
+                const itemTime = item.timestamp.getTime();
+                return itemTime >= start.getTime() && itemTime <= end.getTime();
+            })
+            .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime());
+        
+        if (dayData.length > 0) {
+            console.log(`✅ ${daysAgo}일 전 순위 찾음: ${dayData[0].timestamp.toLocaleString('ko-KR')} ${dayData[0].rank}위`);
+            return dayData[0].rank;
+        }
+        
+        console.log(`⚠️ ${daysAgo}일 전 데이터 없음, 대체값 사용`);
+        return fallbackRank ?? null;
+    };
     
-    if (yesterdayData.length > 0) {
-        yesterdayRank = yesterdayData[0].rank; // 가장 최신 데이터
-        console.log(`✅ 어제 순위 찾음: ${yesterdayData[0].timestamp.toLocaleString('ko-KR')} ${yesterdayRank}위`);
-    } else {
-        console.log(`⚠️ 어제 날짜(${yesterdayStart.toLocaleDateString('ko-KR')}) 범위 내 데이터 없음, 현재 순위 사용`);
-    }
+    const oneDayAgoRank = findRankByDaysAgo(1, todayRank);
+    const twoDaysAgoRank = findRankByDaysAgo(2, todayRank ?? oneDayAgoRank);
     
-    console.log(`✅ 최신: ${latestData.timestamp.toLocaleDateString('ko-KR')} ${todayRank}위`);
-    console.log(`✅ 어제: ${yesterdayRank}위`);
-    document.getElementById('yesterday-rank').textContent = `${yesterdayRank}위`;
+    document.getElementById('one-day-ago-rank').textContent = oneDayAgoRank ? `${oneDayAgoRank}위` : '-';
+    document.getElementById('two-days-ago-rank').textContent = twoDaysAgoRank ? `${twoDaysAgoRank}위` : '-';
     
     // 순위 변화 (첫 번째와 마지막 비교)
     if (ranks.length >= 2) {
