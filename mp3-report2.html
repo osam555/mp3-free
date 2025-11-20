@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MP3가 인체에 미치는 영향 | 종합 분석</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Neutral Stone (bg-stone-100), Accent Blue (blue-700), Warning Red (red-600) -->
+    <!-- Application Structure Plan: 4-Tab SPA (핵심 발견, 실험 데이터, 운동선수 영향, 청소년/일반인 영향). 이 구조는 '무엇을'(Findings) '증거'(Data), '그래서'(Impact)로 분리하여, 다양한 사용자(운동선수, 학부모, 일반인)가 관심 영역으로 바로 이동할 수 있게 설계되었습니다. -->
+    <!-- Visualization & Content Choices: 
+        1. Findings (Inform): HTML/Tailwind Stat Card를 사용해 핵심 지표(반응속도, 근활성도, 근력, 호르몬)를 즉각 요약.
+        2. Data (Compare): 4개의 Bar Chart (Chart.js/Canvas)로 보고서의 핵심 데이터(반응속도: 1.59 vs 1.68; 근활성도: 10.44 vs 8.22; 근력: 100 vs 65; 호르몬: 100 vs 60)를 시각적으로 증명.
+        3. Impact (Analyze): 구조화된 HTML/Tailwind 텍스트 카드를 사용해 운동선수, 청소년 등 특정 청중을 위한 데이터의 의미를 맥락화.
+        4. Qualitative (Inform): 태아 반응에 대한 질적 데이터를 HTML 텍스트 카드로 제공.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f5f5f4; /* stone-100 */
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+        .nav-button {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 4px solid transparent;
+        }
+        .nav-button.active {
+            border-bottom-color: #1d4ed8; /* blue-700 */
+            color: #1d4ed8; /* blue-700 */
+            font-weight: 700;
+        }
+        .nav-button:not(.active):hover {
+            border-bottom-color: #bfdbfe; /* blue-200 */
+            color: #2563eb; /* blue-600 */
+        }
+        .stat-card {
+            background-color: #fafaf9; /* stone-50 */
+            border-left-width: 4px;
+            border-color: #1d4ed8; /* blue-700 */
+        }
+        .impact-card {
+            background-color: #fafaf9; /* stone-50 */
+            border-left-width: 4px;
+        }
+        .impact-card-red { border-color: #dc2626; } /* red-600 */
+        .impact-card-yellow { border-color: #f59e0b; } /* amber-500 */
+        .impact-card-blue { border-color: #2563eb; } /* blue-600 */
+    </style>
+</head>
+<body class="text-stone-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-6xl">
+        
+        <!-- Header -->
+        <header class="mb-6">
+            <h1 class="text-4xl md:text-5xl font-bold text-center text-blue-800 mb-2">MP3가 인체에 미치는 영향</h1>
+            <p class="text-center text-lg text-stone-600">MBC/KBS 과학 다큐멘터리 실험 결과 기반 종합 분석</p>
+        </header>
+
+        <!-- Navigation -->
+        <nav classs="mb-6">
+            <div id="nav-buttons" class="flex flex-wrap justify-center gap-2 md:gap-4 bg-white rounded-lg shadow-md p-3">
+                <button data-section="overview" class="nav-button active py-2 px-4 text-lg">핵심 발견</button>
+                <button data-section="data" class="nav-button py-2 px-4 text-lg">실험 데이터</button>
+                <button data-section="athlete-impact" class="nav-button py-2 px-4 text-lg">운동선수 영향</button>
+                <button data-section="child-impact" class="nav-button py-2 px-4 text-lg">청소년/일반인 영향</button>
+            </div>
+        </nav>
+
+        <!-- Content Area -->
+        <main id="content-container" class="bg-white rounded-lg shadow-xl p-6 md:p-10">
+
+            <!-- Section 1: Overview (핵심 발견) -->
+            <section id="overview-section" class="">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">핵심 발견: MP3 청취의 잠재적 위험</h2>
+                <p class="text-lg text-stone-700 mb-8 leading-relaxed">
+                    과거 MBC 및 KBS의 다큐멘터리에서 진행된 과학적 실험들은 압축된 디지털 음원(MP3) 청취가 인체와 생명체에 측정 가능한 부정적 영향을 미칠 수 있음을 시사합니다. MP3의 '계단식 파형'이 뇌에 미세한 스트레스를 유발하여, 신경계와 근육 반응에 영향을 줍니다.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="stat-card p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-stone-900 mb-2">반응속도 저하</h3>
+                        <p class="text-3xl font-bold text-red-600">0.087초 지연 (약 0.1초)</p>
+                        <p class="text-stone-600 mt-2">LP 청취 시점(1.5903초) 대비 MP3 청취 시점(1.6772초)에서 반응속도가 0.087초 현저하게 느려졌습니다. (MBC 실험)</p>
+                    </div>
+                    <div class="stat-card p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-stone-900 mb-2">근육 활성화 감소</h3>
+                        <p class="text-3xl font-bold text-red-600">21.26% 감소</p>
+                        <p class="text-stone-600 mt-2">근전도 검사(EMG) 결과, LP 청취 시점(10.44mV) 대비 MP3 청취 시점(8.22mV)에서 근육 활성도가 21.26% 감소했습니다. (MBC 실험)</p>
+                    </div>
+                    <div class="stat-card p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-stone-900 mb-2">기능적 근력 저하</h3>
+                        <p class="text-3xl font-bold text-red-600">약 30-40% 감소</p>
+                        <p class="text-stone-600 mt-2">10분간 MP3 청취 후, 15kg 덤벨을 10초간 들던 피험자가 1초도 버티지 못하는 등 근지구력 급감 현상이 나타났습니다. (KBS 스펀지)</p>
+                    </div>
+                    <div class="stat-card p-6 rounded-lg shadow-md">
+                        <h3 class="text-xl font-bold text-stone-900 mb-2">생명체 스트레스 반응</h3>
+                        <p class="text-3xl font-bold text-red-600">성장 호르몬 40% 감소</p>
+                        <p class="text-stone-600 mt-2">MP3에 노출된 식물은 대조군 대비 성장 호르몬(지베렐린) 수치가 40% 낮았으며, 성장이 저해되었습니다. (MBC 실험)</p>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Section 2: Experimental Data (실험 데이터) -->
+            <section id="data-section" class="hidden">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">대화형 실험 데이터 분석</h2>
+                <p class="text-lg text-stone-700 mb-8 leading-relaxed">
+                    MBC 및 KBS 다큐멘터리에서 제시된 핵심 실험 데이터를 시각화한 자료입니다. 차트에 마우스를 올리면 정확한 수치를 확인할 수 있습니다. 이 데이터들은 MP3의 '계단식 파형'이 어떻게 측정 가능한 생리학적 변화를 유도하는지 보여줍니다.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    
+                    <div class="w-full p-4 rounded-lg shadow-lg bg-stone-50">
+                        <h3 class="text-2xl font-bold text-stone-800 text-center mb-4">실험 1: 반응속도 변화 (초)</h3>
+                        <div class="chart-container">
+                            <canvas id="reactionChart"></canvas>
+                        </div>
+                        <p class="text-center text-stone-600 mt-3 px-4">LP 청취 시점(1.5903초) 대비 MP3 청취 시점(1.6772초)에서 반응속도가 0.087초나 느려졌습니다. (MBC, 신경과 전문의)</p>
+                    </div>
+
+                    <div class="w-full p-4 rounded-lg shadow-lg bg-stone-50">
+                        <h3 class="text-2xl font-bold text-stone-800 text-center mb-4">실험 2: 근육 활성화 변화 (mV)</h3>
+                        <div class="chart-container">
+                            <canvas id="activationChart"></canvas>
+                        </div>
+                        <p class="text-center text-stone-600 mt-3 px-4">근전도 검사 결과, MP3 청취 후 근육의 신경 동원 능력이 10.44mV에서 8.22mV로 약 21.26% 감소했습니다. (MBC 실험)</p>
+                    </div>
+
+                    <div class="w-full p-4 rounded-lg shadow-lg bg-stone-50">
+                        <h3 class="text-2xl font-bold text-stone-800 text-center mb-4">실험 3: 기능적 근력 저하 (%)</h3>
+                        <div class="chart-container">
+                            <canvas id="strengthChart"></canvas>
+                        </div>
+                        <p class="text-center text-stone-600 mt-3 px-4">15kg 덤벨 실험에서 MP3 청취 후 근지구력이 급감했습니다. (30-40% 범위의 35% 감소로 시각화, KBS 스펀지)</p>
+                    </div>
+                
+                    <div class="w-full p-4 rounded-lg shadow-lg bg-stone-50">
+                        <h3 class="text-2xl font-bold text-stone-800 text-center mb-4">실험 4: 식물 성장 호르몬 (%)</h3>
+                        <div class="chart-container">
+                            <canvas id="hormoneChart"></canvas>
+                        </div>
+                        <p class="text-center text-stone-600 mt-3 px-4">MP3에 노출된 식물군(처리군)은 대조군에 비해 식물 성장 호르몬 '지베렐린' 수치가 40% 낮게 측정되었습니다. (MBC 실험)</p>
+                    </div>
+                </div>
+                 <div class="mt-8 w-full p-6 rounded-lg shadow-lg bg-stone-50">
+                     <h3 class="text-2xl font-bold text-stone-800 text-center mb-4">실험 5: 태아의 생체 반응 (질적 데이터)</h3>
+                     <p class="text-center text-lg text-stone-700 leading-relaxed max-w-2xl mx-auto">
+                        MBC 다큐멘터리에서는 태아에게 아날로그 국악(LP)과 MP3 음원을 들려주는 실험을 진행했습니다. 그 결과, 아날로그 음원에는 편안한 반응을 보이던 태아가 MP3 음원에는 얼굴을 찡그리거나 몸을 웅크리는 등 <strong class="text-red-600">명확한 거부 및 스트레스 반응</strong>을 보였습니다.
+                     </p>
+                 </div>
+            </section>
+
+            <!-- Section 3: Athlete Impact (운동선수 영향) -->
+            <section id="athlete-impact-section" class="hidden">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">운동선수에게 미치는 치명적 영향</h2>
+                <p class="text-lg text-stone-700 mb-8 leading-relaxed">
+                    본 섹션에서는 MP3 청취로 인한 반응속도, 근력 및 근육 활성화 저하가 엘리트 선수들의 경기력과 부상 위험에 어떻게 직결되는지 스포츠 과학 관점에서 분석합니다. 많은 선수들이 스트레스 해소나 집중을 위해 음악을 듣지만, 음원 포맷이 역효과를 낼 수 있습니다.
+                </p>
+                <div class="space-y-6 text-lg text-stone-700 leading-relaxed">
+                    
+                    <div class="impact-card impact-card-red p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-3">1. 반응속도: 약 0.1초의 벽 (0.087초 지연)</h3>
+                        <p>
+                            프로게이머의 반응속도는 0.1초대이며, 일반인과의 차이도 미세합니다. 실험에서 나타난 <strong class="text-red-600">약 0.1초의 속도 저하 (0.087초 지연)</strong>는 짧은 시간에 승패가 갈리는 모든 스포츠에서 '치명적인(fatal)' 격차입니다. 이는 집중력이나 근신경계 효율 저하를 의미합니다.
+                        </p>
+                        <ul class="list-disc list-inside mt-3 space-y-1">
+                            <li><strong>e스포츠/F1:</strong> 순간의 판단이 승패를 가릅니다. 약 0.1초 지연은 반응 성공과 실패를 나눌 수 있습니다.</li>
+                            <li><strong>육상/수영:</strong> 스타팅 블록에서의 0.01초 싸움에 결정적입니다.</li>
+                            <li><strong>격투기/구기종목:</strong> 상대의 움직임에 반응하는 속도, 즉 '반사신경'이 경기력을 좌우합니다.</li>
+                        </ul>
+                    </div>
+
+                    <div class="impact-card impact-card-red p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-3">2. 근력 및 근활성도 저하</h3>
+                        <p>
+                            덤벨 실험(30-40% 감소)과 근전도 실험(<strong class="text-red-600">근활성도 21.26% 감소</strong>)은 MP3 청취가 근신경계의 동원 능력을 급격히 저하하고 있음을 시사합니다. 이는 선수의 최대 파워 출력과 근지구력에 직접적인 악영향을 미칩니다.
+                        </p>
+                        <ul class="list-disc list-inside mt-3 space-y-1">
+                            <li><strong>웨이트 트레이닝:</strong> 최대 중량(1RM) 및 반복 횟수 감소로 훈련 효율이 저하됩니다.</li>
+                            <li><strong>지구력 스포츠:</strong> 경기 후반부 '버티는 힘'이 급격히 소진될 수 있습니다.</li>
+                            <li><strong>부상 위험:</strong> 근육이 빠르게 지치고 신경 동원 능력이 떨어지면, 부하를 견디지 못하고 부상으로 이어질 위험이 높아집니다.</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 4: Child Impact (아이/청소년 영향) -->
+            <section id="child-impact-section" class="hidden">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">청소년 및 일반인에게 미치는 영향</h2>
+                <p class="text-lg text-stone-700 mb-8 leading-relaxed">
+                    성장기와 학령기에 있는 아이들과 청소년들은 신체, 인지 발달이 활발한 시기입니다. MP3로 인한 미세한 반응속도 및 근력 저하 현상은 이들의 안전, 학습 및 성장에 광범위한 영향을 미칠 수 있습니다.
+                </p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    
+                    <div class="impact-card impact-card-red p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-3">
+                            <span class="text-3xl mr-2">⚠️</span>안전 및 대처 능력 저하
+                        </h3>
+                        <p class="text-stone-700 leading-relaxed">
+                            <strong class="text-red-600">약 0.1초의 반응 지연 (0.087초 지연)</strong>은 일상생활의 작은 사고를 결정지을 수 있습니다. 자전거 탑승 중 갑작스러운 장애물 회피, 길거리에서의 위험 인지 등 순간적인 판단이 필요한 상황에서 대처 능력이 저하되어 안전사고 위험을 높입니다.
+                        </p>
+                    </div>
+
+                    <div class="impact-card impact-card-yellow p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-3">
+                            <span class="text-3xl mr-2">🧠</span>학습 집중력 및 자세 유지
+                        </h3>
+                        <p class="text-stone-700 leading-relaxed">
+                            근력 저하(30-40%)와 <strong class="text-amber-600">근활성도 감소(21.26%)</strong>는 학업에도 영향을 미칩니다. 책상에 앉아 바른 자세를 오래 유지하는 **'코어 근지구력'이 약해져** 쉽게 피로해지고 자세가 무너집니다. 이는 <strong class="text-amber-600">집중력 저하와 만성 피로</strong>로 이어져 학습 효율을 떨어뜨립니다.
+                        </p>
+                    </div>
+
+                    <div class="impact-card impact-card-blue p-6 rounded-lg shadow-md">
+                        <h3 class="text-2xl font-bold text-stone-900 mb-3">
+                            <span class="text-3xl mr-2">🧬</span>성장 호르몬 및 스트레스 부하
+                        </h3>
+                        <p class="text-stone-700 leading-relaxed">
+                            식물 성장 호르몬이 <strong class="text-blue-600">40% 감소</strong>하고 태아가 거부 반응을 보인 것은 MP3가 생명체에 스트레스로 작용한다는 증거입니다. 성장기 아이들은 <strong class="text-blue-600">불필요한 생체 스트레스</strong>를 받아 수면 중 성장 호르몬 분비 등 중요한 성장 활동에 방해를 받을 수 있습니다.
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center text-stone-500 mt-8">
+            <p>&copy; 2025 MP3 Impact Analysis. 본 자료는 제공된 정보를 바탕으로 구성된 가상 분석입니다.</p>
+        </footer>
+    </div>
+
+    <script>
+        let areChartsInitialized = false;
+        let chartInstances = {};
+        
+        // Data constants (using provided numbers)
+        const LP_REACTION_TIME = 1.5903;
+        const MP3_REACTION_TIME = 1.6772;
+        const DELAY_TIME = (MP3_REACTION_TIME - LP_REACTION_TIME); // 0.0869
+
+        const LP_MUSCLE_ACTIVATION = 10.44;
+        const MP3_MUSCLE_ACTIVATION = 8.22;
+        const ACTIVATION_DECREASE_PERCENT = ((LP_MUSCLE_ACTIVATION - MP3_MUSCLE_ACTIVATION) / LP_MUSCLE_ACTIVATION * 100); // 21.26
+
+        // DOM elements for navigation
+        const sectionElements = {
+            overview: document.getElementById('overview-section'),
+            data: document.getElementById('data-section'),
+            'athlete-impact': document.getElementById('athlete-impact-section'),
+            'child-impact': document.getElementById('child-impact-section')
+        };
+
+        const navButtonsContainer = document.getElementById('nav-buttons');
+
+        function showSection(sectionId) {
+            // Hide all sections
+            Object.values(sectionElements).forEach(section => {
+                section.classList.add('hidden');
+            });
+            // Show the selected section
+            if (sectionElements[sectionId]) {
+                 sectionElements[sectionId].classList.remove('hidden');
+            }
+
+            // Update active state of navigation buttons
+            navButtonsContainer.querySelectorAll('button').forEach(button => {
+                if (button.dataset.section === sectionId) {
+                    button.classList.add('active');
+                } else {
+                    button.classList.remove('active');
+                }
+            });
+
+            // Initialize charts only when the data section is first viewed
+            if (sectionId === 'data' && !areChartsInitialized) {
+                initCharts();
+                areChartsInitialized = true;
+            }
+        }
+        
+        // Initial setup: show the first section
+        showSection('overview');
+
+        // Navigation event listener
+        navButtonsContainer.addEventListener('click', (event) => {
+            const button = event.target.closest('button');
+            if (button && button.dataset.section) {
+                showSection(button.dataset.section);
+            }
+        });
+
+        // Chart.js initialization function
+        function initCharts() {
+            const chartOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            color: '#44403c' // stone-700
+                        },
+                        grid: {
+                            color: '#e7e5e4' // stone-200
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            color: '#44403c', // stone-700
+                            font: {
+                                size: 14
+                            }
+                        },
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0c0a09', // stone-950
+                        titleFont: {
+                            size: 16
+                        },
+                        bodyFont: {
+                            size: 14
+                        },
+                        padding: 12,
+                        cornerRadius: 6,
+                        displayColors: false
+                    }
+                },
+                animation: {
+                    duration: 1000,
+                    easing: 'easeInOutQuart'
+                }
+            };
+
+            // 1. Reaction Chart
+            const reactionCtx = document.getElementById('reactionChart').getContext('2d');
+            if (reactionCtx) {
+                chartInstances.reaction = new Chart(reactionCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['LP 청취 시점', 'MP3 청취 시점'],
+                        datasets: [{
+                            label: '반응 시간 (초)',
+                            data: [LP_REACTION_TIME, MP3_REACTION_TIME], 
+                            backgroundColor: ['#60a5fa', '#dc2626'],
+                            borderColor: ['#2563eb', '#b91c1c'],
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            tooltip: {
+                                ...chartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.parsed.y;
+                                        let label = context.label;
+                                        
+                                        if (label.includes('LP')) { 
+                                            return ` LP 반응 시간: ${val.toFixed(4)} 초`;
+                                        } else {
+                                            let diff = (val - LP_REACTION_TIME).toFixed(4);
+                                            return ` MP3 반응 시간: ${val.toFixed(4)} 초 (+${diff}초 지연)`;
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                               ...chartOptions.scales.y,
+                                beginAtZero: false,
+                                min: 1.55,
+                                title: {
+                                    display: true,
+                                    text: '평균 반응 시간 (초) - 낮을수록 좋음',
+                                    color: '#57534e'
+                                }
+                            },
+                             x: { ...chartOptions.scales.x }
+                        }
+                    }
+                });
+            }
+
+
+            // 2. Muscle Activation Chart (EMG)
+            const activationCtx = document.getElementById('activationChart').getContext('2d');
+            if (activationCtx) {
+                chartInstances.activation = new Chart(activationCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['LP 청취 시점', 'MP3 청취 시점'],
+                        datasets: [{
+                            label: '근육 활성화 (mV)',
+                            data: [LP_MUSCLE_ACTIVATION, MP3_MUSCLE_ACTIVATION], 
+                            backgroundColor: ['#60a5fa', '#dc2626'],
+                            borderColor: ['#2563eb', '#b91c1c'],
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                        plugins: {
+                            ...chartOptions.plugins,
+                            tooltip: {
+                                ...chartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.parsed.y;
+                                        if (context.label.includes('MP3')) {
+                                            return ` ${val.toFixed(2)} mV (${ACTIVATION_DECREASE_PERCENT.toFixed(2)}% 감소)`;
+                                        }
+                                        return ` ${val.toFixed(2)} mV (기준)`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                               ...chartOptions.scales.y,
+                                min: 7,
+                                title: {
+                                    display: true,
+                                    text: '근육 활성화 (mV) - 높을수록 좋음',
+                                    color: '#57534e'
+                                }
+                            },
+                             x: { ...chartOptions.scales.x }
+                        }
+                    }
+                });
+            }
+
+
+            // 3. Muscle Strength Chart (Functional - 35% decrease)
+            const strengthCtx = document.getElementById('strengthChart').getContext('2d');
+            if (strengthCtx) {
+                chartInstances.strength = new Chart(strengthCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['청취 전 (100%)', 'MP3 청취 후 (65%)'],
+                        datasets: [{
+                            label: '기능적 근력 (%)',
+                            data: [100, 65], // 35% 감소 (30-40% 범위의 중간값)
+                            backgroundColor: ['#60a5fa', '#dc2626'],
+                            borderColor: ['#2563eb', '#b91c1c'],
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                         plugins: {
+                            ...chartOptions.plugins,
+                            tooltip: {
+                                ...chartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.parsed.y;
+                                        if (val < 100) {
+                                            return ` 기준 대비 65% (힘 35% 감소)`;
+                                        }
+                                        return ` 기준 100%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                               ...chartOptions.scales.y,
+                                title: {
+                                    display: true,
+                                    text: '기능적 근력 (백분율) - 높을수록 좋음',
+                                    color: '#57534e'
+                                }
+                            },
+                             x: { ...chartOptions.scales.x }
+                        }
+                    }
+                });
+            }
+            
+            // 4. Hormone Chart
+            const hormoneCtx = document.getElementById('hormoneChart').getContext('2d');
+            if (hormoneCtx) {
+                chartInstances.hormone = new Chart(hormoneCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: ['대조군 (100%)', 'MP3 처리군 (60%)'],
+                        datasets: [{
+                            label: '지베렐린 수치 (%)',
+                            data: [100, 60], // 40% 감소
+                            backgroundColor: ['#60a5fa', '#dc2626'],
+                            borderColor: ['#2563eb', '#b91c1c'],
+                            borderWidth: 2,
+                            borderRadius: 4
+                        }]
+                    },
+                    options: {
+                        ...chartOptions,
+                         plugins: {
+                            ...chartOptions.plugins,
+                            tooltip: {
+                                ...chartOptions.plugins.tooltip,
+                                callbacks: {
+                                    label: function(context) {
+                                        let val = context.parsed.y;
+                                        if (val < 100) {
+                                            return ` 기준 대비 60% (-40% 감소)`;
+                                        }
+                                        return ` 기준 100%`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                               ...chartOptions.scales.y,
+                                title: {
+                                    display: true,
+                                    text: '호르몬 수치 (백분율) - 높을수록 좋음',
+                                    color: '#57534e'
+                                }
+                            },
+                             x: { ...chartOptions.scales.x }
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+
+</body>
+</html>
