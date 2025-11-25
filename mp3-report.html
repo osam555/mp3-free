@@ -89,22 +89,8 @@
             display: flex;
             transition: transform 0.5s ease-in-out;
             width: 100%;
-            /* Mobile: limit height to 50vh, Tablet: 60vh, Desktop: 70vh */
-            height: 50vh;
-            max-height: 280px;
-        }
-        @media (min-width: 640px) {
-            .slider-wrapper {
-                height: 60vh;
-                max-height: 400px;
-            }
-        }
-        @media (min-width: 1024px) {
-            .slider-wrapper {
-                height: auto;
-                max-height: none;
-                aspect-ratio: 16 / 9;
-            }
+            /* 16:9 aspect ratio for all screen sizes */
+            aspect-ratio: 16 / 9;
         }
         .slider-slide {
             min-width: 100%;
@@ -269,6 +255,14 @@
             <!-- Section 1: Overview (핵심 발견) -->
             <section id="overview-section" class="">
                 <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">핵심 발견: MP3 청취의 잠재적 위험</h2>
+
+                <!-- Overview Images -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <img src="asset/mp3-slow/image0.jpg" alt="MP3, 정말 우리 몸을 느리게 할까?" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image02.jpg" alt="아날로그 vs MP3 파형 비교" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image06.jpg" alt="힘이 빠져나간다" class="w-full h-auto rounded-lg shadow-md">
+                </div>
+
                 <p class="text-lg text-stone-700 mb-8 leading-relaxed">
                     과거 MBC 및 KBS의 다큐멘터리에서 진행된 과학적 실험들은 압축된 디지털 음원(MP3) 청취가 인체와 생명체에 측정 가능한 부정적 영향을 미칠 수 있음을 시사합니다. MP3의 '계단식 파형'이 뇌에 미세한 스트레스를 유발하여, 신경계와 근육 반응에 영향을 줍니다.
                 </p>
@@ -299,6 +293,14 @@
             <!-- Section 2: Experimental Data (실험 데이터) -->
             <section id="data-section" class="hidden">
                 <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">대화형 실험 데이터 분석</h2>
+
+                <!-- Data Images -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <img src="asset/mp3-slow/image04.jpg" alt="반응속도 저하 실험" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image07.jpg" alt="근력 30-40% 급감" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image10.jpg" alt="식물/태아 실험 결과" class="w-full h-auto rounded-lg shadow-md">
+                </div>
+
                 <p class="text-lg text-stone-700 mb-8 leading-relaxed">
                     MBC 및 KBS 다큐멘터리에서 제시된 핵심 실험 데이터를 시각화한 자료입니다. 차트에 마우스를 올리면 정확한 수치를 확인할 수 있습니다. 이 데이터들은 MP3의 '계단식 파형'이 어떻게 측정 가능한 생리학적 변화를 유도하는지 보여줍니다.
                 </p>
@@ -347,6 +349,13 @@
             <!-- Section 3: Athlete Impact (운동선수 영향) -->
             <section id="athlete-impact-section" class="hidden">
                 <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">운동선수에게 미치는 치명적 영향</h2>
+
+                <!-- Athlete Impact Images -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                    <img src="asset/mp3-slow/image03.jpg" alt="0.1초 지연, 결정적 순간을 놓치다" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image05.jpg" alt="찰나의 순간 - 안전, 학습, 스포츠" class="w-full h-auto rounded-lg shadow-md">
+                </div>
+
                 <p class="text-lg text-stone-700 mb-8 leading-relaxed">
                     본 섹션에서는 MP3 청취로 인한 반응속도, 근력 및 근육 활성화 저하가 엘리트 선수들의 경기력과 부상 위험에 어떻게 직결되는지 스포츠 과학 관점에서 분석합니다. 많은 선수들이 스트레스 해소나 집중을 위해 음악을 듣지만, 음원 포맷이 역효과를 낼 수 있습니다.
                 </p>
@@ -381,6 +390,14 @@
             <!-- Section 4: Child Impact (아이/청소년 영향) -->
             <section id="child-impact-section" class="hidden">
                 <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">청소년 및 일반인에게 미치는 영향</h2>
+
+                <!-- Child Impact Images -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <img src="asset/mp3-slow/image01.jpg" alt="우리 일상의 배경음악, MP3" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image08.jpg" alt="무너지는 자세, 빨라지는 피로" class="w-full h-auto rounded-lg shadow-md">
+                    <img src="asset/mp3-slow/image09.jpg" alt="생명체가 거부하는 비생명적 소리" class="w-full h-auto rounded-lg shadow-md">
+                </div>
+
                 <p class="text-lg text-stone-700 mb-8 leading-relaxed">
                     성장기와 학령기에 있는 아이들과 청소년들은 신체, 인지 발달이 활발한 시기입니다. MP3로 인한 미세한 반응속도 및 근력 저하 현상은 이들의 안전, 학습 및 성장에 광범위한 영향을 미칠 수 있습니다.
                 </p>
