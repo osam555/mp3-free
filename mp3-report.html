@@ -60,6 +60,85 @@
         .impact-card-red { border-color: #dc2626; } /* red-600 */
         .impact-card-yellow { border-color: #f59e0b; } /* amber-500 */
         .impact-card-blue { border-color: #2563eb; } /* blue-600 */
+
+        /* Slider Styles */
+        .slider-container {
+            position: relative;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            overflow: hidden;
+            background-color: #fafaf9;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .slider-wrapper {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            aspect-ratio: 16 / 9;
+        }
+        .slider-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .slider-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            display: block;
+            border-radius: 8px;
+            object-fit: contain;
+        }
+        .slider-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+            z-index: 10;
+        }
+        .slider-button:hover {
+            background-color: rgba(0, 0, 0, 0.8);
+        }
+        .slider-button.prev {
+            left: 10px;
+        }
+        .slider-button.next {
+            right: 10px;
+        }
+        .slider-indicators {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .slider-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #d1d5db;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .slider-indicator.active {
+            background-color: #1d4ed8;
+        }
     </style>
 </head>
 <body class="text-stone-800">
@@ -84,6 +163,7 @@
                 <button data-section="data" class="nav-button py-2 px-4 text-lg">실험 데이터</button>
                 <button data-section="athlete-impact" class="nav-button py-2 px-4 text-lg">운동선수 영향</button>
                 <button data-section="child-impact" class="nav-button py-2 px-4 text-lg">청소년/일반인 영향</button>
+                <button data-section="media" class="nav-button py-2 px-4 text-lg">MBC, KBS 다큐</button>
             </div>
         </nav>
 
@@ -209,7 +289,7 @@
                     성장기와 학령기에 있는 아이들과 청소년들은 신체, 인지 발달이 활발한 시기입니다. MP3로 인한 미세한 반응속도 및 근력 저하 현상은 이들의 안전, 학습 및 성장에 광범위한 영향을 미칠 수 있습니다.
                 </p>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    
+
                     <div class="impact-card impact-card-red p-6 rounded-lg shadow-md">
                         <h3 class="text-2xl font-bold text-stone-900 mb-3">
                             <span class="text-3xl mr-2">⚠️</span>안전 및 대처 능력 저하
@@ -240,6 +320,38 @@
                 </div>
             </section>
 
+            <!-- Section 5: Media Coverage (언론 보도) -->
+            <section id="media-section" class="hidden">
+                <h2 class="text-3xl font-bold text-blue-700 mb-6 border-b-2 pb-2">MBC, KBS 다큐 보도</h2>
+                <p class="text-lg text-stone-700 mb-8 leading-relaxed">
+                    MBC와 KBS에서 방영된 MP3 영향 실험 다큐멘터리 보도 자료입니다.
+                </p>
+
+                <div class="slider-container">
+                    <div class="slider-wrapper" id="slider-wrapper">
+                        <div class="slider-slide"><img src="asset/mp3-slow/image0.jpg" alt="언론 보도 1"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image01.jpg" alt="언론 보도 2"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image02.jpg" alt="언론 보도 3"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image03.jpg" alt="언론 보도 4"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image04.jpg" alt="언론 보도 5"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image05.jpg" alt="언론 보도 6"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image06.jpg" alt="언론 보도 7"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image07.jpg" alt="언론 보도 8"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image08.jpg" alt="언론 보도 9"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image09.jpg" alt="언론 보도 10"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image10.jpg" alt="언론 보도 11"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image11.jpg" alt="언론 보도 12"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image12.jpg" alt="언론 보도 13"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image13.jpg" alt="언론 보도 14"></div>
+                        <div class="slider-slide"><img src="asset/mp3-slow/image14.jpg" alt="언론 보도 15"></div>
+                    </div>
+                    <button class="slider-button prev" id="prev-button">‹</button>
+                    <button class="slider-button next" id="next-button">›</button>
+                </div>
+
+                <div class="slider-indicators" id="slider-indicators"></div>
+            </section>
+
         </main>
 
         <!-- Footer -->
@@ -266,7 +378,8 @@
             overview: document.getElementById('overview-section'),
             data: document.getElementById('data-section'),
             'athlete-impact': document.getElementById('athlete-impact-section'),
-            'child-impact': document.getElementById('child-impact-section')
+            'child-impact': document.getElementById('child-impact-section'),
+            media: document.getElementById('media-section')
         };
 
         const navButtonsContainer = document.getElementById('nav-buttons');
@@ -559,6 +672,85 @@
                 });
             }
         }
+
+        // Slider functionality
+        let currentSlide = 0;
+        const totalSlides = 15;
+        const sliderWrapper = document.getElementById('slider-wrapper');
+        const prevButton = document.getElementById('prev-button');
+        const nextButton = document.getElementById('next-button');
+        const indicatorsContainer = document.getElementById('slider-indicators');
+
+        // Create indicators
+        function createIndicators() {
+            for (let i = 0; i < totalSlides; i++) {
+                const indicator = document.createElement('div');
+                indicator.className = 'slider-indicator';
+                if (i === 0) indicator.classList.add('active');
+                indicator.addEventListener('click', () => goToSlide(i));
+                indicatorsContainer.appendChild(indicator);
+            }
+        }
+
+        function updateSlider() {
+            if (sliderWrapper) {
+                sliderWrapper.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+
+            // Update indicators
+            const indicators = indicatorsContainer.querySelectorAll('.slider-indicator');
+            indicators.forEach((indicator, index) => {
+                if (index === currentSlide) {
+                    indicator.classList.add('active');
+                } else {
+                    indicator.classList.remove('active');
+                }
+            });
+        }
+
+        function nextSlide() {
+            currentSlide = (currentSlide + 1) % totalSlides;
+            updateSlider();
+        }
+
+        function prevSlide() {
+            currentSlide = (currentSlide - 1 + totalSlides) % totalSlides;
+            updateSlider();
+        }
+
+        function goToSlide(index) {
+            currentSlide = index;
+            updateSlider();
+        }
+
+        // Event listeners
+        if (nextButton) nextButton.addEventListener('click', nextSlide);
+        if (prevButton) prevButton.addEventListener('click', prevSlide);
+
+        // Initialize indicators
+        createIndicators();
+
+        // Auto-play functionality (3 seconds interval)
+        let autoPlayInterval = setInterval(nextSlide, 3000);
+
+        // Pause auto-play on hover
+        if (sliderWrapper) {
+            const sliderContainer = document.querySelector('.slider-container');
+            sliderContainer.addEventListener('mouseenter', () => {
+                clearInterval(autoPlayInterval);
+            });
+            sliderContainer.addEventListener('mouseleave', () => {
+                autoPlayInterval = setInterval(nextSlide, 3000);
+            });
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (sectionElements.media && !sectionElements.media.classList.contains('hidden')) {
+                if (e.key === 'ArrowLeft') prevSlide();
+                if (e.key === 'ArrowRight') nextSlide();
+            }
+        });
     </script>
 
 </body>
