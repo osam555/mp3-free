@@ -88,21 +88,38 @@
         .slider-wrapper {
             display: flex;
             transition: transform 0.5s ease-in-out;
-            aspect-ratio: 16 / 9;
             width: 100%;
+            /* Mobile: limit height to 50vh, Tablet: 60vh, Desktop: 70vh */
+            height: 50vh;
+            max-height: 280px;
+        }
+        @media (min-width: 640px) {
+            .slider-wrapper {
+                height: 60vh;
+                max-height: 400px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .slider-wrapper {
+                height: auto;
+                max-height: none;
+                aspect-ratio: 16 / 9;
+            }
         }
         .slider-slide {
             min-width: 100%;
+            height: 100%;
             flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
-            aspect-ratio: 16 / 9;
         }
         .slider-slide img {
-            width: 100%;
-            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
             display: block;
             border-radius: 0;
             object-fit: contain;
@@ -429,6 +446,28 @@
                 </div>
 
                 <div class="slider-indicators" id="slider-indicators"></div>
+
+                <!-- Full Image Gallery -->
+                <div class="mt-8">
+                    <h3 class="text-xl font-bold text-stone-800 mb-4 text-center">전체 이미지 보기</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="gallery-item"><img src="asset/mp3-slow/image0.jpg" alt="언론 보도 1" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(0)"><p class="text-center text-sm text-stone-600 mt-2">1. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image01.jpg" alt="언론 보도 2" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(1)"><p class="text-center text-sm text-stone-600 mt-2">2. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image02.jpg" alt="언론 보도 3" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(2)"><p class="text-center text-sm text-stone-600 mt-2">3. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image03.jpg" alt="언론 보도 4" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(3)"><p class="text-center text-sm text-stone-600 mt-2">4. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image04.jpg" alt="언론 보도 5" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(4)"><p class="text-center text-sm text-stone-600 mt-2">5. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image05.jpg" alt="언론 보도 6" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(5)"><p class="text-center text-sm text-stone-600 mt-2">6. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image06.jpg" alt="언론 보도 7" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(6)"><p class="text-center text-sm text-stone-600 mt-2">7. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image07.jpg" alt="언론 보도 8" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(7)"><p class="text-center text-sm text-stone-600 mt-2">8. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image08.jpg" alt="언론 보도 9" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(8)"><p class="text-center text-sm text-stone-600 mt-2">9. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image09.jpg" alt="언론 보도 10" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(9)"><p class="text-center text-sm text-stone-600 mt-2">10. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image10.jpg" alt="언론 보도 11" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(10)"><p class="text-center text-sm text-stone-600 mt-2">11. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image11.jpg" alt="언론 보도 12" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(11)"><p class="text-center text-sm text-stone-600 mt-2">12. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image12.jpg" alt="언론 보도 13" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(12)"><p class="text-center text-sm text-stone-600 mt-2">13. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image13.jpg" alt="언론 보도 14" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(13)"><p class="text-center text-sm text-stone-600 mt-2">14. 언론 보도</p></div>
+                        <div class="gallery-item"><img src="asset/mp3-slow/image14.jpg" alt="언론 보도 15" class="w-full h-auto rounded-lg shadow-md cursor-pointer hover:shadow-xl transition-shadow" onclick="goToSlide(14)"><p class="text-center text-sm text-stone-600 mt-2">15. 언론 보도</p></div>
+                    </div>
+                </div>
             </section>
 
         </main>
