@@ -89,22 +89,8 @@
             display: flex;
             transition: transform 0.5s ease-in-out;
             width: 100%;
-            /* Mobile: limit height to 50vh, Tablet: 60vh, Desktop: 70vh */
-            height: 50vh;
-            max-height: 280px;
-        }
-        @media (min-width: 640px) {
-            .slider-wrapper {
-                height: 60vh;
-                max-height: 400px;
-            }
-        }
-        @media (min-width: 1024px) {
-            .slider-wrapper {
-                height: auto;
-                max-height: none;
-                aspect-ratio: 16 / 9;
-            }
+            /* 16:9 aspect ratio for all screen sizes */
+            aspect-ratio: 16 / 9;
         }
         .slider-slide {
             min-width: 100%;
