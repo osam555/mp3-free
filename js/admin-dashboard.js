@@ -579,16 +579,28 @@ window.loadPublicationEventStats = async function() {
         // Firestore 초기화 확인
         if (typeof db === 'undefined') {
             console.warn('Firestore가 아직 초기화되지 않았습니다.');
-            setTimeout(() => loadPublicationEventStats(), 500);
+            setTimeout(() => window.loadPublicationEventStats(), 500);
             return;
         }
 
+        // UI 엘리먼트 확인
+        const clicksElement = document.getElementById('publication-event-clicks');
+        const lastClickElement = document.getElementById('publication-event-last-click');
+
+        if (!clicksElement || !lastClickElement) {
+            console.warn('UI 엘리먼트를 찾을 수 없습니다.');
+            return;
+        }
+
+        console.log('출간기념회 클릭 통계 로드 시작...');
         const buttonClicksRef = db.collection('button_clicks');
 
         // 출간기념회 버튼 클릭 수 조회
         const snapshot = await buttonClicksRef
             .where('buttonId', '==', 'publication-event-btn')
             .get();
+
+        console.log(`Firestore에서 ${snapshot.size}개의 클릭 기록 조회됨`);
 
         const totalClicks = snapshot.size;
 
@@ -598,7 +610,7 @@ window.loadPublicationEventStats = async function() {
             let latestClick = null;
             snapshot.forEach(doc => {
                 const data = doc.data();
-                if (!latestClick || data.timestamp > latestClick.timestamp) {
+                if (!latestClick || (data.timestamp && data.timestamp > (latestClick.timestamp || 0))) {
                     latestClick = data;
                 }
             });
@@ -610,15 +622,26 @@ window.loadPublicationEventStats = async function() {
         }
 
         // UI 업데이트
-        document.getElementById('publication-event-clicks').textContent = totalClicks;
-        document.getElementById('publication-event-last-click').textContent =
+        clicksElement.textContent = totalClicks;
+        lastClickElement.textContent =
             lastClickTime === '-' ? '마지막 클릭: -' : `마지막 클릭: ${lastClickTime}`;
 
         console.log(`✅ 출간기념회 클릭 통계 로드 완료 (총 ${totalClicks}회)`);
     } catch (error) {
         console.error('출간기념회 클릭 통계 로드 에러:', error);
-        document.getElementById('publication-event-clicks').textContent = '오류';
-        document.getElementById('publication-event-last-click').textContent = '오류: 통계를 불러올 수 없습니다';
+        console.error('에러 메시지:', error.message);
+        console.error('에러 코드:', error.code);
+
+        const clicksElement = document.getElementById('publication-event-clicks');
+        const lastClickElement = document.getElementById('publication-event-last-click');
+
+        if (clicksElement) clicksElement.textContent = '-';
+        if (lastClickElement) lastClickElement.textContent = '마지막 클릭: -';
+
+        // Firestore 보안 규칙 오류인 경우
+        if (error.code === 'permission-denied') {
+            console.warn('Firestore 보안 규칙 오류: button_clicks 컬렉션 읽기 권한 확인 필요');
+        }
     }
 };
 

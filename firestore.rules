@@ -59,5 +59,17 @@ service cloud.firestore {
       // 주의: 실제 운영 시에는 더 엄격한 규칙 권장
       allow read, write: if true;
     }
+
+    // 버튼 클릭 추적 컬렉션
+    match /button_clicks/{document} {
+      // 누구나 클릭 기록 생성 가능
+      allow create: if true;
+
+      // 읽기는 공개 (관리자 페이지에서 표시)
+      allow read: if true;
+
+      // 업데이트와 삭제는 불가
+      allow update, delete: if false;
+    }
   }
 }
