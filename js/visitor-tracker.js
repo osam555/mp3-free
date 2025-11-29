@@ -2,6 +2,7 @@
 
 // Firestore 컬렉션 참조
 const visitorsRef = db.collection('page_visitors');
+const buttonClicksRef = db.collection('button_clicks');
 
 // 방문자 정보 수집 및 저장
 async function trackPageVisit() {
@@ -230,12 +231,54 @@ function trackCustomEvents() {
     }
 }
 
+// 버튼 클릭 추적 함수
+async function trackButtonClick(buttonId) {
+    try {
+        const clickData = {
+            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+            clickDate: new Date().toISOString(),
+            buttonId: buttonId,
+            buttonLabel: getButtonLabel(buttonId),
+            page: window.location.pathname,
+            url: window.location.href,
+            sessionId: getOrCreateSessionId(),
+            userAgent: navigator.userAgent,
+            device: getDeviceType(),
+            browser: getBrowserInfo()
+        };
+
+        await buttonClicksRef.add(clickData);
+        console.log(`버튼 클릭 추적 완료 (ID: ${buttonId})`);
+    } catch (error) {
+        console.error('버튼 클릭 추적 에러:', error);
+    }
+}
+
+// 버튼 라벨 반환 함수
+function getButtonLabel(buttonId) {
+    const labelMap = {
+        'publication-event-btn': '출간기념회 신청'
+    };
+    return labelMap[buttonId] || buttonId;
+}
+
+// 버튼 클릭 리스너 등록
+function setupButtonClickTracking() {
+    const publicationEventBtn = document.getElementById('publication-event-btn');
+    if (publicationEventBtn) {
+        publicationEventBtn.addEventListener('click', (e) => {
+            trackButtonClick('publication-event-btn');
+        });
+    }
+}
+
 // 페이지 로드 시 실행
 window.addEventListener('DOMContentLoaded', () => {
     // Firebase 초기화 확인
     if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
         trackPageVisit();
         trackCustomEvents();
+        setupButtonClickTracking();
     } else {
         console.warn('Firebase가 초기화되지 않았습니다.');
     }

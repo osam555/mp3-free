@@ -503,6 +503,9 @@ window.addEventListener('DOMContentLoaded', () => {
     
     // 순위 정보 로드
     loadRankInfo();
+
+    // 출간기념회 클릭 통계 로드
+    loadPublicationEventStats();
 });
 
 // 순위 차트 변수
@@ -569,6 +572,55 @@ async function loadRankInfo() {
         }
     }
 }
+
+// 출간기념회 클릭 통계 로드
+window.loadPublicationEventStats = async function() {
+    try {
+        // Firestore 초기화 확인
+        if (typeof db === 'undefined') {
+            console.warn('Firestore가 아직 초기화되지 않았습니다.');
+            setTimeout(() => loadPublicationEventStats(), 500);
+            return;
+        }
+
+        const buttonClicksRef = db.collection('button_clicks');
+
+        // 출간기념회 버튼 클릭 수 조회
+        const snapshot = await buttonClicksRef
+            .where('buttonId', '==', 'publication-event-btn')
+            .get();
+
+        const totalClicks = snapshot.size;
+
+        // 마지막 클릭 시간 찾기
+        let lastClickTime = '-';
+        if (totalClicks > 0) {
+            let latestClick = null;
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (!latestClick || data.timestamp > latestClick.timestamp) {
+                    latestClick = data;
+                }
+            });
+
+            if (latestClick && latestClick.clickDate) {
+                const date = new Date(latestClick.clickDate);
+                lastClickTime = formatDate(date);
+            }
+        }
+
+        // UI 업데이트
+        document.getElementById('publication-event-clicks').textContent = totalClicks;
+        document.getElementById('publication-event-last-click').textContent =
+            lastClickTime === '-' ? '마지막 클릭: -' : `마지막 클릭: ${lastClickTime}`;
+
+        console.log(`✅ 출간기념회 클릭 통계 로드 완료 (총 ${totalClicks}회)`);
+    } catch (error) {
+        console.error('출간기념회 클릭 통계 로드 에러:', error);
+        document.getElementById('publication-event-clicks').textContent = '오류';
+        document.getElementById('publication-event-last-click').textContent = '오류: 통계를 불러올 수 없습니다';
+    }
+};
 
 // 순위 히스토리 로드 및 그래프 표시
 async function loadRankHistory() {
