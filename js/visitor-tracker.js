@@ -234,6 +234,14 @@ function trackCustomEvents() {
 // 버튼 클릭 추적 함수
 async function trackButtonClick(buttonId) {
     try {
+        console.log(`[버튼클릭] ${buttonId} 클릭 감지됨`);
+
+        // Firebase 초기화 확인
+        if (typeof db === 'undefined') {
+            console.error('[버튼클릭] Firestore가 초기화되지 않았습니다!');
+            return;
+        }
+
         const clickData = {
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
             clickDate: new Date().toISOString(),
@@ -247,10 +255,14 @@ async function trackButtonClick(buttonId) {
             browser: getBrowserInfo()
         };
 
-        await buttonClicksRef.add(clickData);
-        console.log(`버튼 클릭 추적 완료 (ID: ${buttonId})`);
+        console.log('[버튼클릭] 저장할 데이터:', clickData);
+
+        const docRef = await buttonClicksRef.add(clickData);
+        console.log(`✅ 버튼 클릭 추적 완료 (ID: ${buttonId}, DocID: ${docRef.id})`);
     } catch (error) {
-        console.error('버튼 클릭 추적 에러:', error);
+        console.error('[버튼클릭] 추적 에러:', error);
+        console.error('[버튼클릭] 에러 메시지:', error.message);
+        console.error('[버튼클릭] 에러 코드:', error.code);
     }
 }
 
@@ -264,16 +276,24 @@ function getButtonLabel(buttonId) {
 
 // 버튼 클릭 리스너 등록
 function setupButtonClickTracking() {
+    console.log('[버튼추적] 버튼 클릭 리스너 설정 시작...');
     const publicationEventBtn = document.getElementById('publication-event-btn');
+
     if (publicationEventBtn) {
+        console.log('[버튼추적] 출간기념회 버튼 찾음 ✓');
         publicationEventBtn.addEventListener('click', (e) => {
+            console.log('[버튼추적] 출간기념회 버튼 클릭 감지!');
             trackButtonClick('publication-event-btn');
         });
+        console.log('[버튼추적] 클릭 리스너 등록 완료 ✓');
+    } else {
+        console.warn('[버튼추적] 출간기념회 버튼을 찾을 수 없습니다! (ID: publication-event-btn)');
     }
 }
 
 // 페이지 로드 시 실행
 window.addEventListener('DOMContentLoaded', () => {
+    console.log('[페이지로드] DOMContentLoaded 이벤트 발생');
     // Firebase 초기화 확인
     if (typeof firebase !== 'undefined' && typeof db !== 'undefined') {
         trackPageVisit();
@@ -281,5 +301,21 @@ window.addEventListener('DOMContentLoaded', () => {
         setupButtonClickTracking();
     } else {
         console.warn('Firebase가 초기화되지 않았습니다.');
+        // Firebase 초기화 대기
+        setTimeout(() => {
+            if (typeof db !== 'undefined') {
+                console.log('[페이지로드] Firebase 초기화 완료, 버튼 추적 설정');
+                setupButtonClickTracking();
+            }
+        }, 1000);
+    }
+});
+
+// 추가 안전장치: window load 이벤트에서도 버튼 추적 설정
+window.addEventListener('load', () => {
+    console.log('[페이지로드] window.load 이벤트 발생');
+    if (document.getElementById('publication-event-btn')) {
+        console.log('[페이지로드] 버튼이 존재하고 있으므로 추적 설정 확인');
+        setupButtonClickTracking();
     }
 });
