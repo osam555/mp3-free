@@ -575,7 +575,16 @@ async function loadRankInfo() {
 
 // 출간기념회 클릭 통계 로드
 window.loadPublicationEventStats = async function() {
+    const btn = document.getElementById('refresh-pub-stats-btn');
+    const originalText = btn ? btn.innerHTML : '';
+
     try {
+        // 로딩 상태 표시
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '⏳ 새로고침 중...';
+        }
+
         // Firestore 초기화 확인
         if (typeof db === 'undefined') {
             console.warn('Firestore가 아직 초기화되지 않았습니다.');
@@ -627,6 +636,16 @@ window.loadPublicationEventStats = async function() {
             lastClickTime === '-' ? '마지막 클릭: -' : `마지막 클릭: ${lastClickTime}`;
 
         console.log(`✅ 출간기념회 클릭 통계 로드 완료 (총 ${totalClicks}회)`);
+
+        // 완료 상태 표시
+        if (btn) {
+            btn.innerHTML = '✅ 완료!';
+            setTimeout(() => {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                }
+            }, 2000);
+        }
     } catch (error) {
         console.error('출간기념회 클릭 통계 로드 에러:', error);
         console.error('에러 메시지:', error.message);
@@ -638,9 +657,30 @@ window.loadPublicationEventStats = async function() {
         if (clicksElement) clicksElement.textContent = '-';
         if (lastClickElement) lastClickElement.textContent = '마지막 클릭: -';
 
-        // Firestore 보안 규칙 오류인 경우
+        // 에러 메시지 표시
+        let errorMsg = '통계 로드 실패';
         if (error.code === 'permission-denied') {
+            errorMsg = '권한 오류: Firestore 보안 규칙 확인 필요';
             console.warn('Firestore 보안 규칙 오류: button_clicks 컬렉션 읽기 권한 확인 필요');
+        } else if (error.code === 'failed-precondition') {
+            errorMsg = '인덱스 오류: Firebase Console에서 인덱스 생성 필요';
+        }
+
+        if (btn) {
+            btn.innerHTML = `❌ ${errorMsg}`;
+            setTimeout(() => {
+                if (btn) {
+                    btn.innerHTML = originalText;
+                }
+            }, 3000);
+        }
+
+        // 개발자 콘솔에 상세 정보 표시
+        console.warn(`⚠️ 출간기념회 통계 로드 실패: ${errorMsg}`);
+    } finally {
+        // 최종적으로 버튼 상태 복구
+        if (btn && btn.disabled) {
+            btn.disabled = false;
         }
     }
 };
