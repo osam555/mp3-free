@@ -491,7 +491,7 @@
                     <div class="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
                         <a id="publication-event-btn" href="https://docs.google.com/forms/d/e/1FAIpQLScR8_kx10dYDwS3BxsZ0FnIWpvn_SLqOUDJB2izIBB5kIwdcg/viewform" target="_blank" rel="noopener noreferrer"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200">
-                            📚 출간기념회 신청
+                            📚 북콘서트 신청
                         </a>
                         <a href="https://blog.naver.com/osam_english/224079062888" target="_blank" rel="noopener noreferrer"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg hover:from-amber-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-200">
@@ -501,11 +501,11 @@
                            target="_blank"
                            rel="noopener noreferrer"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-blue-600 to-blue-700 rounded-lg shadow-lg hover:from-blue-700 hover:to-blue-800 transform hover:scale-105 transition-all duration-200">
-                            📚 교보문고 구매 보기
+                            📚 교보문고 구매
                         </a>
                         <a href="#earlybird"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-purple-600 to-purple-700 rounded-lg shadow-lg hover:from-purple-700 hover:to-purple-800 transform hover:scale-105 transition-all duration-200">
-                            🎁 속청 원본 영상 신청하기
+                            🎁 북콘서트 이벤트 신청
                         </a>
                     </div>
 
@@ -624,19 +624,47 @@
                     </p>
                 </div>
 
-                <!-- WAV 한글속청 영상 추가 -->
+                <!-- WAV & MP3 한글속청 영상 비교 -->
                 <div class="glass-card mt-8">
                     <h3 class="text-2xl font-bold text-center mb-6 section-title">📺 WAV로 제작한 한글속청 실제 영상</h3>
-                    <div class="video-container">
-                        <iframe
-                            src="https://www.youtube.com/embed/6xhwSSWzceQ"
-                            title="WAV로 제작한 한글속청 영상"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowfullscreen>
-                        </iframe>
+
+                    <!-- 2-column grid for desktop, 1-column for mobile -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- WAV 영상 -->
+                        <div>
+                            <div class="video-container">
+                                <iframe
+                                    src="https://www.youtube-nocookie.com/embed/6xhwSSWzceQ?rel=0&modestbranding=1"
+                                    title="WAV로 제작한 한글속청 영상"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    referrerpolicy="strict-origin-when-cross-origin">
+                                </iframe>
+                            </div>
+                            <p class="text-center text-gray-600 mt-4 font-semibold">
+                                ✅ WAV 무손실 음원 - 고배속에서도 명료한 음질
+                            </p>
+                        </div>
+
+                        <!-- MP3 영상 -->
+                        <div>
+                            <div class="video-container">
+                                <iframe
+                                    src="https://www.youtube-nocookie.com/embed/4JU_nKGYVH4?rel=0&modestbranding=1"
+                                    title="MP3로 제작한 한글속청 영상"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowfullscreen
+                                    referrerpolicy="strict-origin-when-cross-origin">
+                                </iframe>
+                            </div>
+                            <p class="text-center text-gray-600 mt-4 font-semibold">
+                                ⚠️ MP3로 제작한 영상 - 고배속에서 음질 저하
+                            </p>
+                        </div>
                     </div>
-                    <p class="text-center text-gray-600 mt-4">
-                        WAV 무손실 음원으로 제작된 한글속청 영상 - 고배속에서도 명료한 음질을 직접 확인하세요
+
+                    <p class="text-center text-lg text-gray-700">
+                        두 영상을 비교하여 WAV와 MP3의 음질 차이를 직접 확인해보세요
                     </p>
                 </div>
             </section>
@@ -1198,7 +1226,7 @@
                         </ul>
 
                         <div class="mt-4 md:mt-6 p-3 md:p-4 bg-white rounded-lg">
-                            <h3 id="round-display" class="text-lg md:text-xl font-bold text-center mb-2 text-blue-600">1차 얼리버드</h3>
+                            <h3 id="round-display" class="text-lg md:text-xl font-bold text-center mb-2 text-blue-600">얼리버드</h3>
                             <p class="text-xs md:text-sm text-gray-600 mt-1 md:mt-2 text-center">선착순 100명 한정!</p>
                         </div>
                     </div>
