@@ -1275,14 +1275,27 @@
                                 <p class="text-sm text-gray-500 mt-1">교보문고 구매 영수증 사진 (JPG, PNG, PDF)</p>
                             </div>
 
-                            <!-- 후기 업로드 (선택) -->
-                            <div>
-                                <label class="block text-gray-700 font-semibold mb-2">
-                                    ✍️ 후기 <span class="text-gray-500 text-sm">(선택사항)</span>
+                            <!-- 북콘서트 이벤트 신청 -->
+                            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                                <label class="block text-gray-700 font-semibold mb-3">
+                                    📚 북콘서트 이벤트 신청 <span class="text-red-600">*</span>
                                 </label>
-                                <input type="file" id="review1" accept="image/*,application/pdf"
-                                    class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none">
-                                <p class="text-sm text-gray-500 mt-1">교보문고 등 구매 영수증 캡처 (JPG, PNG, PDF)</p>
+                                <div class="space-y-2">
+                                    <label class="flex items-start">
+                                        <input type="radio" name="book-concert" value="yes" class="mt-1 mr-3" required>
+                                        <div>
+                                            <span class="font-semibold text-blue-700">신청합니다</span>
+                                            <p class="text-sm text-gray-600 mt-1">북콘서트 참석 + 교보문고 3권 이상 구매 시 특전 제공</p>
+                                        </div>
+                                    </label>
+                                    <label class="flex items-start">
+                                        <input type="radio" name="book-concert" value="no" class="mt-1 mr-3" required>
+                                        <div>
+                                            <span class="font-semibold">신청하지 않습니다</span>
+                                            <p class="text-sm text-gray-600 mt-1">얼리버드 특전만 받습니다</p>
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
 
                             <!-- 이름 -->
@@ -1314,29 +1327,6 @@
                                 <input type="tel" id="phone" required
                                     class="w-full p-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none"
                                     placeholder="010-1234-5678">
-                            </div>
-
-                            <!-- 북콘서트 이벤트 신청 -->
-                            <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                                <label class="block text-gray-700 font-semibold mb-3">
-                                    📚 북콘서트 이벤트 신청 <span class="text-red-600">*</span>
-                                </label>
-                                <div class="space-y-2">
-                                    <label class="flex items-start">
-                                        <input type="radio" name="book-concert" value="yes" class="mt-1 mr-3" required>
-                                        <div>
-                                            <span class="font-semibold text-blue-700">신청합니다</span>
-                                            <p class="text-sm text-gray-600 mt-1">북콘서트 참석 + 교보문고 3권 이상 구매 시 특전 제공</p>
-                                        </div>
-                                    </label>
-                                    <label class="flex items-start">
-                                        <input type="radio" name="book-concert" value="no" class="mt-1 mr-3" required>
-                                        <div>
-                                            <span class="font-semibold">신청하지 않습니다</span>
-                                            <p class="text-sm text-gray-600 mt-1">얼리버드 특전만 받습니다</p>
-                                        </div>
-                                    </label>
-                                </div>
                             </div>
 
                             <!-- 영어 학습 목표 -->
