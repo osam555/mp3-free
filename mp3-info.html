@@ -81,11 +81,11 @@
         <!-- Header -->
         <header class="bg-slate-800 text-white p-6 md:p-8">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <div>
+                <a href="/" class="cursor-pointer hover:opacity-80 transition">
                     <div class="text-blue-300 text-sm font-bold uppercase tracking-wide mb-1">2024 교육공학 연구보고서</div>
                     <h1 class="text-2xl md:text-3xl font-bold leading-tight">한국 교육 시장 디지털 음원 사용 실태 및 고음질 전환 전략</h1>
                     <p class="text-slate-400 mt-2 text-sm md:text-base">MP3, AAC(VOD) 점유율 분석과 FLAC 도입을 통한 학습 효율성 증대 방안</p>
-                </div>
+                </a>
                 <div class="mt-4 md:mt-0 bg-slate-700 px-4 py-2 rounded-lg text-center">
                     <span class="block text-xs text-slate-400">연구 대상</span>
                     <span class="font-bold">전국 초중고 및 이러닝 플랫폼</span>
@@ -96,10 +96,12 @@
         <!-- Navigation -->
         <nav class="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 md:px-8">
             <ul class="flex space-x-6 overflow-x-auto no-scrollbar text-sm md:text-base">
+                <li class="whitespace-nowrap py-4 px-2"><a href="/" class="text-gray-600 hover:text-blue-600 transition font-medium">🏠 홈</a></li>
                 <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item active" onclick="app.navigate('overview')">📊 현황 개요</li>
                 <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('analysis')">🎧 포맷 기술 분석</li>
                 <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('survey')">📝 현장 실태 조사</li>
                 <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('strategy')">🚀 해결 방안 (Roadmap)</li>
+                <li class="whitespace-nowrap py-4 px-2"><a href="/mp3law-report.html" class="text-gray-600 hover:text-blue-600 transition font-medium">📋 법률 보고서</a></li>
             </ul>
         </nav>
 
