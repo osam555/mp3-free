@@ -276,9 +276,69 @@
             z-index: 10;
         }
 
+        .gallery-autoplay-controls {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .autoplay-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .autoplay-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .autoplay-btn.playing {
+            background: rgba(25, 37, 250, 0.8);
+        }
+
+        .speed-selector {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .speed-selector:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
         @media (max-width: 768px) {
             .gallery-nav {
                 padding: 0.5rem;
+            }
+
+            .gallery-autoplay-controls {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .speed-selector {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .autoplay-btn {
+                padding: 0.4rem;
             }
         }
     </style>
@@ -352,6 +412,20 @@
 
                     <!-- 이미지 갤러리 -->
                     <div class="gallery-container" id="gallery-parliament">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-parliament')" id="autoplay-btn-parliament">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-parliament', this.value)">
+                                <option value="3000" selected>3초</option>
+                                <option value="5000">5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
                         <div class="gallery-counter">
                             <span class="current-slide">1</span> / <span class="total-slides">12</span>
                         </div>
@@ -444,6 +518,20 @@
 
                     <!-- 이미지 갤러리 -->
                     <div class="gallery-container" id="gallery-education">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-education')" id="autoplay-btn-education">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-education', this.value)">
+                                <option value="3000" selected>3초</option>
+                                <option value="5000">5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
                         <div class="gallery-counter">
                             <span class="current-slide">1</span> / <span class="total-slides">15</span>
                         </div>
@@ -523,6 +611,20 @@
 
                     <!-- 이미지 갤러리 -->
                     <div class="gallery-container" id="gallery-sports">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-sports')" id="autoplay-btn-sports">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-sports', this.value)">
+                                <option value="3000" selected>3초</option>
+                                <option value="5000">5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
                         <div class="gallery-counter">
                             <span class="current-slide">1</span> / <span class="total-slides">15</span>
                         </div>
@@ -590,6 +692,20 @@
 
                     <!-- 이미지 갤러리 -->
                     <div class="gallery-container" id="gallery-public">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-public')" id="autoplay-btn-public">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-public', this.value)">
+                                <option value="3000" selected>3초</option>
+                                <option value="5000">5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
                         <div class="gallery-counter">
                             <span class="current-slide">1</span> / <span class="total-slides">14</span>
                         </div>
@@ -646,6 +762,20 @@
 
                     <!-- 이미지 갤러리 -->
                     <div class="gallery-container" id="gallery-defense">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-defense')" id="autoplay-btn-defense">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-defense', this.value)">
+                                <option value="3000" selected>3초</option>
+                                <option value="5000">5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
                         <div class="gallery-counter">
                             <span class="current-slide">1</span> / <span class="total-slides">15</span>
                         </div>
@@ -755,7 +885,10 @@
                 totalSlides: slides.length,
                 slider: slider,
                 currentSlideEl: currentSlideEl,
-                totalSlidesEl: totalSlidesEl
+                totalSlidesEl: totalSlidesEl,
+                isPlaying: false,
+                intervalId: null,
+                speed: 3000
             };
 
             // Create dots
@@ -772,9 +905,14 @@
             totalSlidesEl.textContent = slides.length;
         }
 
-        function changeSlide(galleryId, direction) {
+        function changeSlide(galleryId, direction, fromAutoplay = false) {
             const gallery = galleries[galleryId];
             if (!gallery) return;
+
+            // Stop autoplay if manually navigating
+            if (gallery.isPlaying && !fromAutoplay) {
+                toggleAutoplay(galleryId);
+            }
 
             gallery.currentIndex += direction;
 
@@ -790,6 +928,11 @@
         function goToSlide(galleryId, index) {
             const gallery = galleries[galleryId];
             if (!gallery) return;
+
+            // Stop autoplay when clicking dots
+            if (gallery.isPlaying) {
+                toggleAutoplay(galleryId);
+            }
 
             gallery.currentIndex = index;
             updateGallery(galleryId);
@@ -814,6 +957,53 @@
                         dot.classList.remove('active');
                     }
                 });
+            }
+        }
+
+        function toggleAutoplay(galleryId) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            const btn = document.getElementById('autoplay-btn-' + galleryId.replace('gallery-', ''));
+            if (!btn) return;
+
+            if (gallery.isPlaying) {
+                // Stop autoplay
+                clearInterval(gallery.intervalId);
+                gallery.isPlaying = false;
+                btn.classList.remove('playing');
+                // Change to play icon
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`;
+            } else {
+                // Start autoplay
+                gallery.isPlaying = true;
+                btn.classList.add('playing');
+                // Change to pause icon
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`;
+
+                gallery.intervalId = setInterval(() => {
+                    changeSlide(galleryId, 1, true);
+                }, gallery.speed);
+            }
+        }
+
+        function changeSpeed(galleryId, speed) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            gallery.speed = parseInt(speed);
+
+            // If currently playing, restart with new speed
+            if (gallery.isPlaying) {
+                clearInterval(gallery.intervalId);
+                gallery.intervalId = setInterval(() => {
+                    changeSlide(galleryId, 1, true);
+                }, gallery.speed);
             }
         }
 
