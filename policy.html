@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="ko" class="overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>정책 제안 - 디지털 음원 규제 및 청각 환경 개선</title>
+    <meta name="description" content="국방·체육·공공·교육 분야 디지털 음원 품질 규제 및 청각 환경 최적화 정책 제안">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #1a202c;
+            line-height: 1.7;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1925FA 0%, #005A9C 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 90, 156, 0.1);
+            transition: all 0.3s ease;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 90, 156, 0.15);
+        }
+
+        .section-title {
+            color: #005A9C;
+            font-weight: 900;
+        }
+
+        .policy-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-defense {
+            background: linear-gradient(135deg, #2C5F2D 0%, #1A472A 100%);
+            color: white;
+        }
+
+        .badge-sports {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a202c;
+        }
+
+        .badge-public {
+            background: linear-gradient(135deg, #E53E3E 0%, #C53030 100%);
+            color: white;
+        }
+
+        .badge-education {
+            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+            color: white;
+        }
+
+        .badge-parliament {
+            background: linear-gradient(135deg, #805AD5 0%, #6B46C1 100%);
+            color: white;
+        }
+
+        .key-stat {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+            border-left: 5px solid #E53E3E;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #1925FA 0%, #005A9C 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(25, 37, 250, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(25, 37, 250, 0.4);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #EBF8FF 0%, #BEE3F8 100%);
+            border-left: 5px solid #3182CE;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            border-left: 5px solid #005A9C;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #2d3748;
+            background: rgba(0, 90, 156, 0.05);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 이미지 갤러리 슬라이더 */
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            margin: 2rem 0;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+
+        .gallery-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .gallery-slide {
+            min-width: 100%;
+            flex-shrink: 0;
+        }
+
+        .gallery-slide img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 10;
+        }
+
+        .gallery-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .gallery-nav.prev {
+            left: 0;
+        }
+
+        .gallery-nav.next {
+            right: 0;
+        }
+
+        .gallery-dots {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .gallery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        .gallery-counter {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-nav {
+                padding: 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full shadow-lg z-50" style="background: #1925FA; backdrop-filter: blur(10px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-white font-black text-xl">WAV 원음</a>
+                </div>
+                <div class="hidden md:flex space-x-4">
+                    <a href="index.html" class="nav-link">홈</a>
+                    <a href="policy.html" class="nav-link bg-white bg-opacity-20">정책 제안</a>
+                    <a href="index.html#expert" class="nav-link">전문가 의견</a>
+                    <a href="index.html#comparison" class="nav-link">비교</a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white p-2">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-blue-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">홈</a>
+                <a href="policy.html" class="block px-3 py-2 text-white bg-blue-800 rounded">정책 제안</a>
+                <a href="index.html#expert" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">전문가 의견</a>
+                <a href="index.html#comparison" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">비교</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient flex items-center justify-center relative pt-20 md:pt-32 py-16 md:py-24">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-6">
+                디지털 음원 규제 및<br>청각 환경 개선 정책 제안
+            </h1>
+            <p class="text-xl md:text-2xl text-white text-opacity-90 mb-8 max-w-3xl mx-auto">
+                국방·체육·공공·교육 4대 핵심 분야<br>
+                0.087초 반응 지연과 삼각근 근력 저하 문제 해결
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <span class="policy-badge badge-defense">🛡️ 국방</span>
+                <span class="policy-badge badge-sports">🏅 체육</span>
+                <span class="policy-badge badge-public">🏢 공공</span>
+                <span class="policy-badge badge-education">📚 교육</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="bg-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+
+            <!-- 국회포럼 보고서 -->
+            <section id="parliament" class="mb-16">
+                <div class="glass-card">
+                    <span class="policy-badge badge-parliament">🏛️ 국회포럼</span>
+                    <h2 class="text-3xl md:text-4xl font-black mb-6 section-title">
+                        청각 환경의 신경생리학적 최적화를 통한<br>국가 경쟁력 제고 전략
+                    </h2>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="gallery-container" id="gallery-parliament">
+                        <div class="gallery-counter">
+                            <span class="current-slide">1</span> / <span class="total-slides">12</span>
+                        </div>
+                        <button class="gallery-nav prev" onclick="changeSlide('gallery-parliament', -1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-slider">
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_1.png" alt="국회포럼 자료 1"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_2.png" alt="국회포럼 자료 2"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_3.png" alt="국회포럼 자료 3"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_4.png" alt="국회포럼 자료 4"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_5.png" alt="국회포럼 자료 5"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_6.png" alt="국회포럼 자료 6"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_7.png" alt="국회포럼 자료 7"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_8.png" alt="국회포럼 자료 8"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_9.png" alt="국회포럼 자료 9"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_10.png" alt="국회포럼 자료 10"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_11.png" alt="국회포럼 자료 11"></div>
+                            <div class="gallery-slide"><img src="docs/소리_위협_국가_경쟁력_PNG/소리_위협_국가_경쟁력_12.png" alt="국회포럼 자료 12"></div>
+                        </div>
+                        <button class="gallery-nav next" onclick="changeSlide('gallery-parliament', 1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-dots" id="dots-parliament"></div>
+                    </div>
+
+                    <div class="key-stat">
+                        <h3 class="text-2xl font-bold text-red-600 mb-2">⚠️ 핵심 문제</h3>
+                        <p class="text-lg font-bold">MP3 10분 청취 → <span class="text-red-600">0.087초 반응 지연</span> (혈중알코올농도 0.05% 수준)</p>
+                        <p class="text-lg font-bold">즉각적인 <span class="text-red-600">삼각근 근력 약화</span> 현상 발생</p>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">📊 분야별 영향 분석</h3>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">🛡️ 국방 분야</h4>
+                            <ul class="space-y-2">
+                                <li>• <strong>0.1초 지연</strong> = 시속 60km 트럭 1.67m 추가 주행</li>
+                                <li>• 마하 1.5 전투기 51m 무방비 비행</li>
+                                <li>• 근접전 승부처 20~30% 시간적 우위 상실</li>
+                                <li>• 삼각근 약화로 사격 견착 불안정</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">🏅 체육 분야</h4>
+                            <ul class="space-y-2">
+                                <li>• 2024 파리 올림픽 100m: <strong>0.005초</strong> 차 금메달</li>
+                                <li>• 0.087초 = 금메달 마진의 <strong>17.4배</strong></li>
+                                <li>• 반효진 사격 금메달: <strong>0.1점</strong> 차이</li>
+                                <li>• 삼각근 약화가 조준 정밀도에 직접 영향</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">🏢 공공 분야</h4>
+                            <ul class="space-y-2">
+                                <li>• 헬스장: 근력 강화 중 오히려 근력 약화</li>
+                                <li>• 병원: 치유 음악이 교감신경 자극</li>
+                                <li>• 키즈카페: 아동 정서 불안 유발</li>
+                                <li>• 일상 공간의 "청각적 미세먼지"</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">📚 교육 분야</h4>
+                            <ul class="space-y-2">
+                                <li>• 뇌의 보간 작업으로 학습 에너지 낭비</li>
+                                <li>• AI 디지털 교과서 음질 표준 부재</li>
+                                <li>• 수능 듣기: 0.1초가 정답률 결정</li>
+                                <li>• 저품질 음원 = 학습 핸디캡</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <a href="docs/[국회포럼] 보고서.md" class="download-btn" download>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        국회포럼 보고서 다운로드
+                    </a>
+                </div>
+            </section>
+
+            <!-- 체육 분야 -->
+            <section id="sports" class="mb-16">
+                <div class="glass-card">
+                    <span class="policy-badge badge-sports">🏅 체육 분야</span>
+                    <h2 class="text-3xl md:text-4xl font-black mb-6 section-title">
+                        국가대표 경기력 향상을 위한<br>청각 환경 최적화 전략
+                    </h2>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="gallery-container" id="gallery-sports">
+                        <div class="gallery-counter">
+                            <span class="current-slide">1</span> / <span class="total-slides">15</span>
+                        </div>
+                        <button class="gallery-nav prev" onclick="changeSlide('gallery-sports', -1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-slider">
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_1.png" alt="체육 자료 1"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_2.png" alt="체육 자료 2"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_3.png" alt="체육 자료 3"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_4.png" alt="체육 자료 4"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_5.png" alt="체육 자료 5"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_6.png" alt="체육 자료 6"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_7.png" alt="체육 자료 7"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_8.png" alt="체육 자료 8"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_9.png" alt="체육 자료 9"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_10.png" alt="체육 자료 10"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_11.png" alt="체육 자료 11"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_12.png" alt="체육 자료 12"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_13.png" alt="체육 자료 13"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_14.png" alt="체육 자료 14"></div>
+                            <div class="gallery-slide"><img src="docs/0087초_승리의_과학_PNG/0087초_승리의_과학_15.png" alt="체육 자료 15"></div>
+                        </div>
+                        <button class="gallery-nav next" onclick="changeSlide('gallery-sports', 1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-dots" id="dots-sports"></div>
+                    </div>
+
+                    <blockquote class="text-lg">
+                        "0.005초가 금메달을 결정짓는 세계에서, 0.087초의 반응 지연은 메달권 밖으로의 추방을 의미합니다."
+                    </blockquote>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">🥇 올림픽 실제 사례</h3>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="key-stat">
+                            <h4 class="text-xl font-bold mb-3">🏃 노아 라일스 (100m 금메달)</h4>
+                            <p class="mb-2"><strong>기록:</strong> 9.784초</p>
+                            <p class="mb-2"><strong>2위와 차이:</strong> 0.005초</p>
+                            <p class="text-red-600 font-bold">MP3 지연(0.087초) = 금메달 마진의 17.4배</p>
+                        </div>
+
+                        <div class="key-stat">
+                            <h4 class="text-xl font-bold mb-3">🎯 반효진 (사격 금메달)</h4>
+                            <p class="mb-2"><strong>슛오프 점수:</strong> 10.4점</p>
+                            <p class="mb-2"><strong>2위와 차이:</strong> 0.1점</p>
+                            <p class="text-red-600 font-bold">삼각근 약화 → 조준 불안정 → 메달 색 변경</p>
+                        </div>
+                    </div>
+
+                    <a href="docs/[11운동선수촌] 디지털 청각 환경 개선 제안.md" class="download-btn" download>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        체육 분야 제안서 다운로드
+                    </a>
+                </div>
+            </section>
+
+            <!-- 공공장소 분야 -->
+            <section id="public" class="mb-16">
+                <div class="glass-card">
+                    <span class="policy-badge badge-public">🏢 공공장소</span>
+                    <h2 class="text-3xl md:text-4xl font-black mb-6 section-title">
+                        공공장소 디지털 음원 규제 및<br>DAC 설치 의무화 검토
+                    </h2>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="gallery-container" id="gallery-public">
+                        <div class="gallery-counter">
+                            <span class="current-slide">1</span> / <span class="total-slides">14</span>
+                        </div>
+                        <button class="gallery-nav prev" onclick="changeSlide('gallery-public', -1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-slider">
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_1.png" alt="공공장소 자료 1"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_2.png" alt="공공장소 자료 2"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_3.png" alt="공공장소 자료 3"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_4.png" alt="공공장소 자료 4"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_5.png" alt="공공장소 자료 5"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_6.png" alt="공공장소 자료 6"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_7.png" alt="공공장소 자료 7"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_8.png" alt="공공장소 자료 8"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_9.png" alt="공공장소 자료 9"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_10.png" alt="공공장소 자료 10"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_11.png" alt="공공장소 자료 11"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_12.png" alt="공공장소 자료 12"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_13.png" alt="공공장소 자료 13"></div>
+                            <div class="gallery-slide"><img src="docs/소리_청정_공간_설계_PNG/소리_청정_공간_설계_14.png" alt="공공장소 자료 14"></div>
+                        </div>
+                        <button class="gallery-nav next" onclick="changeSlide('gallery-public', 1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-dots" id="dots-public"></div>
+                    </div>
+
+                    <blockquote class="text-lg">
+                        "소리의 미세먼지를 막아야 합니다. DAC는 공기청정기처럼 필수 환경가전입니다."
+                    </blockquote>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">⚠️ 이중 파형 파괴 (Double Destruction)</h3>
+
+                    <div class="key-stat">
+                        <h3 class="text-xl font-bold text-red-600 mb-3">공공장소의 소리 오염 구조</h3>
+                        <p class="mb-2"><strong>1차 파괴:</strong> 유튜브 음원 (128kbps AAC) - 고주파 삭제, 계단식 파형</p>
+                        <p><strong>2차 파괴:</strong> PC 사운드카드 - 전자기 노이즈(EMI) 혼입, 파형 왜곡</p>
+                    </div>
+
+                    <a href="docs/[11법률제안] 공공장소 디지탈음원 규제 및 DAC 설치 의무화 검토.md" class="download-btn" download>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        공공장소 법률제안 다운로드
+                    </a>
+                </div>
+            </section>
+
+            <!-- 국방 분야 -->
+            <section id="defense" class="mb-16">
+                <div class="glass-card">
+                    <span class="policy-badge badge-defense">🛡️ 국방 분야</span>
+                    <h2 class="text-3xl md:text-4xl font-black mb-6 section-title">
+                        국방 전투력 보존을 위한<br>디지털 청각 환경 최적화 규정
+                    </h2>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="gallery-container" id="gallery-defense">
+                        <div class="gallery-counter">
+                            <span class="current-slide">1</span> / <span class="total-slides">15</span>
+                        </div>
+                        <button class="gallery-nav prev" onclick="changeSlide('gallery-defense', -1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-slider">
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_1.png" alt="국방 자료 1"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_2.png" alt="국방 자료 2"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_3.png" alt="국방 자료 3"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_4.png" alt="국방 자료 4"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_5.png" alt="국방 자료 5"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_6.png" alt="국방 자료 6"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_7.png" alt="국방 자료 7"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_8.png" alt="국방 자료 8"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_9.png" alt="국방 자료 9"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_10.png" alt="국방 자료 10"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_11.png" alt="국방 자료 11"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_12.png" alt="국방 자료 12"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_13.png" alt="국방 자료 13"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_14.png" alt="국방 자료 14"></div>
+                            <div class="gallery-slide"><img src="docs/0_PNG.1_Second_Delay_Combat_Threat/0.1_Second_Delay_Combat_Threat_15.png" alt="국방 자료 15"></div>
+                        </div>
+                        <button class="gallery-nav next" onclick="changeSlide('gallery-defense', 1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-dots" id="dots-defense"></div>
+                    </div>
+
+                    <blockquote class="text-lg">
+                        "0.1초의 지연은 전투기를 51m 무방비로 날게 하고, 트럭을 1.67m 더 미끄러뜨리며, 근접전에서 적에게 선제 사격권을 헌납하는 것입니다."
+                    </blockquote>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">⚔️ OODA 루프와 인지전</h3>
+
+                    <div class="key-stat">
+                        <h3 class="text-xl font-bold text-red-600 mb-3">MP3 = 음주 운전 수준의 인지 지연</h3>
+                        <p class="mb-2"><strong>0.087초 지연</strong> = 혈중알코올농도 <strong>0.05%</strong> (면허 정지 수준)</p>
+                        <p>전 장병이 "음주 상태"로 경계 근무를 서는 것과 동일한 위험</p>
+                    </div>
+
+                    <a href="docs/[11군대음원] 디지털 오디오 안전 규정 초안.md" class="download-btn" download>
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        국방 규정 초안 다운로드
+                    </a>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">WAV 원음</h3>
+                    <p class="text-gray-400">디지털 음원 품질 개선을 통한 국민 건강권 보호</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">바로가기</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">홈</a></li>
+                        <li><a href="#parliament" class="text-gray-400 hover:text-white">국회포럼</a></li>
+                        <li><a href="#sports" class="text-gray-400 hover:text-white">체육 분야</a></li>
+                        <li><a href="#public" class="text-gray-400 hover:text-white">공공장소</a></li>
+                        <li><a href="#defense" class="text-gray-400 hover:text-white">국방 분야</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">문의</h3>
+                    <p class="text-gray-400">정책 제안 및 협력 문의 환영</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 WAV 원음. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Gallery functionality
+        const galleries = {};
+
+        function initGallery(galleryId) {
+            const gallery = document.getElementById(galleryId);
+            if (!gallery) return;
+
+            const slider = gallery.querySelector('.gallery-slider');
+            const slides = gallery.querySelectorAll('.gallery-slide');
+            const dotsContainer = document.getElementById('dots-' + galleryId.replace('gallery-', ''));
+            const currentSlideEl = gallery.querySelector('.current-slide');
+            const totalSlidesEl = gallery.querySelector('.total-slides');
+
+            galleries[galleryId] = {
+                currentIndex: 0,
+                totalSlides: slides.length,
+                slider: slider,
+                currentSlideEl: currentSlideEl,
+                totalSlidesEl: totalSlidesEl
+            };
+
+            // Create dots
+            if (dotsContainer) {
+                for (let i = 0; i < slides.length; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'gallery-dot';
+                    if (i === 0) dot.classList.add('active');
+                    dot.onclick = () => goToSlide(galleryId, i);
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            totalSlidesEl.textContent = slides.length;
+        }
+
+        function changeSlide(galleryId, direction) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            gallery.currentIndex += direction;
+
+            if (gallery.currentIndex < 0) {
+                gallery.currentIndex = gallery.totalSlides - 1;
+            } else if (gallery.currentIndex >= gallery.totalSlides) {
+                gallery.currentIndex = 0;
+            }
+
+            updateGallery(galleryId);
+        }
+
+        function goToSlide(galleryId, index) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            gallery.currentIndex = index;
+            updateGallery(galleryId);
+        }
+
+        function updateGallery(galleryId) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            const offset = -gallery.currentIndex * 100;
+            gallery.slider.style.transform = `translateX(${offset}%)`;
+            gallery.currentSlideEl.textContent = gallery.currentIndex + 1;
+
+            // Update dots
+            const dotsContainer = document.getElementById('dots-' + galleryId.replace('gallery-', ''));
+            if (dotsContainer) {
+                const dots = dotsContainer.querySelectorAll('.gallery-dot');
+                dots.forEach((dot, index) => {
+                    if (index === gallery.currentIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        // Initialize all galleries
+        document.addEventListener('DOMContentLoaded', () => {
+            initGallery('gallery-parliament');
+            initGallery('gallery-sports');
+            initGallery('gallery-public');
+            initGallery('gallery-defense');
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
