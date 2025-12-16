@@ -1,4 +1,6 @@
 {
+  "buildCommand": "echo 'Static site'",
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/assembly", "destination": "/assembly.html" },
     { "source": "/education", "destination": "/education.html" },
