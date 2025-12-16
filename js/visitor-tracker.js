@@ -269,7 +269,13 @@ async function trackButtonClick(buttonId) {
 // 버튼 라벨 반환 함수
 function getButtonLabel(buttonId) {
     const labelMap = {
-        'publication-event-btn': '출간기념회 신청'
+        'publication-event-btn': '출간기념회 신청',
+        'autoplay-btn-parliament': '국회 정책제안',
+        'autoplay-btn-education': '교육 정책제안',
+        'autoplay-btn-sports': '체육 정책제안',
+        'autoplay-btn-public': '공공 정책제안',
+        'autoplay-btn-defense': '국방 정책제안',
+        'autoplay-btn-english-liberation': '영어해방 자동재생'
     };
     return labelMap[buttonId] || buttonId;
 }
@@ -277,18 +283,33 @@ function getButtonLabel(buttonId) {
 // 버튼 클릭 리스너 등록
 function setupButtonClickTracking() {
     console.log('[버튼추적] 버튼 클릭 리스너 설정 시작...');
-    const publicationEventBtn = document.getElementById('publication-event-btn');
 
-    if (publicationEventBtn) {
-        console.log('[버튼추적] 출간기념회 버튼 찾음 ✓');
-        publicationEventBtn.addEventListener('click', (e) => {
-            console.log('[버튼추적] 출간기념회 버튼 클릭 감지!');
-            trackButtonClick('publication-event-btn');
-        });
-        console.log('[버튼추적] 클릭 리스너 등록 완료 ✓');
-    } else {
-        console.warn('[버튼추적] 출간기념회 버튼을 찾을 수 없습니다! (ID: publication-event-btn)');
-    }
+    // 추적할 버튼 ID 목록
+    const buttonIds = [
+        'publication-event-btn',
+        'autoplay-btn-parliament',
+        'autoplay-btn-education',
+        'autoplay-btn-sports',
+        'autoplay-btn-public',
+        'autoplay-btn-defense',
+        'autoplay-btn-english-liberation'
+    ];
+
+    // 각 버튼에 클릭 리스너 등록
+    buttonIds.forEach(buttonId => {
+        const button = document.getElementById(buttonId);
+
+        if (button) {
+            console.log(`[버튼추적] ${buttonId} 버튼 찾음 ✓`);
+            button.addEventListener('click', (e) => {
+                console.log(`[버튼추적] ${buttonId} 버튼 클릭 감지!`);
+                trackButtonClick(buttonId);
+            });
+            console.log(`[버튼추적] ${buttonId} 클릭 리스너 등록 완료 ✓`);
+        } else {
+            console.warn(`[버튼추적] ${buttonId} 버튼을 찾을 수 없습니다!`);
+        }
+    });
 }
 
 // 페이지 로드 시 실행

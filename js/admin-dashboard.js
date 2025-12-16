@@ -506,6 +506,9 @@ window.addEventListener('DOMContentLoaded', () => {
 
     // 출간기념회 클릭 통계 로드
     loadPublicationEventStats();
+
+    // 정책제안 주제별 클릭 통계 로드
+    loadPolicyTopicsStats();
 });
 
 // 순위 차트 변수
@@ -682,6 +685,58 @@ window.loadPublicationEventStats = async function() {
         if (btn && btn.disabled) {
             btn.disabled = false;
         }
+    }
+};
+
+// 정책제안 5개 주제별 클릭 통계 로드
+window.loadPolicyTopicsStats = async function() {
+    try {
+        // Firestore 초기화 확인
+        if (typeof db === 'undefined') {
+            console.warn('Firestore가 아직 초기화되지 않았습니다.');
+            setTimeout(() => window.loadPolicyTopicsStats(), 500);
+            return;
+        }
+
+        console.log('정책제안 주제별 클릭 통계 로드 시작...');
+        const buttonClicksRef = db.collection('button_clicks');
+
+        // 5개 주제 버튼 ID 목록
+        const topics = [
+            { id: 'autoplay-btn-parliament', elementId: 'parliament-clicks', label: '국회' },
+            { id: 'autoplay-btn-education', elementId: 'education-clicks', label: '교육' },
+            { id: 'autoplay-btn-sports', elementId: 'sports-clicks', label: '체육' },
+            { id: 'autoplay-btn-public', elementId: 'public-clicks', label: '공공' },
+            { id: 'autoplay-btn-defense', elementId: 'defense-clicks', label: '국방' }
+        ];
+
+        // 각 주제별 클릭 수 조회
+        for (const topic of topics) {
+            try {
+                const snapshot = await buttonClicksRef
+                    .where('buttonId', '==', topic.id)
+                    .get();
+
+                const totalClicks = snapshot.size;
+                const clicksElement = document.getElementById(topic.elementId);
+
+                if (clicksElement) {
+                    clicksElement.textContent = totalClicks;
+                }
+
+                console.log(`✅ ${topic.label} 정책제안 클릭: ${totalClicks}회`);
+            } catch (error) {
+                console.error(`${topic.label} 통계 로드 에러:`, error);
+                const clicksElement = document.getElementById(topic.elementId);
+                if (clicksElement) {
+                    clicksElement.textContent = '-';
+                }
+            }
+        }
+
+        console.log('✅ 정책제안 주제별 통계 로드 완료');
+    } catch (error) {
+        console.error('정책제안 통계 로드 에러:', error);
     }
 };
 
