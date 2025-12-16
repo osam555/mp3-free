@@ -7,8 +7,8 @@
       "dest": "/index.html"
     },
     {
-      "src": "/parliament",
-      "dest": "/parliament.html"
+      "src": "/assembly",
+      "dest": "/assembly.html"
     },
     {
       "src": "/education",
@@ -27,8 +27,8 @@
       "dest": "/defense.html"
     },
     {
-      "src": "/english-liberation",
-      "dest": "/english-liberation.html"
+      "src": "/english",
+      "dest": "/english.html"
     },
     {
       "src": "/policy",
@@ -36,12 +36,12 @@
     }
   ],
   "rewrites": [
-    { "source": "/parliament", "destination": "/parliament.html" },
+    { "source": "/assembly", "destination": "/assembly.html" },
     { "source": "/education", "destination": "/education.html" },
     { "source": "/sports", "destination": "/sports.html" },
     { "source": "/public", "destination": "/public.html" },
     { "source": "/defense", "destination": "/defense.html" },
-    { "source": "/english-liberation", "destination": "/english-liberation.html" },
+    { "source": "/english", "destination": "/english.html" },
     { "source": "/policy", "destination": "/policy.html" }
   ],
   "headers": [

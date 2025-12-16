@@ -10,7 +10,7 @@ def split_policy_html():
 
     # 각 섹션 정의
     sections = {
-        'parliament': {
+        'assembly': {
             'title': '국회포럼 - 소리의 질 혁신 국가 전략',
             'description': '국회 디지털 음원 품질 규제 정책 제안 - MP3 품질 개선 및 청각 환경 최적화',
             'start_marker': '<section id="parliament"',
@@ -45,7 +45,7 @@ def split_policy_html():
             'end_marker': '</section>',
             'badge': '⚔️ 국방분야'
         },
-        'english-liberation': {
+        'english': {
             'title': '영어해방 - 영어 교육 혁신 전략',
             'description': '영어 교육 혁신을 위한 고품질 음원 환경 구축 전략 - 발음 학습 및 AI 학습 효과 극대화',
             'start_marker': '<section id="english-liberation"',
