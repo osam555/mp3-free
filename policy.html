@@ -169,26 +169,46 @@
         .gallery-container {
             position: relative;
             width: 100%;
+            max-height: 600px;
             margin: 2rem 0;
             border-radius: 1rem;
             overflow: hidden;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: #f8f9fa;
         }
 
         .gallery-slider {
             display: flex;
             transition: transform 0.5s ease-in-out;
+            height: 600px;
         }
 
         .gallery-slide {
             min-width: 100%;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
         }
 
         .gallery-slide img {
-            width: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
             height: auto;
+            object-fit: contain;
             display: block;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-container {
+                max-height: 400px;
+            }
+
+            .gallery-slider {
+                height: 400px;
+            }
         }
 
         .gallery-nav {
@@ -407,13 +427,6 @@
                             </ul>
                         </div>
                     </div>
-
-                    <a href="docs/[국회포럼] 보고서.md" class="download-btn" download>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        국회포럼 보고서 다운로드
-                    </a>
                 </div>
             </section>
 
@@ -493,13 +506,6 @@
                             <li>• 뇌 인지 부하: 음원 복원에 에너지 소모</li>
                         </ul>
                     </div>
-
-                    <a href="docs/[111법률제안] 디지탈 학습 음원 품질 규제 법안 제안.md" class="download-btn" download>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        교육 분야 법률 제안 다운로드
-                    </a>
                 </div>
             </section>
 
@@ -567,13 +573,6 @@
                             <p class="text-red-600 font-bold">삼각근 약화 → 조준 불안정 → 메달 색 변경</p>
                         </div>
                     </div>
-
-                    <a href="docs/[11운동선수촌] 디지털 청각 환경 개선 제안.md" class="download-btn" download>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        체육 분야 제안서 다운로드
-                    </a>
                 </div>
             </section>
 
@@ -630,13 +629,6 @@
                         <p class="mb-2"><strong>1차 파괴:</strong> 유튜브 음원 (128kbps AAC) - 고주파 삭제, 계단식 파형</p>
                         <p><strong>2차 파괴:</strong> PC 사운드카드 - 전자기 노이즈(EMI) 혼입, 파형 왜곡</p>
                     </div>
-
-                    <a href="docs/[11법률제안] 공공장소 디지탈음원 규제 및 DAC 설치 의무화 검토.md" class="download-btn" download>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        공공장소 법률제안 다운로드
-                    </a>
                 </div>
             </section>
 
@@ -694,13 +686,6 @@
                         <p class="mb-2"><strong>0.087초 지연</strong> = 혈중알코올농도 <strong>0.05%</strong> (면허 정지 수준)</p>
                         <p>전 장병이 "음주 상태"로 경계 근무를 서는 것과 동일한 위험</p>
                     </div>
-
-                    <a href="docs/[11군대음원] 디지털 오디오 안전 규정 초안.md" class="download-btn" download>
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        국방 규정 초안 다운로드
-                    </a>
                 </div>
             </section>
 
