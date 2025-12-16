@@ -1,40 +1,4 @@
 {
-  "buildCommand": "echo 'Static site'",
-  "outputDirectory": ".",
-  "routes": [
-    {
-      "src": "/",
-      "dest": "/index.html"
-    },
-    {
-      "src": "/assembly",
-      "dest": "/assembly.html"
-    },
-    {
-      "src": "/education",
-      "dest": "/education.html"
-    },
-    {
-      "src": "/sports",
-      "dest": "/sports.html"
-    },
-    {
-      "src": "/public",
-      "dest": "/public.html"
-    },
-    {
-      "src": "/defense",
-      "dest": "/defense.html"
-    },
-    {
-      "src": "/english",
-      "dest": "/english.html"
-    },
-    {
-      "src": "/policy",
-      "dest": "/policy.html"
-    }
-  ],
   "rewrites": [
     { "source": "/assembly", "destination": "/assembly.html" },
     { "source": "/education", "destination": "/education.html" },
