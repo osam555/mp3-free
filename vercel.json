@@ -5,6 +5,62 @@
     {
       "src": "/",
       "dest": "/index.html"
+    },
+    {
+      "src": "/parliament",
+      "dest": "/parliament.html"
+    },
+    {
+      "src": "/education",
+      "dest": "/education.html"
+    },
+    {
+      "src": "/sports",
+      "dest": "/sports.html"
+    },
+    {
+      "src": "/public",
+      "dest": "/public.html"
+    },
+    {
+      "src": "/defense",
+      "dest": "/defense.html"
+    },
+    {
+      "src": "/english-liberation",
+      "dest": "/english-liberation.html"
+    },
+    {
+      "src": "/policy",
+      "dest": "/policy.html"
+    }
+  ],
+  "rewrites": [
+    { "source": "/parliament", "destination": "/parliament.html" },
+    { "source": "/education", "destination": "/education.html" },
+    { "source": "/sports", "destination": "/sports.html" },
+    { "source": "/public", "destination": "/public.html" },
+    { "source": "/defense", "destination": "/defense.html" },
+    { "source": "/english-liberation", "destination": "/english-liberation.html" },
+    { "source": "/policy", "destination": "/policy.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
     }
   ]
 }

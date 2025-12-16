@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="ko" class="overflow-x-hidden">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>교육 분야 - 디지털 학습 환경 개선</title>
+    <meta name="description" content="교육 분야 디지털 음원 품질 규제 정책 제안 - 학습 효율 향상을 위한 고품질 음원">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #ffffff;
+            color: #1a202c;
+            line-height: 1.7;
+        }
+
+        .hero-gradient {
+            background: linear-gradient(135deg, #1925FA 0%, #005A9C 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-gradient::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse 15s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.1) rotate(180deg); }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(0, 90, 156, 0.1);
+            transition: all 0.3s ease;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 70px rgba(0, 90, 156, 0.15);
+        }
+
+        .section-title {
+            color: #005A9C;
+            font-weight: 900;
+        }
+
+        .policy-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .badge-defense {
+            background: linear-gradient(135deg, #2C5F2D 0%, #1A472A 100%);
+            color: white;
+        }
+
+        .badge-sports {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #1a202c;
+        }
+
+        .badge-public {
+            background: linear-gradient(135deg, #E53E3E 0%, #C53030 100%);
+            color: white;
+        }
+
+        .badge-education {
+            background: linear-gradient(135deg, #4299E1 0%, #3182CE 100%);
+            color: white;
+        }
+
+        .badge-parliament {
+            background: linear-gradient(135deg, #805AD5 0%, #6B46C1 100%);
+            color: white;
+        }
+
+        .key-stat {
+            background: linear-gradient(135deg, #FFF5F5 0%, #FED7D7 100%);
+            border-left: 5px solid #E53E3E;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .download-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #1925FA 0%, #005A9C 100%);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(25, 37, 250, 0.3);
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(25, 37, 250, 0.4);
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #EBF8FF 0%, #BEE3F8 100%);
+            border-left: 5px solid #3182CE;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin: 1.5rem 0;
+        }
+
+        blockquote {
+            border-left: 5px solid #005A9C;
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            font-style: italic;
+            color: #2d3748;
+            background: rgba(0, 90, 156, 0.05);
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* 이미지 갤러리 슬라이더 */
+        .gallery-container {
+            position: relative;
+            width: 100%;
+            max-height: 600px;
+            margin: 2rem 0;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            background: #f8f9fa;
+        }
+
+        .gallery-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            height: 600px;
+        }
+
+        .gallery-slide {
+            width: 100%;
+            min-width: 100%;
+            max-width: 100%;
+            flex-shrink: 0;
+            flex-grow: 0;
+            flex-basis: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .gallery-slide img {
+            max-width: 100%;
+            max-height: 100%;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .gallery-container {
+                max-height: 400px;
+            }
+
+            .gallery-slider {
+                height: 400px;
+            }
+        }
+
+        .gallery-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 1rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            z-index: 10;
+        }
+
+        .gallery-nav:hover {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        .gallery-nav.prev {
+            left: 0;
+        }
+
+        .gallery-nav.next {
+            right: 0;
+        }
+
+        .gallery-dots {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+            z-index: 10;
+        }
+
+        .gallery-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .gallery-dot.active {
+            background: white;
+            transform: scale(1.3);
+        }
+
+        .gallery-counter {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            z-index: 10;
+        }
+
+        .gallery-autoplay-controls {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .autoplay-btn {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.3s ease;
+        }
+
+        .autoplay-btn:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .autoplay-btn.playing {
+            background: rgba(25, 37, 250, 0.8);
+        }
+
+        .speed-selector {
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .speed-selector:hover {
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        @media (max-width: 768px) {
+            .gallery-nav {
+                padding: 0.5rem;
+            }
+
+            .gallery-autoplay-controls {
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .speed-selector {
+                font-size: 0.75rem;
+                padding: 0.25rem 0.5rem;
+            }
+
+            .autoplay-btn {
+                padding: 0.4rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full shadow-lg z-50" style="background: #1925FA; backdrop-filter: blur(10px);">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <a href="index.html" class="text-white font-black text-xl">영어해방 운동본부</a>
+                </div>
+                <div class="hidden md:flex space-x-4">
+                    <a href="index.html" class="nav-link">홈</a>
+                    <a href="policy.html" class="nav-link bg-white bg-opacity-20">정책 제안</a>
+                    <a href="#parliament" class="nav-link">🏛️ 국회</a>
+                    <a href="#education" class="nav-link">📚 교육</a>
+                    <a href="#public" class="nav-link">🏢 공공</a>
+                    <a href="#sports" class="nav-link">🏅 체육</a>
+                    <a href="#defense" class="nav-link">🛡️ 국방</a>
+                    <a href="#english-liberation" class="nav-link">🌏 영어해방</a>
+                    <a href="index.html#expert" class="nav-link">전문가 의견</a>
+                    <a href="index.html#comparison" class="nav-link">비교</a>
+                </div>
+                <!-- Mobile menu button -->
+                <div class="md:hidden">
+                    <button id="mobile-menu-btn" class="text-white p-2">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-blue-900">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="index.html" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">홈</a>
+                <a href="policy.html" class="block px-3 py-2 text-white bg-blue-800 rounded">정책 제안</a>
+                <a href="#parliament" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">🏛️ 국회</a>
+                <a href="#education" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">📚 교육</a>
+                <a href="#public" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">🏢 공공</a>
+                <a href="#sports" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">🏅 체육</a>
+                <a href="#defense" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">🛡️ 국방</a>
+                <a href="#english-liberation" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">🌏 영어해방</a>
+                <a href="index.html#expert" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">전문가 의견</a>
+                <a href="index.html#comparison" class="block px-3 py-2 text-white hover:bg-blue-800 rounded">비교</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-gradient flex items-center justify-center relative pt-20 md:pt-32 py-16 md:py-24">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+            <h1 class="text-4xl md:text-6xl font-black text-white mb-6">
+                디지털 음원 규제 및<br>청각 환경 개선 정책 제안
+            </h1>
+            <p class="text-xl md:text-2xl text-white text-opacity-90 mb-8 max-w-3xl mx-auto">
+                국회·교육·공공·체육·국방·영어해방 6대 핵심 분야<br>
+                0.087초 반응 지연과 삼각근 근력 저하 문제 해결
+            </p>
+            <div class="flex flex-wrap justify-center gap-4">
+                <a href="#parliament" class="policy-badge badge-parliament cursor-pointer hover:scale-110 transition-transform">🏛️ 국회</a>
+                <a href="#education" class="policy-badge badge-education cursor-pointer hover:scale-110 transition-transform">📚 교육</a>
+                <a href="#public" class="policy-badge badge-public cursor-pointer hover:scale-110 transition-transform">🏢 공공</a>
+                <a href="#sports" class="policy-badge badge-sports cursor-pointer hover:scale-110 transition-transform">🏅 체육</a>
+                <a href="#defense" class="policy-badge badge-defense cursor-pointer hover:scale-110 transition-transform">🛡️ 국방</a>
+                <a href="#english-liberation" class="policy-badge badge-parliament cursor-pointer hover:scale-110 transition-transform">🌏 영어해방</a>
+            </div>
+        </div>
+    </section>
+
+    
+    <!-- Hero Section -->
+    <section class="hero-gradient py-20 md:py-32 relative overflow-hidden" style="margin-top: 64px;">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center">
+                <span class="policy-badge badge-parliament mb-6 inline-block text-lg">🎓 교육분야</span>
+                <h1 class="text-4xl md:text-5xl lg:text-6xl font-black text-white mb-6">
+                    교육 분야 - 디지털 학습 환경 개선
+                </h1>
+                <p class="text-xl md:text-2xl text-white text-opacity-90 mb-8 max-w-3xl mx-auto">
+                    교육 분야 디지털 음원 품질 규제 정책 제안 - 학습 효율 향상을 위한 고품질 음원
+                </p>
+                <a href="/policy.html" class="download-btn inline-block">
+                    📋 전체 정책 보기
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="py-16 bg-gradient-to-b from-gray-50 to-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<section id="education" class="mb-16">
+                <div class="glass-card">
+                    <span class="policy-badge badge-education">📚 교육 분야</span>
+                    <h2 class="text-3xl md:text-4xl font-black mb-6 section-title">
+                        디지털 학습 환경 개선을 위한<br>고해상도 음원 의무화 법률 제안
+                    </h2>
+
+                    <!-- 핵심 요약 -->
+                    <div class="bg-green-50 border-l-4 border-green-600 p-6 mb-8 rounded-r-lg">
+                        <h3 class="text-xl font-bold text-green-900 mb-3">📌 핵심 요약</h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">🎓</span>
+                                <span><strong>고등교육 분야</strong> - 사이버대·일반대 온라인강좌 LMS VOD, K-MOOC 저품질 음원 개선 필요</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">📚</span>
+                                <span><strong>초중고 교육</strong> - EBS 인강, 수능 영어 듣기 0.087초 지연, 교육청 온라인 클래스 표준화 시급</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">🌐</span>
+                                <span><strong>어학 시험 준비</strong> - YBM·해커스 토익, 능률·천일문, 토플·아이엘츠 MP3 교재 고품질화</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">💼</span>
+                                <span><strong>성인 직무·취미 교육</strong> - 클래스101, 패스트캠퍼스, 유데미, 인프런, 밀리의서재 청각 정보 품질 개선</span>
+                            </li>
+                            <li class="flex items-start">
+                                <span class="text-green-600 mr-2">⚖️</span>
+                                <span><strong>2025 AI 디지털 교과서</strong> - 음질 표준 부재, 최소 48kHz/16bit 무손실 의무화 필요</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- 상세 설명 -->
+                    <div class="bg-white border border-green-200 p-6 mb-8 rounded-lg">
+                        <p class="text-gray-800 leading-relaxed">
+                            디지털 교육 환경에서 사용되는 저품질 AAC/MP3 음원은 학습자의 뇌에 과도한 보정 작업을 강요하여 '디지털 피로'를 유발합니다. 뇌가 끊어진 계단식 파형을 복원하는 데 에너지를 낭비하면서 집중력과 학습 효율이 저하됩니다. 2025년 AI 디지털 교과서 도입을 앞두고, 음성 인식(STT)과 발음 교정의 정확도를 위해서도 최소 48kHz/16bit 무손실 음원의 법적 의무화가 필요합니다.
+                        </p>
+                    </div>
+
+                    <!-- 이미지 갤러리 -->
+                    <div class="gallery-container" id="gallery-education">
+                        <div class="gallery-autoplay-controls">
+                            <button class="autoplay-btn" onclick="toggleAutoplay('gallery-education')" id="autoplay-btn-education">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </button>
+                            <select class="speed-selector" onchange="changeSpeed('gallery-education', this.value)">
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
+                                <option value="7000">7초</option>
+                                <option value="10000">10초</option>
+                            </select>
+                        </div>
+                        <div class="gallery-counter">
+                            <span class="current-slide">1</span> / <span class="total-slides">15</span>
+                        </div>
+                        <button class="gallery-nav prev" onclick="changeSlide('gallery-education', -1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-slider">
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_1.png" alt="교육 자료 1"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_2.png" alt="교육 자료 2"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_3.png" alt="교육 자료 3"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_4.png" alt="교육 자료 4"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_5.png" alt="교육 자료 5"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_6.png" alt="교육 자료 6"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_7.png" alt="교육 자료 7"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_8.png" alt="교육 자료 8"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_9.png" alt="교육 자료 9"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_10.png" alt="교육 자료 10"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_11.png" alt="교육 자료 11"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_12.png" alt="교육 자료 12"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_13.png" alt="교육 자료 13"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_14.png" alt="교육 자료 14"></div>
+                            <div class="gallery-slide"><img src="docs/Digital_Education_Audio_Standards_PNG/Digital_Education_Audio_Standards_15.png" alt="교육 자료 15"></div>
+                        </div>
+                        <button class="gallery-nav next" onclick="changeSlide('gallery-education', 1)">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+                        <div class="gallery-dots" id="dots-education"></div>
+                    </div>
+
+                    <blockquote class="text-lg">
+                        "손실 압축 음원은 뇌의 보정 작업으로 학습 에너지를 낭비하게 만들고, 디지털 피로와 집중력 저하를 유발합니다."
+                    </blockquote>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">📺 디지털 교육 현장의 음원 사용 실태</h3>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">🎓 고등교육 (대학·사이버대)</h4>
+                            <ul class="space-y-2">
+                                <li>• <strong>사이버대학교</strong>: LMS 플랫폼 VOD, 128kbps AAC 압축</li>
+                                <li>• <strong>일반대학 온라인 강좌</strong>: Zoom, Teams 녹화본 저품질</li>
+                                <li>• <strong>MOOC (K-MOOC)</strong>: 대용량 트래픽 절감 우선, 음질 후순위</li>
+                                <li class="text-red-600">→ 성인 학습자 청각 인지 능력 저하 가속화</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">📚 초중고 교육 (수능·내신)</h4>
+                            <ul class="space-y-2">
+                                <li>• <strong>EBS 인터넷 강의</strong>: 중고등학생 필수, MP3 음원 제공</li>
+                                <li>• <strong>수능 영어 듣기</strong>: 0.087초 지연으로 다음 문장 누락</li>
+                                <li>• <strong>교육청 온라인 클래스</strong>: 표준 없는 음질 관리</li>
+                                <li class="text-red-600">→ 학습 결손과 성적 격차 발생</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">🌐 어학 시험 준비 (MP3 교재)</h4>
+                            <ul class="space-y-2">
+                                <li>• <strong>YBM, 해커스 토익</strong>: MP3 파일 제공, 고속 버전 유료 판매</li>
+                                <li>• <strong>능률, 천일문</strong>: 교재 음원 MP3 다운로드 방식</li>
+                                <li>• <strong>토플, 아이엘츠</strong>: 시험장 음향 vs 집 MP3 환경 차이</li>
+                                <li class="text-red-600">→ 실전 대비 불가능, 발음 구분 능력 저하</li>
+                            </ul>
+                        </div>
+
+                        <div class="highlight-box">
+                            <h4 class="text-xl font-bold mb-3">💼 성인 직무·취미 교육</h4>
+                            <ul class="space-y-2">
+                                <li>• <strong>클래스101, 패스트캠퍼스</strong>: 4K 영상 vs 저품질 오디오</li>
+                                <li>• <strong>유데미, 인프런</strong>: 개발자 강의, 코드 설명 청취 피로</li>
+                                <li>• <strong>오디오북 (밀리의 서재)</strong>: 장시간 청취 시 두통 유발</li>
+                                <li class="text-red-600">→ 시각 정보 과잉, 청각 정보 빈곤 불균형</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="key-stat">
+                        <h3 class="text-xl font-bold text-green-600 mb-3">🚨 현황 종합</h3>
+                        <p class="mb-2"><strong>대학·사이버대</strong>: 비용 절감 우선, 음질 관리 부재</p>
+                        <p class="mb-2"><strong>초중고 교육</strong>: MP3 관행, 0.1초 지연으로 학습 결손</p>
+                        <p class="mb-2"><strong>어학 교재</strong>: MP3 파일 중심, 발음 학습 저해</p>
+                        <p><strong>성인 교육</strong>: 시각 중시, 청각 정보 질 경시</p>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">🎓 AI 디지털 교과서 시대의 음질 표준</h3>
+
+                    <div class="grid md:grid-cols-2 gap-6 mb-8">
+                        <div class="key-stat">
+                            <h4 class="text-xl font-bold mb-3">📉 디지털 피로 (Digital Fatigue)</h4>
+                            <p class="mb-2"><strong>MP3/AAC 음원:</strong> 뇌의 지속적 보정 작업 필요</p>
+                            <p class="mb-2"><strong>결과:</strong> 학습 에너지 낭비, 집중력 저하</p>
+                            <p class="text-red-600 font-bold">고해상도 음원 = 뇌 에너지 절약 = 학습 효율 향상</p>
+                        </div>
+
+                        <div class="key-stat">
+                            <h4 class="text-xl font-bold mb-3">📱 2025 AI 디지털 교과서</h4>
+                            <p class="mb-2"><strong>문제:</strong> 음질 표준 부재</p>
+                            <p class="mb-2"><strong>현황:</strong> 128kbps AAC 관행적 사용</p>
+                            <p class="text-blue-600 font-bold">법적 의무화 필요: 최소 48kHz/16bit 무손실</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-2xl font-bold mt-8 mb-4 section-title">🔬 학습 효율성 분석</h3>
+
+                    <div class="key-stat">
+                        <h3 class="text-xl font-bold text-blue-600 mb-3">저품질 음원 = 학습 핸디캡</h3>
+                        <ul class="space-y-2">
+                            <li>• 수능 듣기: 0.1초가 정답률 결정</li>
+                            <li>• 어학 학습: 발음·억양 정확도 필수</li>
+                            <li>• 온라인 강의: 장시간 청취 시 피로도 급증</li>
+                            <li>• 뇌 인지 부하: 음원 복원에 에너지 소모</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+<!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <h3 class="text-xl font-bold mb-4">WAV 원음</h3>
+                    <p class="text-gray-400">디지털 음원 품질 개선을 통한 국민 건강권 보호</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">바로가기</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-400 hover:text-white">홈</a></li>
+                        <li><a href="#parliament" class="text-gray-400 hover:text-white">국회포럼</a></li>
+                        <li><a href="#education" class="text-gray-400 hover:text-white">교육 분야</a></li>
+                        <li><a href="#sports" class="text-gray-400 hover:text-white">체육 분야</a></li>
+                        <li><a href="#public" class="text-gray-400 hover:text-white">공공장소</a></li>
+                        <li><a href="#defense" class="text-gray-400 hover:text-white">국방 분야</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-4">문의</h3>
+                    <p class="text-gray-400">정책 제안 및 협력 문의 환영</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-400">
+                <p>&copy; 2025 WAV 원음. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Gallery functionality
+        const galleries = {};
+
+        function initGallery(galleryId) {
+            const gallery = document.getElementById(galleryId);
+            if (!gallery) return;
+
+            const slider = gallery.querySelector('.gallery-slider');
+            const slides = gallery.querySelectorAll('.gallery-slide');
+            const dotsContainer = document.getElementById('dots-' + galleryId.replace('gallery-', ''));
+            const currentSlideEl = gallery.querySelector('.current-slide');
+            const totalSlidesEl = gallery.querySelector('.total-slides');
+
+            galleries[galleryId] = {
+                currentIndex: 0,
+                totalSlides: slides.length,
+                slider: slider,
+                currentSlideEl: currentSlideEl,
+                totalSlidesEl: totalSlidesEl,
+                isPlaying: false,
+                intervalId: null,
+                speed: 5000
+            };
+
+            // Create dots
+            if (dotsContainer) {
+                for (let i = 0; i < slides.length; i++) {
+                    const dot = document.createElement('div');
+                    dot.className = 'gallery-dot';
+                    if (i === 0) dot.classList.add('active');
+                    dot.onclick = () => goToSlide(galleryId, i);
+                    dotsContainer.appendChild(dot);
+                }
+            }
+
+            totalSlidesEl.textContent = slides.length;
+        }
+
+        function changeSlide(galleryId, direction, fromAutoplay = false) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            // Stop autoplay if manually navigating
+            if (gallery.isPlaying && !fromAutoplay) {
+                toggleAutoplay(galleryId);
+            }
+
+            gallery.currentIndex += direction;
+
+            if (gallery.currentIndex < 0) {
+                gallery.currentIndex = gallery.totalSlides - 1;
+            } else if (gallery.currentIndex >= gallery.totalSlides) {
+                gallery.currentIndex = 0;
+            }
+
+            updateGallery(galleryId);
+        }
+
+        function goToSlide(galleryId, index) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            // Stop autoplay when clicking dots
+            if (gallery.isPlaying) {
+                toggleAutoplay(galleryId);
+            }
+
+            gallery.currentIndex = index;
+            updateGallery(galleryId);
+        }
+
+        function updateGallery(galleryId) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            const offset = -gallery.currentIndex * 100;
+            gallery.slider.style.transform = `translateX(${offset}%)`;
+            gallery.currentSlideEl.textContent = gallery.currentIndex + 1;
+
+            // Update dots
+            const dotsContainer = document.getElementById('dots-' + galleryId.replace('gallery-', ''));
+            if (dotsContainer) {
+                const dots = dotsContainer.querySelectorAll('.gallery-dot');
+                dots.forEach((dot, index) => {
+                    if (index === gallery.currentIndex) {
+                        dot.classList.add('active');
+                    } else {
+                        dot.classList.remove('active');
+                    }
+                });
+            }
+        }
+
+        function toggleAutoplay(galleryId) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            const btn = document.getElementById('autoplay-btn-' + galleryId.replace('gallery-', ''));
+            if (!btn) return;
+
+            if (gallery.isPlaying) {
+                // Stop autoplay
+                clearInterval(gallery.intervalId);
+                gallery.isPlaying = false;
+                btn.classList.remove('playing');
+                // Change to play icon
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`;
+            } else {
+                // Start autoplay
+                gallery.isPlaying = true;
+                btn.classList.add('playing');
+                // Change to pause icon
+                btn.innerHTML = `<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>`;
+
+                gallery.intervalId = setInterval(() => {
+                    changeSlide(galleryId, 1, true);
+                }, gallery.speed);
+            }
+        }
+
+        function changeSpeed(galleryId, speed) {
+            const gallery = galleries[galleryId];
+            if (!gallery) return;
+
+            gallery.speed = parseInt(speed);
+
+            // If currently playing, restart with new speed
+            if (gallery.isPlaying) {
+                clearInterval(gallery.intervalId);
+                gallery.intervalId = setInterval(() => {
+                    changeSlide(galleryId, 1, true);
+                }, gallery.speed);
+            }
+        }
+
+        // Initialize all galleries
+        document.addEventListener('DOMContentLoaded', () => {
+            initGallery('gallery-parliament');
+            initGallery('gallery-education');
+            initGallery('gallery-sports');
+            initGallery('gallery-public');
+            initGallery('gallery-defense');
+            initGallery('gallery-english-liberation');
+        });
+
+        // Smooth scroll for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
