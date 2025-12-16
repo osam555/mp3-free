@@ -467,8 +467,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-parliament', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -602,8 +602,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-education', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -773,8 +773,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-sports', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -880,8 +880,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-public', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -976,8 +976,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-defense', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -1073,8 +1073,8 @@
                                 </svg>
                             </button>
                             <select class="speed-selector" onchange="changeSpeed('gallery-english-liberation', this.value)">
-                                <option value="3000" selected>3초</option>
-                                <option value="5000">5초</option>
+                                <option value="3000">3초</option>
+                                <option value="5000" selected>5초</option>
                                 <option value="7000">7초</option>
                                 <option value="10000">10초</option>
                             </select>
@@ -1211,7 +1211,7 @@
                 totalSlidesEl: totalSlidesEl,
                 isPlaying: false,
                 intervalId: null,
-                speed: 3000
+                speed: 5000
             };
 
             // Create dots
@@ -1337,6 +1337,7 @@
             initGallery('gallery-sports');
             initGallery('gallery-public');
             initGallery('gallery-defense');
+            initGallery('gallery-english-liberation');
         });
 
         // Smooth scroll for anchor links

@@ -1,0 +1,2 @@
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOTXbEzcFgTpHZzURlkz7hlOuQA335LuX85YLMkzttyC seungjong555.com
+ssh-keygen -t ed25519 -C seungjong555@gmail.com
