@@ -33,7 +33,7 @@ sections = {
     'english': {
         'title': '영어해방 - 영어 교육 혁신 전략',
         'description': '영어 교육 디지털 음원 품질 규제 정책 제안 - WAV 학습 환경 최적화',
-        'image': 'docs/대한민국_영어_해방_운동_PNG/대한민국_영어_해방_운동_1.webp',
+        'image': 'docs/english/Slide1.png',
         'url': 'english'
     }
 }

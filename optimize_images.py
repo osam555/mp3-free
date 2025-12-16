@@ -85,7 +85,7 @@ if __name__ == '__main__':
         'docs/Digital_Education_Audio_Standards_PNG',
         'docs/소리_청정_공간_설계_PNG',
         'docs/근접전투_음원품질_PNG',
-        'docs/대한민국_영어_해방_운동_PNG'
+        'docs/english'
     ]
 
     for directory in directories:
