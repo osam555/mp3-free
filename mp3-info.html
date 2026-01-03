@@ -3,541 +3,424 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>한국 교육 시장 오디오 포맷 분석 및 전략 보고서</title>
+    <title>MP3 Archive - 모든 리소스 모음</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Chosen Palette: Warm Neutrals & Academic Blue -->
-    <!-- Primary Background: #f8f9fa (Warm Grey/White) -->
-    <!-- Secondary Background: #ffffff (White cards) -->
-    <!-- Primary Accent: #3b82f6 (Blue) for actions/data -->
-    <!-- Text: #1f2937 (Dark Grey) -->
-
-    <!-- Application Structure Plan: 
-         The app is designed as a Dashboard SPA to allow stakeholders (educators, policy makers) to quickly grasp the technical landscape.
-         1. Header: Report title and context.
-         2. Navigation: Tab-based switching for 4 core modules (Overview, Tech Analysis, Survey Data, Strategic Roadmap).
-         3. Dynamic Content Area:
-            - Overview: High-level metrics and market share (Doughnut Chart).
-            - Tech Analysis: Interactive comparison of MP3/AAC/FLAC (Scatter Plot + Detail Cards).
-            - Survey Data: User pain points in educational settings (Bar Chart).
-            - Roadmap: Step-by-step solution implementation (Interactive Timeline).
-         4. Interaction: Users click tabs to switch views, hover charts for data, and click format cards to reveal technical specs.
-    -->
-
-    <!-- Visualization & Content Choices:
-         1. Market Share (Overview): Doughnut Chart. Goal: Inform. Shows dominance of MP3.
-         2. Quality vs. Efficiency (Tech Analysis): Scatter Plot. Goal: Compare. visualizes the trade-off between file size and audio quality.
-         3. Teacher Feedback (Survey): Horizontal Bar Chart. Goal: Inform/Rank. Highlights 'Clarity' as the main issue.
-         4. Roadmap (Strategy): Styled HTML List. Goal: Guide. Shows the progression from legacy to high-res.
-         5. Format Cards: Clickable Divs. Goal: Educate. Provides specific pros/cons for each format.
-    -->
-
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. Icons use Unicode. -->
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap" rel="stylesheet">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f3f4f6; /* warm gray-100 */
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #e2e8f0;
         }
-        .chart-container {
+
+        /* 홈/테마 버튼 */
+        .floating-buttons {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #22d3ee;
+            font-size: 1.25rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-icon:hover {
+            background: #334155;
+            border-color: #22d3ee;
+            transform: scale(1.05);
+        }
+
+        .page-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
             position: relative;
-            width: 100%;
-            max-width: 600px; /* Constraint */
-            margin-left: auto;
-            margin-right: auto;
-            height: 300px;
-            max-height: 400px;
+            overflow: hidden;
         }
-        @media (min-width: 768px) {
-            .chart-container {
-                height: 350px;
-            }
+
+        .page-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #f472b6, #22d3ee, #818cf8);
+            opacity: 0;
+            transition: opacity 0.3s ease;
         }
-        .nav-item.active {
-            border-bottom: 2px solid #2563eb;
-            color: #2563eb;
+
+        .page-card:hover {
+            transform: translateY(-5px);
+            border-color: #22d3ee;
+            box-shadow: 0 20px 40px rgba(34, 211, 238, 0.2);
+        }
+
+        .page-card:hover::before {
+            opacity: 1;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-new {
+            background: linear-gradient(135deg, #22d3ee, #818cf8);
+            color: white;
+        }
+
+        .badge-classic {
+            background: #fbbf24;
+            color: #1a202c;
+        }
+
+        .badge-report {
+            background: #f472b6;
+            color: white;
+        }
+
+        .badge-analysis {
+            background: #818cf8;
+            color: white;
+        }
+
+        /* 라이트 테마 */
+        body.light-theme {
+            background-color: #f8f9fa;
+            color: #1a202c;
+        }
+
+        body.light-theme .page-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+            border: 1px solid #e2e8f0;
+        }
+
+        body.light-theme .page-card:hover {
+            border-color: #22d3ee;
+            box-shadow: 0 20px 40px rgba(34, 211, 238, 0.15);
+        }
+
+        body.light-theme .btn-icon {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+            color: #22d3ee;
+        }
+
+        body.light-theme .btn-icon:hover {
+            background: #f7fafc;
+            border-color: #22d3ee;
+        }
+
+        body.light-theme h1,
+        body.light-theme h2,
+        body.light-theme h3 {
+            color: #1a202c;
+        }
+
+        body.light-theme p {
+            color: #4a5568;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
+        }
+
+        body.light-theme .hero-section {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .category-title {
+            color: #22d3ee;
             font-weight: 700;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #334155;
         }
-        .card-hover:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
+        body.light-theme .category-title {
+            color: #118AB2;
+            border-bottom: 2px solid #e2e8f0;
         }
-        .fade-in {
-            animation: fadeIn 0.5s ease-in-out;
+
+        .icon-large {
+            font-size: 3rem;
+            margin-bottom: 1rem;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        body.light-theme .stat-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #22d3ee;
+        }
+
+        body.light-theme .stat-number {
+            color: #118AB2;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            margin-top: 0.5rem;
+        }
+
+        body.light-theme .stat-label {
+            color: #64748b;
         }
     </style>
 </head>
-<body class="text-gray-800">
+<body>
 
-    <!-- App Container -->
-    <div id="app" class="max-w-6xl mx-auto min-h-screen flex flex-col bg-white shadow-xl my-0 md:my-4 rounded-xl overflow-hidden">
-        
-        <!-- Header -->
-        <header class="bg-slate-800 text-white p-6 md:p-8">
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
-                <a href="/" class="cursor-pointer hover:opacity-80 transition">
-                    <div class="text-blue-300 text-sm font-bold uppercase tracking-wide mb-1">2024 교육공학 연구보고서</div>
-                    <h1 class="text-2xl md:text-3xl font-bold leading-tight">한국 교육 시장 디지털 음원 사용 실태 및 고음질 전환 전략</h1>
-                    <p class="text-slate-400 mt-2 text-sm md:text-base">MP3, AAC(VOD) 점유율 분석과 FLAC 도입을 통한 학습 효율성 증대 방안</p>
-                </a>
-                <div class="mt-4 md:mt-0 bg-slate-700 px-4 py-2 rounded-lg text-center">
-                    <span class="block text-xs text-slate-400">연구 대상</span>
-                    <span class="font-bold">전국 초중고 및 이러닝 플랫폼</span>
-                </div>
-            </div>
-        </header>
-
-        <!-- Navigation -->
-        <nav class="bg-white border-b border-gray-200 sticky top-0 z-10 px-4 md:px-8">
-            <ul class="flex space-x-6 overflow-x-auto no-scrollbar text-sm md:text-base">
-                <li class="whitespace-nowrap py-4 px-2"><a href="/" class="text-gray-600 hover:text-blue-600 transition font-medium">🏠 홈</a></li>
-                <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item active" onclick="app.navigate('overview')">📊 현황 개요</li>
-                <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('analysis')">🎧 포맷 기술 분석</li>
-                <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('survey')">📝 현장 실태 조사</li>
-                <li class="whitespace-nowrap py-4 px-2 cursor-pointer nav-item" onclick="app.navigate('strategy')">🚀 해결 방안 (Roadmap)</li>
-                <li class="whitespace-nowrap py-4 px-2"><a href="/mp3law-report.html" class="text-gray-600 hover:text-blue-600 transition font-medium">📋 법률 보고서</a></li>
-            </ul>
-        </nav>
-
-        <!-- Main Content Area -->
-        <main id="main-content" class="flex-grow p-4 md:p-8 bg-gray-50">
-            <!-- Dynamic Content Injected Here -->
-        </main>
-
-        <!-- Footer -->
-        <footer class="bg-gray-100 p-6 text-center text-xs text-gray-500 border-t">
-            <p>본 인터랙티브 보고서는 제공된 소스 데이터를 바탕으로 재구성되었습니다. | © 2024 Educational Technology Analysis Group</p>
-        </footer>
-
+    <!-- 홈/테마 버튼 -->
+    <div class="floating-buttons">
+        <a href="index.html" class="btn-icon" title="홈으로">
+            🏠
+        </a>
+        <button class="btn-icon" id="themeToggle" title="테마 전환">
+            🌓
+        </button>
     </div>
 
+    <!-- Hero Section -->
+    <section class="hero-section py-16 px-4">
+        <div class="max-w-6xl mx-auto text-center">
+            <div class="icon-large">📚</div>
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-4">
+                MP3 Archive
+            </h1>
+            <p class="text-xl md:text-2xl text-slate-400 mb-8">
+                모든 MP3 관련 리소스와 분석 자료 모음
+            </p>
+
+            <!-- 통계 섹션 -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">7</div>
+                    <div class="stat-label">전체 페이지</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">분석 리포트</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">인포그래픽</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">2</div>
+                    <div class="stat-label">비교 분석</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <main class="max-w-6xl mx-auto p-4 md:p-8 space-y-12">
+
+        <!-- 인포그래픽 섹션 -->
+        <section>
+            <h2 class="category-title">🎨 인포그래픽 & 시각화</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- MP3WAV 다크 -->
+                <a href="mp3wav.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">🌙</span>
+                        <span class="badge badge-new">LATEST</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 text-cyan-400">무손실 오디오와 인지 부하</h3>
+                    <p class="text-slate-400 mb-4">
+                        WAV/FLAC vs MP3/AAC 비교 분석. Plotly.js 스펙트럼 히트맵 포함.
+                    </p>
+                    <div class="flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span>📊 Chart.js</span>
+                        <span>📈 Plotly.js</span>
+                        <span>🎨 다크 테마</span>
+                        <span>📱 반응형</span>
+                    </div>
+                </a>
+
+                <!-- MP3WAV 라이트 -->
+                <a href="mp3wav-old.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">☀️</span>
+                        <span class="badge badge-classic">CLASSIC</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 text-amber-400">MP3 편리함의 숨겨진 비용</h3>
+                    <p class="text-slate-400 mb-4">
+                        KBS, MBC 방송 실험 결과 분석. 근력 테스트 및 태교 실험 데이터.
+                    </p>
+                    <div class="flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span>📊 Chart.js</span>
+                        <span>🎨 라이트 테마</span>
+                        <span>🧪 실험 데이터</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- 비교 분석 섹션 -->
+        <section>
+            <h2 class="category-title">⚖️ 비교 분석</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+                <!-- MP3WAV2 -->
+                <a href="mp3wav2.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">📊</span>
+                        <span class="badge badge-analysis">V2</span>
+                    </div>
+                    <h3 class="text-2xl font-bold mb-2 text-indigo-400">MP3 vs WAV 비교</h3>
+                    <p class="text-slate-400 mb-4">
+                        속청 학습 효과 비교. 배속별 음원 선명도 분석.
+                    </p>
+                    <div class="flex flex-wrap gap-2 text-xs text-slate-500">
+                        <span>🎧 속청 분석</span>
+                        <span>📈 성능 비교</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- 리포트 섹션 -->
+        <section>
+            <h2 class="category-title">📄 분석 리포트</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+
+                <!-- MP3 리포트 -->
+                <a href="mp3-report.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">📄</span>
+                        <span class="badge badge-report">REPORT</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-pink-400">MP3 리포트</h3>
+                    <p class="text-slate-400 mb-4 text-sm">
+                        MP3 음원 사용 현황 및 영향 분석 종합 리포트
+                    </p>
+                </a>
+
+                <!-- MP3 리포트 2 -->
+                <a href="mp3-report2.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">📄</span>
+                        <span class="badge badge-report">REPORT</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-pink-400">MP3 리포트 2</h3>
+                    <p class="text-slate-400 mb-4 text-sm">
+                        MP3 음원의 심화 분석 및 추가 연구 자료
+                    </p>
+                </a>
+
+                <!-- MP3 법률 리포트 -->
+                <a href="mp3law-report.html" class="page-card">
+                    <div class="flex items-start justify-between mb-3">
+                        <span class="text-4xl">⚖️</span>
+                        <span class="badge badge-report">LEGAL</span>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2 text-purple-400">MP3 법률 리포트</h3>
+                    <p class="text-slate-400 mb-4 text-sm">
+                        MP3 관련 법률, 특허, 라이선스 분석
+                    </p>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="text-center py-8 text-slate-600 border-t border-slate-800">
+        <p class="text-sm">MP3 Archive - 대충영어</p>
+        <p class="text-xs mt-2">무손실 음원 사용 권장을 위한 교육 자료</p>
+    </footer>
+
+    <!-- JavaScript -->
     <script>
-        // --- Data Store ---
-        const reportData = {
-            overview: {
-                intro: "현재 한국 교육 시장의 디지털 음원은 압축 효율이 높은 포맷 위주로 구성되어 있습니다. 그러나 외국어 듣기 평가와 같은 정밀한 청취가 필요한 영역에서 음질 저하 문제가 지속적으로 제기되고 있습니다. 본 섹션에서는 시장을 지배하는 주요 포맷의 점유율과 핵심 지표를 요약합니다.",
-                metrics: [
-                    { label: "MP3 점유율", value: "62%", sub: "압도적 우위", icon: "💿", color: "text-blue-600" },
-                    { label: "평균 비트레이트", value: "128 kbps", sub: "권장치(192+) 미달", icon: "📉", color: "text-red-500" },
-                    { label: "음질 불만족률", value: "38%", sub: "교사/학생 응답", icon: "⚠️", color: "text-orange-500" },
-                    { label: "스트리밍 전환율", value: "45%", sub: "전년 대비 +15%", icon: "📡", color: "text-green-600" }
-                ],
-                marketShare: {
-                    labels: ['MP3 (구형)', 'AAC/M4A (VOD)', 'WMA (레거시)', 'FLAC/WAV (고음질)'],
-                    data: [62, 28, 7, 3],
-                    colors: ['#3b82f6', '#10b981', '#9ca3af', '#8b5cf6']
-                }
-            },
-            analysis: {
-                intro: "교육용 콘텐츠에 사용되는 주요 오디오 포맷의 기술적 특성을 비교 분석합니다. 용량 효율성과 음질 간의 트레이드오프(Trade-off) 관계를 이해하는 것이 최적의 솔루션을 선택하는 핵심입니다.",
-                formats: [
-                    { 
-                        id: 'mp3', 
-                        name: 'MP3 (MPEG-1 Audio Layer III)', 
-                        type: '손실 압축',
-                        desc: '가장 널리 쓰이는 표준. 호환성은 최고이나 낮은 비트레이트에서 고역대 정보가 손실되어 발음 구분에 불리함.',
-                        pros: ['모든 기기 호환', '작은 용량'],
-                        cons: ['오래된 압축 기술', '치찰음(s, sh 등) 왜곡 가능성']
-                    },
-                    { 
-                        id: 'aac', 
-                        name: 'AAC (Advanced Audio Coding)', 
-                        type: '손실 압축',
-                        desc: 'MP3의 후속 기술. VOD(동영상) 강의의 표준 오디오 코덱. 같은 용량 대비 음질이 우수하여 스트리밍에 적합.',
-                        pros: ['높은 압축 효율', '스트리밍 최적화'],
-                        cons: ['일부 구형 학습기기 호환성 문제']
-                    },
-                    { 
-                        id: 'flac', 
-                        name: 'FLAC (Free Lossless Audio Codec)', 
-                        type: '무손실 압축',
-                        desc: '원본 오디오 데이터를 손실 없이 압축. 용량은 크지만 원음 그대로 보존되어 어학용 마스터 음원으로 적합.',
-                        pros: ['완벽한 원음 보존', '명확한 발음 전달'],
-                        cons: ['큰 용량(MP3의 5~6배)', '대역폭 비용 증가']
-                    }
-                ],
-                scatterData: [
-                    { x: 128, y: 70, label: 'MP3 (128k)' },
-                    { x: 192, y: 80, label: 'MP3 (192k)' },
-                    { x: 128, y: 85, label: 'AAC (128k)' },
-                    { x: 900, y: 100, label: 'FLAC (Original)' },
-                    { x: 64, y: 50, label: 'WMA (64k)' }
-                ],
-                negativeImpacts: [
-                    {
-                        title: "1. 고주파수 삭제와 자음 구분 불가",
-                        desc: "MP3 128kbps는 16kHz 이상의 소리를 삭제합니다. 영어의 마찰음(f, v, th, s)과 파열음은 이 고역대에 중요한 '공기 소리' 정보가 포함되어 있어, 이를 잃으면 'Think'와 'Sink', 'Fan'과 'Pan'을 구분하기 어려워집니다.",
-                        icon: "📉"
-                    },
-                    {
-                        title: "2. 시간축 해상도와 과도 응답 왜곡",
-                        desc: "MP3는 소리를 프레임 단위로 뭉개서 처리합니다. 짧고 강한 소리(Transient)인 영어의 파열음(p, t, k)의 시작 부분이 흐릿해져, 원어민의 빠르고 날카로운 발음 뉘앙스가 사라집니다.",
-                        icon: "⏳"
-                    },
-                    {
-                        title: "3. 뇌의 인지적 피로도 증가",
-                        desc: "손실된 오디오 정보를 뇌가 문맥으로 채워 넣으려다 보니(Filling-in effect), 학생들은 무의식적으로 더 많은 에너지를 소모하게 됩니다. 이는 장시간 듣기 학습 시 집중력 저하와 빠른 피로를 유발합니다.",
-                        icon: "🧠"
-                    }
-                ]
-            },
-            survey: {
-                intro: "일선 학교 교사와 학생 1,500명을 대상으로 한 설문조사 결과입니다. 디지털 교과서 및 듣기 평가 자료의 오디오 품질에 대한 실질적인 경험과 문제점을 파악했습니다.",
-                painPoints: {
-                    labels: ['발음 구분 모호함 (P/B, F/V 등)', '배경 잡음/화이트 노이즈', '재생 시 로딩/끊김', '기기 호환성 오류', '볼륨 레벨 불균형'],
-                    data: [52, 35, 20, 15, 45] // Percentages
-                },
-                text: "가장 큰 불만 사항은 '명확하지 않은 발음 전달(52%)'이었습니다. 이는 128kbps 이하의 저음질 MP3가 고주파수 대역을 삭제하면서 발생하는 현상으로, 언어 학습에 치명적일 수 있습니다."
-            },
-            strategy: {
-                intro: "분석된 문제점을 바탕으로 한국 교육 시장의 오디오 품질 혁신을 위한 3단계 로드맵을 제안합니다. 인프라 비용과 학습 효과를 모두 고려한 현실적인 접근이 필요합니다.",
-                steps: [
-                    { 
-                        phase: "1단계: 표준화 (단기)", 
-                        title: "최소 품질 기준 상향", 
-                        desc: "모든 공교육 디지털 자료의 최소 기준을 MP3 192kbps 또는 AAC 128kbps로 의무화하여 기본 명료도 확보.",
-                        icon: "⚖️"
-                    },
-                    { 
-                        phase: "2단계: 이원화 (중기)", 
-                        title: "서비스별 포맷 최적화", 
-                        desc: "스트리밍(VOD)은 고효율 AAC로, 다운로드형 중요 듣기 평가는 고음질 FLAC/WAV로 이원화하여 제공.",
-                        icon: "🔀"
-                    },
-                    { 
-                        phase: "3단계: 지능화 (장기)", 
-                        title: "AI 기반 업스케일링 & 적응형 전송", 
-                        desc: "기존 저음질 아카이브를 AI로 복원하고, 네트워크 환경에 따라 FLAC과 AAC를 자동 전환하는 스마트 시스템 구축.",
-                        icon: "🧠"
-                    }
-                ]
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // 저장된 테마 불러오기
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            body.classList.add('light-theme');
+            themeToggle.textContent = '🌙';
+        } else {
+            themeToggle.textContent = '☀️';
+        }
+
+        // 테마 전환
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-theme');
+
+            if (body.classList.contains('light-theme')) {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
             }
-        };
-
-        // --- App Logic ---
-        const app = {
-            state: {
-                currentTab: 'overview',
-                charts: {}
-            },
-
-            init: function() {
-                this.navigate('overview');
-            },
-
-            navigate: function(tabId) {
-                this.state.currentTab = tabId;
-                
-                // Update Nav Styles
-                document.querySelectorAll('.nav-item').forEach(el => {
-                    el.classList.remove('active');
-                    if(el.getAttribute('onclick').includes(tabId)) {
-                        el.classList.add('active');
-                    }
-                });
-
-                // Render Content
-                const contentDiv = document.getElementById('main-content');
-                contentDiv.innerHTML = ''; // Clear current
-                contentDiv.classList.remove('fade-in');
-                void contentDiv.offsetWidth; // Trigger reflow
-                contentDiv.classList.add('fade-in');
-
-                switch(tabId) {
-                    case 'overview': this.renderOverview(contentDiv); break;
-                    case 'analysis': this.renderAnalysis(contentDiv); break;
-                    case 'survey': this.renderSurvey(contentDiv); break;
-                    case 'strategy': this.renderStrategy(contentDiv); break;
-                }
-            },
-
-            // --- Render Functions ---
-
-            renderOverview: function(container) {
-                const data = reportData.overview;
-                
-                // Grid Layout
-                const grid = document.createElement('div');
-                grid.className = 'grid grid-cols-1 md:grid-cols-3 gap-6';
-
-                // Intro & Metrics (Left & Center)
-                const leftCol = document.createElement('div');
-                leftCol.className = 'md:col-span-2 space-y-6';
-                
-                // Section Intro
-                leftCol.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                        <h2 class="text-xl font-bold mb-3 text-slate-800 border-l-4 border-blue-500 pl-3">시장 현황 요약</h2>
-                        <p class="text-gray-600 leading-relaxed">${data.intro}</p>
-                    </div>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        ${data.metrics.map(m => `
-                            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center space-x-4 card-hover transition duration-300">
-                                <div class="text-3xl bg-gray-50 p-3 rounded-full">${m.icon}</div>
-                                <div>
-                                    <div class="text-sm text-gray-500 font-medium">${m.label}</div>
-                                    <div class="text-2xl font-bold ${m.color}">${m.value}</div>
-                                    <div class="text-xs text-gray-400 mt-1">${m.sub}</div>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-
-                // Chart (Right)
-                const rightCol = document.createElement('div');
-                rightCol.className = 'md:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col items-center justify-center';
-                rightCol.innerHTML = `
-                    <h3 class="text-lg font-bold mb-4 w-full text-left text-slate-700">포맷별 점유율</h3>
-                    <div class="chart-container">
-                        <canvas id="overviewChart"></canvas>
-                    </div>
-                    <p class="text-xs text-gray-400 mt-4 text-center">출처: 2023 교육 콘텐츠 DB 분석</p>
-                `;
-
-                grid.appendChild(leftCol);
-                grid.appendChild(rightCol);
-                container.appendChild(grid);
-
-                // Initialize Chart
-                setTimeout(() => {
-                    const ctx = document.getElementById('overviewChart').getContext('2d');
-                    if (this.state.charts.overview) this.state.charts.overview.destroy();
-                    
-                    this.state.charts.overview = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: data.marketShare.labels,
-                            datasets: [{
-                                data: data.marketShare.data,
-                                backgroundColor: data.marketShare.colors,
-                                borderWidth: 0
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { position: 'bottom', labels: { boxWidth: 12, padding: 15 } }
-                            }
-                        }
-                    });
-                }, 0);
-            },
-
-            renderAnalysis: function(container) {
-                const data = reportData.analysis;
-
-                container.innerHTML = `
-                    <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-8">
-                        <h2 class="text-xl font-bold mb-3 text-slate-800 border-l-4 border-blue-500 pl-3">기술 비교: 품질 vs 효율성</h2>
-                        <p class="text-gray-600 mb-6">${data.intro}</p>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start mb-8">
-                            <!-- Comparison Cards -->
-                            <div class="space-y-4">
-                                ${data.formats.map(f => `
-                                    <div class="border rounded-lg p-4 cursor-pointer hover:bg-blue-50 transition-colors group" onclick="document.getElementById('details-${f.id}').classList.toggle('hidden')">
-                                        <div class="flex justify-between items-center">
-                                            <h3 class="font-bold text-lg text-slate-700 group-hover:text-blue-600">${f.name}</h3>
-                                            <span class="text-xs px-2 py-1 bg-gray-200 rounded text-gray-600 group-hover:bg-blue-200 group-hover:text-blue-800">${f.type}</span>
-                                        </div>
-                                        <div id="details-${f.id}" class="hidden mt-3 text-sm border-t pt-3">
-                                            <p class="mb-2 text-gray-600">${f.desc}</p>
-                                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                                <div class="text-green-600"><strong>👍 장점:</strong> ${f.pros.join(', ')}</div>
-                                                <div class="text-red-500"><strong>👎 단점:</strong> ${f.cons.join(', ')}</div>
-                                            </div>
-                                        </div>
-                                        <div class="text-center mt-2 text-gray-400 text-xs">▼ 상세 정보 보기</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            
-                            <!-- Scatter Chart Area -->
-                            <div class="bg-gray-50 rounded-lg p-4 h-full flex flex-col">
-                                <h3 class="font-bold text-center mb-2 text-slate-600">비트레이트(용량) 대비 음질 점수</h3>
-                                <div class="chart-container flex-grow">
-                                    <canvas id="analysisChart"></canvas>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- New Section: Negative Impact Analysis -->
-                        <div class="bg-red-50 border border-red-100 rounded-xl p-6 mt-8">
-                            <h3 class="text-lg font-bold text-red-700 mb-4 flex items-center">
-                                <span class="text-2xl mr-2">⚠️</span> 심층 분석: 저음질 MP3가 영어 듣기 학습에 미치는 악영향
-                            </h3>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                ${data.negativeImpacts.map(impact => `
-                                    <div class="bg-white p-4 rounded-lg shadow-sm border-t-4 border-red-400">
-                                        <div class="text-3xl mb-3 text-center">${impact.icon}</div>
-                                        <h4 class="font-bold text-slate-800 mb-2 text-sm">${impact.title}</h4>
-                                        <p class="text-xs text-gray-600 leading-relaxed text-justify">${impact.desc}</p>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            <div class="mt-4 text-center">
-                                <span class="inline-block bg-red-100 text-red-800 text-xs px-3 py-1 rounded-full font-bold">결론</span>
-                                <span class="text-xs text-red-700 ml-2">미세한 발음 구분이 필요한 어학용 음원은 MP3 192kbps 이상 또는 무손실 포맷 필수</span>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Initialize Scatter Chart
-                setTimeout(() => {
-                    const ctx = document.getElementById('analysisChart').getContext('2d');
-                    if (this.state.charts.analysis) this.state.charts.analysis.destroy();
-
-                    this.state.charts.analysis = new Chart(ctx, {
-                        type: 'scatter',
-                        data: {
-                            datasets: [{
-                                label: '포맷 성능 분포',
-                                data: data.scatterData,
-                                backgroundColor: '#3b82f6',
-                                pointRadius: 8,
-                                pointHoverRadius: 10
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                tooltip: {
-                                    callbacks: {
-                                        label: function(context) {
-                                            return `${context.raw.label}: ${context.raw.y}점 (용량지수: ${context.raw.x})`;
-                                        }
-                                    }
-                                }
-                            },
-                            scales: {
-                                x: { 
-                                    title: { display: true, text: '비트레이트 / 용량 (kbps 등가)' },
-                                    min: 0, max: 1000 
-                                },
-                                y: { 
-                                    title: { display: true, text: '음질 평가 점수 (100점 만점)' },
-                                    min: 40, max: 100 
-                                }
-                            }
-                        }
-                    });
-                }, 0);
-            },
-
-            renderSurvey: function(container) {
-                const data = reportData.survey;
-
-                container.innerHTML = `
-                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 h-full">
-                        <div class="lg:col-span-1 bg-white p-6 rounded-lg shadow-sm border border-gray-100 flex flex-col justify-center">
-                            <h2 class="text-xl font-bold mb-4 text-slate-800 border-l-4 border-blue-500 pl-3">현장의 목소리</h2>
-                            <p class="text-gray-600 mb-6">${data.intro}</p>
-                            <div class="bg-orange-50 p-4 rounded-lg border-l-4 border-orange-400">
-                                <h4 class="font-bold text-orange-800 mb-1">📢 핵심 발견</h4>
-                                <p class="text-sm text-orange-700 leading-snug">"${data.text}"</p>
-                            </div>
-                        </div>
-                        <div class="lg:col-span-2 bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-                            <h3 class="font-bold text-lg mb-4 text-slate-700">오디오 품질 관련 주요 불만 사항 (중복 응답)</h3>
-                            <div class="chart-container">
-                                <canvas id="surveyChart"></canvas>
-                            </div>
-                        </div>
-                    </div>
-                `;
-
-                // Initialize Bar Chart
-                setTimeout(() => {
-                    const ctx = document.getElementById('surveyChart').getContext('2d');
-                    if (this.state.charts.survey) this.state.charts.survey.destroy();
-
-                    this.state.charts.survey = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: data.painPoints.labels,
-                            datasets: [{
-                                label: '응답 비율 (%)',
-                                data: data.painPoints.data,
-                                backgroundColor: data.painPoints.data.map(v => v > 50 ? '#ef4444' : '#60a5fa'),
-                                borderRadius: 4,
-                            }]
-                        },
-                        options: {
-                            indexAxis: 'y', // Horizontal Bar
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false }
-                            },
-                            scales: {
-                                x: { max: 100, grid: { color: '#f3f4f6' } },
-                                y: { grid: { display: false } }
-                            }
-                        }
-                    });
-                }, 0);
-            },
-
-            renderStrategy: function(container) {
-                const data = reportData.strategy;
-
-                container.innerHTML = `
-                    <div class="max-w-4xl mx-auto">
-                        <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-100 mb-8 text-center">
-                            <h2 class="text-2xl font-bold mb-2 text-slate-800">고음질 교육 환경을 위한 로드맵</h2>
-                            <p class="text-gray-600">${data.intro}</p>
-                        </div>
-
-                        <div class="relative border-l-4 border-blue-200 ml-4 md:ml-10 space-y-12 my-10">
-                            ${data.steps.map((step, index) => `
-                                <div class="relative pl-8 md:pl-12 group">
-                                    <!-- Dot -->
-                                    <div class="absolute -left-3.5 top-0 w-6 h-6 bg-white border-4 border-blue-500 rounded-full group-hover:scale-125 transition-transform duration-300"></div>
-                                    
-                                    <!-- Content -->
-                                    <div class="bg-white p-6 rounded-lg shadow-md border border-gray-100 relative top-[-10px] hover:shadow-lg transition-shadow duration-300">
-                                        <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 text-xs font-bold rounded-full mb-2">${step.phase}</span>
-                                        <div class="flex items-start justify-between">
-                                            <div>
-                                                <h3 class="text-xl font-bold text-slate-800 mb-2">${step.title}</h3>
-                                                <p class="text-gray-600 text-sm leading-relaxed">${step.desc}</p>
-                                            </div>
-                                            <div class="text-4xl opacity-20 group-hover:opacity-100 transition-opacity duration-300 ml-4 hidden md:block">
-                                                ${step.icon}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                        
-                        <div class="bg-slate-800 text-white p-6 rounded-lg text-center mt-12">
-                            <h3 class="font-bold text-lg mb-2">결론 및 제언</h3>
-                            <p class="text-sm text-slate-300 opacity-90">
-                                MP3는 여전히 시장을 지배하고 있지만, 교육의 질적 향상을 위해 AAC(스트리밍)와 FLAC(아카이브)의 하이브리드 전략이 필수적입니다.
-                                <br class="hidden md:inline">단순한 용량 최적화를 넘어 '학습자 경험'을 최우선으로 하는 오디오 포맷 정책 수립이 시급합니다.
-                            </p>
-                        </div>
-                    </div>
-                `;
-            }
-        };
-
-        // Initialize App
-        document.addEventListener('DOMContentLoaded', () => {
-            app.init();
         });
 
+        // 카드 클릭 애니메이션
+        document.querySelectorAll('.page-card').forEach(card => {
+            card.addEventListener('click', function(e) {
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 100);
+            });
+        });
     </script>
+
 </body>
 </html>

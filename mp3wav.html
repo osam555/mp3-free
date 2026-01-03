@@ -3,402 +3,890 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MP3 음원의 잠재적 영향 분석</title>
+    <title>무손실 오디오와 인지 부하 인포그래픽</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=Noto+Sans+KR:wght@300;400;700;900&display=swap');
+
         body {
-            font-family: 'Noto Sans KR', sans-serif;
-            background-color: #f8f9fa;
-            color: #073B4C;
+            font-family: 'Noto Sans KR', 'Inter', sans-serif;
+            background-color: #0f172a; /* Slate 900*/
+            color: #e2e8f0; /* Slate 200 */
         }
+
+        /* 색상 팔레트 업데이트:
+           보라색 (WAV/비압축/Raw): #818cf8
+           청록색 (FLAC/무손실/최상): #22d3ee
+           호박색 (AAC/중간/불충분): #fbbf24
+           분홍색 (MP3/나쁨): #f472b6
+        */
+
+        .glass-card {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+        }
+
         .chart-container {
             position: relative;
             width: 100%;
-            max-width: 600px;
             margin-left: auto;
             margin-right: auto;
-            height: 300px;
+            height: 350px;
+            max-width: 100%;
             max-height: 400px;
         }
-        @media (min-width: 640px) {
+
+        @media (min-width: 768px) {
             .chart-container {
-                height: 350px;
+                height: 400px;
             }
         }
-        h1, h2, h3 {
-            color: #118AB2;
-            font-weight: 700;
+
+        .flow-arrow-down {
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #64748b;
+            margin: 0.5rem auto;
         }
-        .card {
-            background-color: white;
+
+        .flow-line-vertical {
+            width: 4px;
+            height: 2rem;
+            background-color: #64748b;
+            margin: 0 auto;
+        }
+
+        th, td {
+            vertical-align: top;
+        }
+
+        /* 햄버거 메뉴 스타일 */
+        .hamburger {
+            position: fixed;
+            top: 1rem;
+            right: 1rem;
+            z-index: 1000;
+            cursor: pointer;
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 0.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            padding: 1.5rem;
-            margin-bottom: 1.5rem;
+            padding: 0.75rem;
+            transition: all 0.3s ease;
         }
-        .stat-card {
-            background-color: #118AB2;
-            color: white;
-            padding: 1.5rem;
+
+        .hamburger:hover {
+            background: #334155;
+            border-color: #22d3ee;
+        }
+
+        .hamburger-line {
+            width: 25px;
+            height: 3px;
+            background-color: #22d3ee;
+            margin: 5px 0;
+            transition: 0.3s;
+            border-radius: 2px;
+        }
+
+        .hamburger.active .hamburger-line:nth-child(1) {
+            transform: rotate(-45deg) translate(-5px, 6px);
+        }
+
+        .hamburger.active .hamburger-line:nth-child(2) {
+            opacity: 0;
+        }
+
+        .hamburger.active .hamburger-line:nth-child(3) {
+            transform: rotate(45deg) translate(-5px, -6px);
+        }
+
+        .side-menu {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: #1e293b;
+            border-left: 1px solid #334155;
+            z-index: 999;
+            transition: right 0.3s ease;
+            overflow-y: auto;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .side-menu.active {
+            right: 0;
+        }
+
+        .menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .menu-item {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #334155;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #e2e8f0;
+        }
+
+        .menu-item:hover {
+            background: #334155;
+            padding-left: 2rem;
+        }
+
+        .menu-item a {
+            color: #e2e8f0;
+            text-decoration: none;
+            display: block;
+        }
+
+        .menu-item a:hover {
+            color: #22d3ee;
+        }
+
+        .submenu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #0f172a;
+        }
+
+        .submenu.active {
+            max-height: 500px;
+        }
+
+        .submenu-item {
+            padding: 0.75rem 2rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .submenu-item:last-child {
+            border-bottom: none;
+        }
+
+        .submenu-item a {
+            color: #94a3b8;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .submenu-item a:hover {
+            color: #22d3ee;
+            padding-left: 0.5rem;
+        }
+
+        .archive-badge {
+            display: inline-block;
+            background: #334155;
+            color: #fbbf24;
+            font-size: 0.75rem;
+            padding: 0.125rem 0.5rem;
+            border-radius: 0.25rem;
+            margin-left: 0.5rem;
+        }
+
+        .menu-header {
+            padding: 2rem 1.5rem 1rem;
+            border-bottom: 2px solid #334155;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+
+        .menu-header h3 {
+            color: #22d3ee;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .dropdown-arrow {
+            float: right;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-arrow.active {
+            transform: rotate(180deg);
+        }
+
+        /* 홈/테마 버튼 스타일 */
+        .floating-buttons {
+            position: fixed;
+            top: 1rem;
+            left: 1rem;
+            z-index: 1000;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-icon {
+            background: #1e293b;
+            border: 1px solid #334155;
             border-radius: 0.5rem;
-            text-align: center;
+            padding: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #22d3ee;
+            font-size: 1.25rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .warning-text {
-            color: #FF6B6B;
-            font-weight: 700;
+
+        .btn-icon:hover {
+            background: #334155;
+            border-color: #22d3ee;
+            transform: scale(1.05);
         }
-        .safe-text {
-            color: #047857;
-            font-weight: 700;
+
+        /* 라이트 테마 */
+        body.light-theme {
+            background-color: #ffffff;
+            color: #1a202c;
+        }
+
+        body.light-theme .glass-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body.light-theme header {
+            background-color: #f8f9fa !important;
+            border-bottom: 1px solid #e2e8f0 !important;
+        }
+
+        body.light-theme h1,
+        body.light-theme h2,
+        body.light-theme h3 {
+            color: #1a202c;
+        }
+
+        body.light-theme p,
+        body.light-theme td,
+        body.light-theme th {
+            color: #4a5568;
+        }
+
+        body.light-theme .text-slate-300,
+        body.light-theme .text-slate-400 {
+            color: #4a5568 !important;
+        }
+
+        body.light-theme .text-white {
+            color: #1a202c !important;
+        }
+
+        body.light-theme footer {
+            background-color: #f8f9fa;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        body.light-theme .hamburger,
+        body.light-theme .btn-icon {
+            background: #ffffff;
+            border: 1px solid #cbd5e0;
+        }
+
+        body.light-theme .hamburger:hover,
+        body.light-theme .btn-icon:hover {
+            background: #f7fafc;
+            border-color: #22d3ee;
+        }
+
+        body.light-theme .hamburger-line {
+            background-color: #22d3ee;
+        }
+
+        body.light-theme .side-menu {
+            background: #ffffff;
+            border-left: 1px solid #e2e8f0;
+        }
+
+        body.light-theme .menu-header {
+            background: linear-gradient(135deg, #ffffff 0%, #f7fafc 100%);
+            border-bottom: 2px solid #e2e8f0;
+        }
+
+        body.light-theme .menu-item {
+            border-bottom: 1px solid #e2e8f0;
+            color: #1a202c;
+        }
+
+        body.light-theme .menu-item:hover {
+            background: #f7fafc;
+        }
+
+        body.light-theme .submenu {
+            background: #f8f9fa;
+        }
+
+        body.light-theme .submenu-item {
+            border-bottom: 1px solid #e2e8f0;
         }
     </style>
 </head>
-<body>
+<body class="antialiased selection:bg-cyan-500 selection:text-white">
 
-    <main class="max-w-7xl mx-auto p-4 md:p-8">
-        <header class="text-center my-8">
-            <h1 class="text-4xl md:text-5xl font-bold mb-4">MP3 편리함의 숨겨진 비용</h1>
-            <p class="text-xl md:text-2xl" style="color: #073B4C;">MP3 손실 음원이 우리 건강에 미치는 잠재적 영향 분석</p>
-        </header>
+    <!-- 홈/테마 버튼 -->
+    <div class="floating-buttons">
+        <a href="index.html" class="btn-icon" title="홈으로">
+            🏠
+        </a>
+        <button class="btn-icon" id="themeToggle" title="테마 전환">
+            🌓
+        </button>
+    </div>
 
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">주요 방송 실험 결과</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">국내 주요 방송사(KBS, MBC)의 실험은 MP3와 같은 디지털 손실 음원이 인체에 부정적인 영향을 미칠 수 있다는 충격적인 사실을 보고했습니다. 이는 단순한 음질의 차이를 넘어 생체 반응의 차이를 의미합니다.</p>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card border-l-4 border-[#FF6B6B]">
-                    <h3 class="text-2xl font-bold mb-3">KBS '스펀지' (2006)</h3>
-                    <p class="text-lg">MP3 청취가 인체에 부정적인 영향을 줄 수 있음을 시사했습니다. 특히 근력 테스트에서 MP3를 10분간 청취후 힘이 현저하게 약해지는 현상이 관찰되었습니다.</p>
+    <!-- 햄버거 메뉴 버튼 -->
+    <div class="hamburger" id="hamburger">
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+        <div class="hamburger-line"></div>
+    </div>
+
+    <!-- 메뉴 오버레이 -->
+    <div class="menu-overlay" id="menuOverlay"></div>
+
+    <!-- 사이드 메뉴 -->
+    <nav class="side-menu" id="sideMenu">
+        <div class="menu-header">
+            <h3>📚 MP3 Archive</h3>
+        </div>
+
+        <div class="menu-item" id="archiveToggle">
+            <span>🗂️ 아카이브</span>
+            <span class="dropdown-arrow" id="archiveArrow">▼</span>
+        </div>
+        <div class="submenu" id="archiveSubmenu">
+            <div class="submenu-item">
+                <a href="mp3wav.html">
+                    <span>🌙 무손실 오디오 (다크)</span>
+                    <span class="archive-badge">LATEST</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3wav-old.html">
+                    <span>☀️ MP3 영향 분석 (라이트)</span>
+                    <span class="archive-badge">CLASSIC</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3wav2.html">
+                    <span>📊 MP3 vs WAV 비교</span>
+                    <span class="archive-badge">V2</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3-info.html">
+                    <span>ℹ️ MP3 정보</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3-report.html">
+                    <span>📄 MP3 리포트</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3-report2.html">
+                    <span>📄 MP3 리포트 2</span>
+                </a>
+            </div>
+            <div class="submenu-item">
+                <a href="mp3law-report.html">
+                    <span>⚖️ MP3 법률 리포트</span>
+                </a>
+            </div>
+        </div>
+
+        <div class="menu-item">
+            <a href="index.html">🏠 홈으로</a>
+        </div>
+    </nav>
+
+    <!-- 헤더 -->
+    <header class="relative overflow-hidden bg-slate-900 border-b border-slate-800 pt-16 pb-12 px-4 text-center">
+        <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-pink-500 via-cyan-500 to-indigo-500"></div>
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight text-white mb-4 leading-tight">
+            압축된 소리, <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-pink-500">잃어버린 집중력</span><br>
+            왜 <span class="text-indigo-400">WAV</span>와 <span class="text-cyan-400">FLAC</span>이어야 하는가?
+        </h1>
+        <p class="text-lg md:text-xl text-slate-400 max-w-4xl mx-auto leading-relaxed break-keep">
+            AAC 코덱과 48kHz 샘플링도 정답이 아닙니다.
+            인간의 뇌는 미세한 소리 정보의 누락을 감지하며, 이는 인지 부하로 이어집니다.
+            <br>
+            진정한 몰입을 위한 <span class="text-indigo-400 font-bold">WAV(비압축)</span> 및 <span class="text-cyan-400 font-bold">FLAC(무손실)</span> 오디오의 중요성을 시각화했습니다.
+        </p>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-8 space-y-16">
+
+        <!-- 섹션 1: 기술 격차 (MP3/AAC vs FLAC/WAV) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-white border-l-4 border-indigo-500 pl-4">타협 없는 품질의 시대</h2>
+                <p class="text-slate-300 break-keep">
+                    비디오는 8K 시대로 진입했지만, 오디오는 여전히 '데이터 절약'을 위해 손실 압축(MP3, AAC)을 사용합니다.
+                    <strong>AAC조차도</strong> 인간의 청각 모델을 흉내 내어 데이터를 삭제하는 '손실 포맷'입니다.
+                    <br><br>
+                    반면, 스튜디오 마스터링 표준인 <span class="text-indigo-400 font-bold">WAV</span>와 이를 효율화한 <span class="text-cyan-400 font-bold">FLAC</span>은 원음 그대로의 정보를 100% 보존합니다.
+                </p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-6">
+                    <div class="glass-card p-3 text-center border-t-2 border-pink-500">
+                        <div class="text-xs text-slate-400">MP3</div>
+                        <div class="text-lg font-bold text-pink-400">손실</div>
+                        <div class="text-[10px] text-slate-500">데이터 ~90% 삭제</div>
+                    </div>
+                    <div class="glass-card p-3 text-center border-t-2 border-amber-500">
+                        <div class="text-xs text-slate-400">AAC</div>
+                        <div class="text-lg font-bold text-amber-400">부분 손실</div>
+                        <div class="text-[10px] text-slate-500">효율적이나 삭제됨</div>
+                    </div>
+                    <div class="glass-card p-3 text-center border-t-2 border-cyan-500">
+                        <div class="text-xs text-slate-400">FLAC</div>
+                        <div class="text-lg font-bold text-cyan-400">무손실</div>
+                        <div class="text-[10px] text-slate-500">압축 효율 + 원음</div>
+                    </div>
+                    <div class="glass-card p-3 text-center border-t-2 border-indigo-500 bg-slate-800/50">
+                        <div class="text-xs text-slate-400">WAV</div>
+                        <div class="text-lg font-bold text-indigo-400">비압축 원음</div>
+                        <div class="text-[10px] text-slate-500">Raw Data 100%</div>
+                    </div>
                 </div>
-                <div class="card border-l-4 border-[#FF6B6B]">
-                    <h3 class="text-2xl font-bold mb-3">MBC '생명의 소리 아날로그'</h3>
-                    <p class="text-lg">LP(아날로그)와 CD/MP3(디지털) 청취자를 비교한 결과, LP 청취 시 근력이 유지되거나 강화된 반면, MP3 청취 시에는 근력이 현저히 저하되는 결과가 나타났습니다.</p>
+            </div>
+            <div class="glass-card p-4">
+                <h3 class="text-lg font-semibold text-white mb-4 text-center">오디오 포맷별 전송률(Bitrate) 비교</h3>
+                <div class="chart-container">
+                    <canvas id="evolutionChart"></canvas>
+                </div>
+                <p class="text-center text-xs text-slate-500 mt-2">WAV는 압축을 거치지 않아 가장 높은 정보 밀도를 가집니다.</p>
+            </div>
+        </section>
+
+        <!-- 섹션 2: 스펙트럼 비교 (AAC vs WAV/FLAC) -->
+        <section class="space-y-6">
+            <div class="text-center max-w-4xl mx-auto">
+                <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">보이지 않는 차이, 느껴지는 피로</h2>
+                <p class="text-slate-300 break-keep">
+                    AAC는 20kHz까지 재생되지만, 사이코어쿠스틱 모델이 "들리지 않는다"고 판단한 미세한 디테일(잔향, 공간감)을 지워버립니다.
+                    <strong>WAV/FLAC</strong>은 스튜디오 원음의 꽉 찬 스펙트럼을 그대로 전달하여 뇌가 자연스럽게 소리를 처리하도록 돕습니다.
+                </p>
+            </div>
+
+            <div class="glass-card p-2 md:p-6">
+                <div id="spectrumPlot" class="w-full h-[400px] md:h-[500px]"></div>
+                <div class="text-center text-xs text-slate-500 mt-2 break-keep">
+                    시각화: WAV/FLAC(위)의 조밀하고 풍부한 정보량 vs AAC(아래)의 인위적인 빈틈과 스머징(Smearing) 현상 비교.
                 </div>
             </div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">무엇이 사라졌는가?: 손실 압축의 비밀</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">MP3는 파일 크기를 줄이기 위해 '손실 압축' 방식을 사용합니다. 이 과정에서 원음(WAV, LP)에 포함된 방대한 음역대, 특히 인간이 '듣기 어렵다'고 여겨지는 고주파수 영역의 데이터가 대거 삭제됩니다.</p>
-            
-            <div class="card md:col-span-2">
-                <h3 class="text-2xl font-bold text-center mb-6">아날로그 원음 vs MP3 압축 음원</h3>
-                <div class="flex flex-col md:flex-row justify-around items-center">
-                    <div class="w-full md:w-2/5 p-4 rounded-lg bg-[#06D6A0] text-black text-center shadow-lg mb-4 md:mb-0">
-                        <h4 class="text-xl font-bold mb-2">WAV / LP (무손실)</h4>
-                        <p>풍부한 고주파수 포함</p>
-                        <div class="text-sm font-mono mt-2 p-2 bg-white bg-opacity-20 rounded">
-                            [저주파]...[중주파]...<span class="font-bold">[고주파]</span>...<span class="font-bold">[초고주파]</span>
+        <!-- 섹션 3: 인지 생리학 (3단계 비교) -->
+        <section class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            <div class="order-2 md:order-1 glass-card p-6">
+                <h3 class="text-lg font-semibold text-white mb-4">포맷별 청취 노력 (동공 확장 반응)</h3>
+                <div class="chart-container">
+                    <canvas id="pupilChart"></canvas>
+                </div>
+                <p class="text-xs text-slate-500 mt-4 text-center">
+                    WAV/FLAC 청취 시 동공 확장이 가장 적으며(낮은 부하), 뇌가 가장 편안한 상태를 유지합니다.
+                </p>
+            </div>
+            <div class="order-1 md:order-2 space-y-4">
+                <h2 class="text-2xl md:text-3xl font-bold text-white border-l-4 border-amber-500 pl-4">뇌는 원음을 원합니다</h2>
+                <p class="text-slate-300 break-keep">
+                    압축된 오디오의 미세한 아티팩트(Artifacts)는 뇌의 **전두엽**을 자극하여 '소리 복원' 작업을 시킵니다.
+                    AAC가 MP3보다 낫지만, 무손실(WAV/FLAC)만큼 뇌를 편안하게 하지는 못합니다.
+                </p>
+                <div class="mt-6 space-y-4">
+                    <div class="flex items-center p-3 rounded-lg bg-pink-500/10 border border-pink-500/20">
+                        <div class="w-10 text-2xl">😫</div>
+                        <div>
+                            <div class="font-bold text-pink-400">MP3</div>
+                            <div class="text-xs text-slate-400">높은 인지 부하, 빠른 피로</div>
                         </div>
                     </div>
-                    
-                    <div class="text-4xl font-bold text-[#FF6B6B] mx-4">➡️✂️</div>
-                    
-                    <div class="w-full md:w-2/5 p-4 rounded-lg bg-[#FF6B6B] text-white text-center shadow-lg">
-                        <h4 class="text-xl font-bold mb-2">MP3 (손실)</h4>
-                        <p>고주파수 대부분 삭제</p>
-                        <div class="text-sm font-mono mt-2 p-2 bg-white bg-opacity-20 rounded">
-                            [저주파]...[중주파]...<span class="line-through opacity-50">[고주파]</span>
+                    <div class="flex items-center p-3 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                        <div class="w-10 text-2xl">😐</div>
+                        <div>
+                            <div class="font-bold text-amber-400">AAC (48k)</div>
+                            <div class="text-xs text-slate-400">중간 부하, 장시간 청취 시 피로</div>
+                        </div>
+                    </div>
+                    <div class="flex items-center p-3 rounded-lg bg-indigo-500/10 border border-indigo-500/20">
+                        <div class="w-10 text-2xl">😌</div>
+                        <div>
+                            <div class="font-bold text-indigo-400">WAV / FLAC (무손실)</div>
+                            <div class="text-xs text-slate-400">최소 부하, "투명한" 청취 경험</div>
                         </div>
                     </div>
                 </div>
-                <p class="text-center mt-6 text-lg">문제는 이 '삭제된' 고주파수 영역이 단순한 소음이 아니라는 점입니다. MBC 다큐멘터리에 따르면, 미국에서는 모차르트 음악의 고주파음을 활용해 <span class="warning-text">정신 질환을 치료하고 두뇌 활성화를 돕는</span> 연구가 진행 중입니다.</p>
             </div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">데이터로 보는 생체 반응의 차이</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">단순한 감상을 넘어, 우리 몸은 소리의 차이에 민감하게 반응합니다. 방송 실험 및 태교 실험 결과는 아날로그 음원과 디지털 음원이 신체 근력 및 태아의 반응에 상반된 영향을 미칠 수 있음을 보여줍니다.</p>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div class="card">
-                    <h3 class="text-2xl font-bold text-center mb-4">근력 테스트 비교 (MBC 실험 근거)</h3>
-                    <div class="chart-container">
-                        <canvas id="muscleChart"></canvas>
-                    </div>
-                    <p class="mt-4 text-center">LP(아날로그) 음원을 들었을 때 100%의 근력을 유지했다면, MP3(디지털) 음원을 들었을 때는 근력이 <span class="warning-text">약 30-40% 감소</span>하는 경향을 보였습니다.</p>
-                </div>
-                
-                <div class="card">
-                    <h3 class="text-2xl font-bold text-center mb-4">태교 실험 반응 비교</h3>
-                    <div class="chart-container">
-                        <canvas id="prenatalChart"></canvas>
-                    </div>
-                    <p class="mt-4 text-center">아날로그 국악이나 자연의 소리를 들려주었을 때 태아는 <span class="safe-text">안정적인 반응</span>을 보인 반면, MP3 음원 청취 시에는 스트레스 반응을 보이는 경우가 관찰되었습니다.</p>
-                </div>
+        <!-- 섹션 4: 해결책 테이블 -->
+        <section class="glass-card p-8 border-t-4 border-indigo-500">
+            <h2 class="text-2xl font-bold text-white mb-6">제안: 오디오 품질 표준 가이드</h2>
+            <p class="text-slate-300 mb-6">
+                학습 효율과 청취 편의성을 극대화하기 위해, 이제는 '타협 없는 품질'을 선택해야 할 때입니다.
+            </p>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse min-w-[600px]">
+                    <thead>
+                        <tr class="border-b border-slate-700">
+                            <th class="p-4 text-slate-400 font-semibold uppercase text-xs">구분</th>
+                            <th class="p-4 text-pink-400 font-semibold uppercase text-xs">MP3 (지양)</th>
+                            <th class="p-4 text-amber-400 font-semibold uppercase text-xs">AAC (기본)</th>
+                            <th class="p-4 text-cyan-400 font-semibold uppercase text-xs">FLAC (권장)</th>
+                            <th class="p-4 text-indigo-400 font-semibold uppercase text-xs">WAV (최상)</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-sm">
+                        <tr class="border-b border-slate-700/50">
+                            <td class="p-4 text-white font-medium">형식</td>
+                            <td class="p-4 text-pink-300">손실 압축</td>
+                            <td class="p-4 text-amber-300">손실 압축</td>
+                            <td class="p-4 text-cyan-300">무손실 압축</td>
+                            <td class="p-4 text-indigo-300">비압축 원음</td>
+                        </tr>
+                        <tr class="border-b border-slate-700/50">
+                            <td class="p-4 text-white font-medium">정보 보존</td>
+                            <td class="p-4 text-pink-300">~10%</td>
+                            <td class="p-4 text-amber-300">~20-30%</td>
+                            <td class="p-4 text-cyan-300">100%</td>
+                            <td class="p-4 text-indigo-300 font-bold">100% (Raw)</td>
+                        </tr>
+                        <tr>
+                            <td class="p-4 text-white font-medium">용도</td>
+                            <td class="p-4 text-pink-300">단순 음성</td>
+                            <td class="p-4 text-amber-300">스트리밍</td>
+                            <td class="p-4 text-cyan-300">고음질 스트리밍</td>
+                            <td class="p-4 text-indigo-300">마스터링/보관</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">시장의 움직임: 업계는 알고 있다</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">소비자들의 귀가 깨어나고, 음원 시장의 패러다임도 변화하고 있습니다. 주요 음악 플랫폼들은 음질 경쟁에 돌입하며 MP3에서 무손실 음원(FLAC)으로 서비스를 전환하고 있습니다. 이는 MP3의 한계를 업계 스스로 인정하는 반증입니다.</p>
-            
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 text-center">
-                <div class="card transform transition-transform hover:scale-105">
-                    <h3 class="text-2xl font-bold mb-2">지니(Genie)</h3>
-                    <p class="text-lg safe-text">FLAC 24bit<br>무손실 음원 서비스</p>
-                </div>
-                <div class="card transform transition-transform hover:scale-105">
-                    <h3 class="text-2xl font-bold mb-2">멜론(Melon)</h3>
-                    <p class="text-lg safe-text">Hi-Fi<br>무손실 음원 서비스</p>
-                </div>
-                <div class="card transform transition-transform hover:scale-105">
-                    <h3 class="text-2xl font-bold mb-2">Apple Music</h3>
-                    <p class="text-lg safe-text">Lossless<br>무손실 오디오 제공</p>
-                </div>
-            </div>
-            
-            <div class="stat-card mt-8">
-                <h3 class="text-2xl font-bold mb-2">LP의 부활</h3>
-                <p class="text-lg">2019년 미국에서는 30년 만에 LP 매출이 CD 매출을 역전했습니다. 이는 고음질 아날로그 사운드에 대한 대중의 향수가 단순한 유행이 아님을 증명합니다.</p>
-            </div>
-        </section>
-
-        <section class="mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">사례 연구: 속청(速聽)과 음질의 상관관계</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">영어 교육 전문가로서, 2-4배속 속청 훈련을 진행할 때 음질의 중요성을 절감했습니다. 최근 PCM(무손실)으로 제작한 학습 영상이 기존 MP3 기반 영상보다 3-4배속에서 '훨씬 더 잘 들린다'는 피드백을 회원들로부터 공통적으로 받았습니다.</p>
-            
-            <div class="card">
-                <h3 class="text-2xl font-bold text-center mb-4">배속별 음원 선명도 비교 (사용자 피드백 기반)</h3>
-                <div class="chart-container" style="max-width: 800px;">
-                    <canvas id="speedChart"></canvas>
-                </div>
-                <p class="mt-4 text-center">MP3는 배속이 높아질수록 정보 손실이 두드러져 <span class="warning-text">인지율이 급격히 하락</span>합니다. 반면, PCM(WAV)은 고배속에서도 <span class="safe-text">명확한 소리를 유지</span>하여 속청 학습 효과를 극대화합니다.</p>
-            </div>
-        </section>
-
-        <section class="text-center mb-12">
-            <h2 class="text-3xl font-bold text-center mb-6">결론: 당신의 선택은 무엇입니까?</h2>
-            <p class="text-lg text-center max-w-3xl mx-auto mb-8">이것은 과학적 증명을 넘어선 '인식'의 문제입니다. 방송인 배철수는 "MP3 음악은 쓰레기와 같다"고까지 발언했습니다. 편리함의 대가로 우리는 무엇을 잃고 있을까요? 저희는 이러한 이유로 학습 어플에 MP3 대신 WAV 음원을 고집합니다.</p>
-            
-            <div class="card max-w-2xl mx-auto border-t-4 border-[#118AB2]">
-                <h3 class="text-2xl font-bold mb-4">현명한 청취자를 위한 제안</h3>
-                <ul class="text-left space-y-3 text-lg">
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3">🎧</span>
-                        <span><strong class="text-[#118AB2]">음원 확인하기:</strong> 가능한 MP3 대신 FLAC, WAV 등 무손실 음원을 선택하세요.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3">🧘</span>
-                        <span><strong class="text-[#118AB2]">신체 반응 살피기:</strong> 장시간 청취 후 피로도나 스트레스 변화를 스스로 느껴보세요.</span>
-                    </li>
-                    <li class="flex items-start">
-                        <span class="text-2xl mr-3">💡</span>
-                        <span><strong class="text-[#118AB2]">인식 공유하기:</strong> 편리함이 항상 최선은 아닐 수 있습니다. 음질의 중요성을 주변에 알려주세요.</span>
-                    </li>
-                </ul>
-            </div>
-        </section>
+        <!-- 푸터 -->
+        <footer class="text-center text-slate-600 py-12 border-t border-slate-800">
+            <p class="text-sm">데이터 출처: "고해상도 오디오와 인지 효율성 연구 (2025)"</p>
+            <p class="text-xs mt-2">무손실 음원 사용 권장을 위해 생성됨 - 대충영어</p>
+        </footer>
 
     </main>
 
-    <footer class="text-center p-6 bg-white border-t">
-        <p class="text-sm" style="color: #073B4C;">본 인포그래픽은 음질과 건강의 상관 관계에 대한 인식을 제고하기 위해 제작되었습니다. 대충영어</p>
-    </footer>
-
+    <!-- CHART.JS 구현 -->
     <script>
-        window.addEventListener('DOMContentLoaded', () => {
-            const colors = {
-                red: '#FF6B6B',
-                yellow: '#FFD166',
-                green: '#06D6A0',
-                blue: '#118AB2',
-                darkBlue: '#073B4C'
-            };
-
-            const tooltipTitleCallback = (tooltipItems) => {
-                const item = tooltipItems[0];
-                let label = item.chart.data.labels[item.dataIndex];
-                if (Array.isArray(label)) {
-                    return label.join(' ');
+        function splitLabel(label, maxLength = 16) {
+            if (typeof label !== 'string' || label.length <= maxLength) return label;
+            const words = label.split(' ');
+            const lines = [];
+            let currentLine = words[0];
+            for (let i = 1; i < words.length; i++) {
+                if ((currentLine + ' ' + words[i]).length <= maxLength) {
+                    currentLine += ' ' + words[i];
                 } else {
+                    lines.push(currentLine);
+                    currentLine = words[i];
+                }
+            }
+            lines.push(currentLine);
+            return lines;
+        }
+
+        Chart.defaults.font.family = "'Noto Sans KR', 'Inter', sans-serif";
+        Chart.defaults.color = '#94a3b8';
+        Chart.defaults.borderColor = '#334155';
+
+        const tooltipConfig = {
+            backgroundColor: '#0f172a',
+            titleColor: '#f8fafc',
+            bodyColor: '#e2e8f0',
+            borderColor: '#334155',
+            borderWidth: 1,
+            titleFont: { family: "'Noto Sans KR', sans-serif" },
+            bodyFont: { family: "'Noto Sans KR', sans-serif" },
+            callbacks: {
+                title: function(tooltipItems) {
+                    const item = tooltipItems[0];
+                    let label = item.chart.data.labels[item.dataIndex];
+                    if (Array.isArray(label)) return label.join(' ');
                     return label;
                 }
-            };
-            
-            const defaultChartOptions = {
+            }
+        };
+
+        // --- 차트 1: 데이터 밀도 비교 (Bar) ---
+        const ctxEvolution = document.getElementById('evolutionChart').getContext('2d');
+        new Chart(ctxEvolution, {
+            type: 'bar',
+            data: {
+                labels: ['MP3 (128k)', 'AAC (256k)', 'FLAC (16bit)', 'WAV (16bit)', 'WAV (24bit/Hi-Res)'],
+                datasets: [
+                    {
+                        label: '비트레이트 (kbps)',
+                        data: [128, 256, 900, 1411, 4608],
+                        backgroundColor: [
+                            'rgba(244, 114, 182, 0.5)', // Pink (MP3)
+                            'rgba(251, 191, 36, 0.8)',  // Amber (AAC)
+                            'rgba(34, 211, 238, 0.6)',  // Cyan (FLAC)
+                            'rgba(129, 140, 248, 0.8)', // Indigo (WAV 16)
+                            'rgba(129, 140, 248, 1)'    // Indigo (WAV 24)
+                        ],
+                        borderColor: [
+                            '#f472b6', '#fbbf24', '#22d3ee', '#818cf8', '#818cf8'
+                        ],
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        labels: {
-                            color: colors.darkBlue,
-                            font: {
-                                size: 14,
-                                family: "'Noto Sans KR', sans-serif"
-                            }
-                        }
-                    },
-                    tooltip: {
-                        callbacks: {
-                            title: tooltipTitleCallback
-                        },
-                        bodyFont: {
-                            family: "'Noto Sans KR', sans-serif"
-                        },
-                        titleFont: {
-                            family: "'Noto Sans KR', sans-serif"
-                        }
-                    }
+                    tooltip: tooltipConfig,
+                    legend: { display: false }
                 },
                 scales: {
                     y: {
-                        ticks: {
-                            color: colors.darkBlue,
-                            font: {
-                                family: "'Noto Sans KR', sans-serif"
-                            }
-                        },
-                        grid: {
-                            color: '#e0e0e0'
-                        }
+                        beginAtZero: true,
+                        title: { display: true, text: '전송률 (kbps)' },
+                        type: 'logarithmic'
                     },
-                    x: {
-                        ticks: {
-                            color: colors.darkBlue,
-                            font: {
-                                family: "'Noto Sans KR', sans-serif"
-                            }
-                        },
-                        grid: {
-                            display: false
-                        }
-                    }
+                    x: { grid: { display: false } }
                 }
-            };
+            }
+        });
 
-            const ctx1 = document.getElementById('muscleChart').getContext('2d');
-            new Chart(ctx1, {
-                type: 'bar',
-                data: {
-                    labels: ['LP (아날로그)', 'MP3 (디지털)'],
-                    datasets: [{
-                        label: '근력 유지율 (%)',
-                        data: [100, 65],
-                        backgroundColor: [colors.green, colors.red],
-                        borderColor: [colors.green, colors.red],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    ...defaultChartOptions,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                color: colors.darkBlue,
-                                font: {
-                                    family: "'Noto Sans KR', sans-serif"
-                                }
-                            },
-                            grid: {
-                                color: '#e0e0e0'
-                            }
-                        },
-                        x: {
-                           ticks: {
-                                color: colors.darkBlue,
-                                font: {
-                                    family: "'Noto Sans KR', sans-serif",
-                                    size: 14
-                                }
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
+        // --- 차트 2: 동공 확장 (3-Line Comparison) ---
+        const ctxPupil = document.getElementById('pupilChart').getContext('2d');
+        new Chart(ctxPupil, {
+            type: 'line',
+            data: {
+                labels: ['0분', '10분', '20분', '30분', '40분', '50분', '60분'],
+                datasets: [
+                    {
+                        label: 'MP3 (높은 부하)',
+                        data: [3.0, 3.8, 4.2, 4.5, 4.6, 4.7, 4.8],
+                        borderColor: '#f472b6', // Pink
+                        backgroundColor: 'rgba(244, 114, 182, 0.1)',
+                        tension: 0.4
                     },
-                    plugins: {
-                        ...defaultChartOptions.plugins,
-                        legend: {
-                            display: false
-                        }
+                    {
+                        label: 'AAC (중간 부하)',
+                        data: [3.0, 3.4, 3.7, 3.9, 4.0, 4.1, 4.2],
+                        borderColor: '#fbbf24', // Amber
+                        backgroundColor: 'rgba(251, 191, 36, 0.1)',
+                        borderDash: [5, 5],
+                        tension: 0.4
+                    },
+                    {
+                        label: 'WAV / FLAC (안정적)',
+                        data: [3.0, 3.1, 3.1, 3.2, 3.2, 3.2, 3.3],
+                        borderColor: '#818cf8', // Indigo
+                        backgroundColor: 'rgba(129, 140, 248, 0.2)',
+                        fill: true,
+                        tension: 0.4
                     }
-                }
-            });
-
-            const ctx2 = document.getElementById('prenatalChart').getContext('2d');
-            new Chart(ctx2, {
-                type: 'doughnut',
-                data: {
-                    labels: ['태아 안정 (아날로그/자연음)', '태아 스트레스 반응 (MP3)'],
-                    datasets: [{
-                        data: [80, 20],
-                        backgroundColor: [colors.green, colors.red],
-                        hoverOffset: 4
-                    }]
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    tooltip: tooltipConfig,
+                    legend: { position: 'bottom' },
+                    title: { display: true, text: '시간 경과에 따른 동공 지름 (mm)' }
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        ...defaultChartOptions.plugins,
-                        legend: {
-                            position: 'bottom',
-                            labels: {
-                                color: colors.darkBlue,
-                                font: {
-                                    size: 14,
-                                    family: "'Noto Sans KR', sans-serif"
-                                }
-                            }
-                        }
-                    }
+                scales: {
+                    y: {
+                        min: 2.5, max: 5.5,
+                        grid: { color: '#334155' }
+                    },
+                    x: { grid: { display: false } }
                 }
-            });
-
-            const ctx3 = document.getElementById('speedChart').getContext('2d');
-            new Chart(ctx3, {
-                type: 'bar',
-                data: {
-                    labels: ['2배속', '3배속', '4배속'],
-                    datasets: [
-                        {
-                            label: 'MP3 선명도 (%)',
-                            data: [80, 50, 20],
-                            backgroundColor: colors.red,
-                        },
-                        {
-                            label: 'PCM/WAV 선명도 (%)',
-                            data: [100, 95, 85],
-                            backgroundColor: colors.green,
-                        }
-                    ]
-                },
-                options: {
-                    ...defaultChartOptions,
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                color: colors.darkBlue,
-                                font: {
-                                    family: "'Noto Sans KR', sans-serif"
-                                }
-                            },
-                            grid: {
-                                color: '#e0e0e0'
-                            }
-                        },
-                        x: {
-                           ticks: {
-                                color: colors.darkBlue,
-                                font: {
-                                    family: "'Noto Sans KR', sans-serif",
-                                    size: 14
-                                }
-                            },
-                            grid: {
-                                display: false
-                            }
-                        }
-                    }
-                }
-            });
+            }
         });
     </script>
+
+    <!-- PLOTLY.JS: AAC vs FLAC/WAV 비교 -->
+    <script>
+        // AAC vs WAV/FLAC Heatmap
+        const freqBins = Array.from({length: 30}, (_, i) => i);
+        const timeSteps = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8'];
+
+        const zDataWAV = [];
+        const zDataAAC = [];
+
+        // 데이터 생성 로직
+        for (let t = 0; t < timeSteps.length; t++) {
+            let rowWAV = [];
+            let rowAAC = [];
+            for (let f = 0; f < freqBins.length; f++) {
+                // 원음 (WAV/FLAC) 에너지
+                let baseEnergy = Math.max(0, 100 - (f * 2.5));
+                let detail = (Math.random() * 15);
+
+                let wavVal = baseEnergy + detail;
+                rowWAV.push(wavVal);
+
+                // AAC 시뮬레이션
+                let aacVal = wavVal;
+
+                if (f > 22) {
+                    aacVal = 0; // Cutoff
+                } else {
+                    if (Math.random() > 0.6) {
+                        aacVal = aacVal * 0.7;
+                    }
+                }
+                rowAAC.push(aacVal);
+            }
+            zDataWAV.push(rowWAV);
+            zDataAAC.push(rowAAC);
+        }
+
+        const traceWAV = {
+            z: zDataWAV,
+            x: freqBins,
+            y: timeSteps.map(t => 'WAV ' + t),
+            type: 'heatmap',
+            colorscale: [
+                [0, '#0f172a'],
+                [0.5, '#22d3ee'],
+                [1, '#818cf8']
+            ],
+            name: 'WAV/FLAC',
+            showscale: false
+        };
+
+        const traceAAC = {
+            z: zDataAAC,
+            x: freqBins,
+            y: timeSteps.map(t => 'AAC ' + t),
+            type: 'heatmap',
+            colorscale: 'YlOrBr',
+            name: 'AAC',
+            xaxis: 'x',
+            yaxis: 'y2',
+            showscale: false
+        };
+
+        const layout = {
+            grid: {rows: 2, columns: 1, pattern: 'independent'},
+            paper_bgcolor: 'rgba(0,0,0,0)',
+            plot_bgcolor: 'rgba(0,0,0,0)',
+            font: { family: 'Noto Sans KR, sans-serif', color: '#94a3b8' },
+            margin: { t: 30, l: 60, r: 20, b: 40 },
+            xaxis: { title: '주파수 대역 및 디테일', showticklabels: false },
+            yaxis: { title: 'WAV/FLAC (원음)' },
+            yaxis2: { title: 'AAC (손실)' },
+            annotations: [
+                {
+                    x: 25, y: 3.5, xref: 'x', yref: 'y2',
+                    text: '정보 손실',
+                    showarrow: false,
+                    font: { color: '#fbbf24', size: 14, weight: 'bold', family: 'Noto Sans KR' }
+                }
+            ]
+        };
+
+        const config = { responsive: true, displayModeBar: false, renderer: 'canvas' };
+
+        Plotly.newPlot('spectrumPlot', [traceWAV, traceAAC], layout, config);
+    </script>
+
+    <!-- 햄버거 메뉴 JavaScript -->
+    <script>
+        const hamburger = document.getElementById('hamburger');
+        const sideMenu = document.getElementById('sideMenu');
+        const menuOverlay = document.getElementById('menuOverlay');
+        const archiveToggle = document.getElementById('archiveToggle');
+        const archiveSubmenu = document.getElementById('archiveSubmenu');
+        const archiveArrow = document.getElementById('archiveArrow');
+
+        // 햄버거 메뉴 토글
+        function toggleMenu() {
+            hamburger.classList.toggle('active');
+            sideMenu.classList.toggle('active');
+            menuOverlay.classList.toggle('active');
+            document.body.style.overflow = sideMenu.classList.contains('active') ? 'hidden' : '';
+        }
+
+        hamburger.addEventListener('click', toggleMenu);
+        menuOverlay.addEventListener('click', toggleMenu);
+
+        // 아카이브 드롭다운 토글
+        archiveToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            archiveSubmenu.classList.toggle('active');
+            archiveArrow.classList.toggle('active');
+        });
+
+        // ESC 키로 메뉴 닫기
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && sideMenu.classList.contains('active')) {
+                toggleMenu();
+            }
+        });
+
+        // 페이지 로드 시 아카이브 메뉴 자동 열기
+        window.addEventListener('DOMContentLoaded', () => {
+            archiveSubmenu.classList.add('active');
+            archiveArrow.classList.add('active');
+        });
+
+        // 테마 토글 기능
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+
+        // 저장된 테마 불러오기
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light') {
+            body.classList.add('light-theme');
+            themeToggle.textContent = '🌙';
+        } else {
+            themeToggle.textContent = '☀️';
+        }
+
+        // 테마 전환
+        themeToggle.addEventListener('click', () => {
+            body.classList.toggle('light-theme');
+
+            if (body.classList.contains('light-theme')) {
+                localStorage.setItem('theme', 'light');
+                themeToggle.textContent = '🌙';
+            } else {
+                localStorage.setItem('theme', 'dark');
+                themeToggle.textContent = '☀️';
+            }
+        });
+    </script>
+
 </body>
 </html>
