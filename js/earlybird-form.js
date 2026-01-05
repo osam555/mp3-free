@@ -181,7 +181,8 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
     const email = document.getElementById('email').value.trim();
     const phone = document.getElementById('phone').value.trim();
     const receiptFile = document.getElementById('receipt').files[0];
-    const reviewFile = document.getElementById('review1').files[0];
+    const reviewElement = document.getElementById('review1');
+    const reviewFile = reviewElement ? reviewElement.files[0] : null;
 
     // 영어 학습 목표 (복수 선택)
     const goalsCheckboxes = document.querySelectorAll('input[name="goals"]:checked');

@@ -1641,17 +1641,20 @@
             // YouTube 썸네일 표시 (재생 안함)
             function showYouTubeThumbnail() {
                 if (hasTransitioned) return;
-                
+
                 hasTransitioned = true;
-                
+
                 // GIF 숨기기
-                heroGif.style.display = 'none';
-                
+                if (heroGif) {
+                    heroGif.style.display = 'none';
+                }
+
                 // YouTube 표시 (iframe은 비어있음, 버튼만 표시)
-                heroYoutube.style.display = 'block';
-                
-                // 썸네일 배경 설정 (선택사항)
-                heroYoutube.style.background = `url('https://img.youtube.com/vi/6xhwSSWzceQ/maxresdefault.jpg') center/cover`;
+                if (heroYoutube) {
+                    heroYoutube.style.display = 'block';
+                    // 썸네일 배경 설정 (선택사항)
+                    heroYoutube.style.background = `url('https://img.youtube.com/vi/6xhwSSWzceQ/maxresdefault.jpg') center/cover`;
+                }
                 
                 console.log('🖼️ YouTube 썸네일 표시, 버튼 대기 중');
             }
