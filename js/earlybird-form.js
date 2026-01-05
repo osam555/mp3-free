@@ -233,7 +233,7 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
         if (isDuplicate) {
             showMessage('이미 신청하신 이메일입니다.', 'error');
             submitBtn.disabled = false;
-            submitBtn.textContent = '🎁 얼리버드 신청하기';
+            submitBtn.textContent = '🎁 이벤트 신청하기';
             return;
         }
 
@@ -288,14 +288,14 @@ document.getElementById('earlybird-form').addEventListener('submit', async (e) =
         // 버튼 복구
         setTimeout(() => {
             submitBtn.disabled = false;
-            submitBtn.textContent = '🎁 얼리버드 신청하기';
+            submitBtn.textContent = '🎁 이벤트 신청하기';
         }, 3000);
 
     } catch (error) {
         console.error('신청 에러:', error);
-        showMessage('신청 중 오류가 발생했습니다. 다시 시도해주세요.<br>' + error.message, 'error');
+        showMessage('신청 중 오류가 발생했습니다. 다시 시도해주세요.<br>' + error.message + '<br><br>📞 문제가 계속되면 오쌤에게 문의해주세요: 010-8791-9119', 'error');
         submitBtn.disabled = false;
-        submitBtn.textContent = '🎁 얼리버드 신청하기';
+        submitBtn.textContent = '🎁 이벤트 신청하기';
     }
 });
 
