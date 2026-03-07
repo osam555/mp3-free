@@ -67,6 +67,7 @@
             line-height: 1.7;
         }
 
+        /* Enhanced UI System */
         .chart-container {
             position: relative;
             width: 100%;
@@ -81,8 +82,9 @@
             }
         }
 
+        /* Enhanced Hero Section */
         .hero-gradient {
-            background: #1925FA;
+            background: linear-gradient(135deg, #1925FA 0%, #005A9C 100%);
             position: relative;
             overflow: hidden;
         }
@@ -96,6 +98,166 @@
             height: 200%;
             background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
             animation: pulse 15s ease-in-out infinite;
+        }
+
+        .hero-gradient::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+            animation: shimmer 8s ease-in-out infinite;
+        }
+
+        /* Enhanced Glass Card System */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            border-color: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Enhanced Section Title */
+        .section-title {
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: linear-gradient(90deg, #1925FA, #005A9C);
+            border-radius: 2px;
+        }
+
+        /* Enhanced Button */
+        .enhanced-btn {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            z-index: 1;
+        }
+
+        .enhanced-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .enhanced-btn:hover::before {
+            left: 100%;
+        }
+
+        /* Enhanced Image Card */
+        .image-card {
+            border-radius: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .image-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .image-card img {
+            transition: transform 0.3s ease;
+        }
+
+        .image-card:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Enhanced Section Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 0.5;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        /* Enhanced Progress Bar */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 4px;
+            background: linear-gradient(90deg, #1925FA, #005A9C);
+            z-index: 1000;
+            transition: width 0.1s ease;
+        }
+
+        /* Enhanced Navigation */
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #1925FA, #005A9C);
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover::after,
+        .nav-link.active::after {
+            width: 100%;
         }
 
         @keyframes pulse {
@@ -459,14 +621,14 @@
     <!-- Hero Section -->
     <section id="hero" class="hero-gradient flex items-center justify-center relative pt-20 md:pt-40 py-16 md:py-24">
         <div class="max-w-6xl mx-auto px-4 text-center relative z-10">
-            <h1 class="text-4xl md:text-6xl font-black text-white mb-6 fade-in-up">
-                영어 학습의 차이는<br><span class="text-yellow-300">'소리'</span>에서 시작됩니다
+            <h1 class="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-8 fade-in-up">
+                영어 학습의 차이는<br><span class="text-yellow-300 font-bold">'소리'</span>에서 시작됩니다
             </h1>
-            <p class="text-lg md:text-2xl text-gray-200 mb-12 fade-in-up">
+            <p class="text-xl md:text-3xl text-gray-200 mb-8 fade-in-up max-w-4xl mx-auto px-4">
                 왜 '대충 영어'는 MP3 대신 WAV를 선택했는가?
             </p>
-            <a href="#prenatal" class="inline-block bg-white text-blue-700 px-8 py-4 rounded-full font-bold text-lg hover:bg-blue-50 transition-all transform hover:scale-105 shadow-2xl fade-in-up">
-                MBC 생명의소리 - 태아의 MP3 반응 ↓
+            <a href="#prenatal" class="enhanced-btn bg-white text-blue-700 px-10 py-5 rounded-full font-bold text-xl hover:bg-blue-50 transition-all transform hover:scale-105 shadow-2xl fade-in-up">
+                <span class="relative z-10">MBC 생명의소리 - 태아의 MP3 반응 ↓</span>
             </a>
         </div>
         <div class="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-white to-transparent"></div>
@@ -503,8 +665,8 @@
                         책 구매 이벤트, 얼리버드 100명, 체험과정 할인 + wav 원음 영상 제공
                     </p>
 
-                    <!-- Action Buttons -->
-                    <div class="flex flex-col sm:flex-row gap-4 mt-6 justify-center">
+                    <!-- Enhanced Action Buttons -->
+                    <div class="flex flex-col sm:flex-row gap-6 mt-8 justify-center">
                         <a href="https://mp3-free.app/#earlybird" target="_blank" rel="noopener noreferrer"
                            class="inline-flex items-center justify-center px-8 py-4 text-lg font-bold text-white bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg hover:from-amber-600 hover:to-orange-700 transform hover:scale-105 transition-all duration-200">
                             🎓 대충영어 체험과정 이벤트
@@ -1199,7 +1361,7 @@
                 </h2>
                 <p class="text-base md:text-lg text-center max-w-3xl mx-auto mb-6 md:mb-8 px-2">
                     교보문고에서 '대충영어 구매하신 선착순 <span class="font-bold text-red-600">100명</span>에게
-                    <span class="font-bold text-blue-700">영어 귀를 2배 이상 빠르게 뚫게 하는 WAV 속청 동영상 원본(500메가)</span>을 제공합니다!
+                    <span class="font-bold text-blue-700">영어 귀를 2배 이상 빠르게 뚫게 하는 WAV 속청 동영상 원본</span>을 제공합니다!
                 </p>
 
                 <div class="mb-6 md:mb-8">
